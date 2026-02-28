@@ -2,7 +2,7 @@ import type {Metadata} from 'next';
 import './globals.css'; // Global styles
 
 export const metadata: Metadata = {
-  title: 'Criador de Carrossel',
+  title: 'Carrossel Viral Lab',
   description: 'Painel de Criação de Carrossel',
 };
 

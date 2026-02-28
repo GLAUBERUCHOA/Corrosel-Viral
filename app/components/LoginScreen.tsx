@@ -1,19 +1,44 @@
+'use client';
 import React, { useState } from 'react';
-
-const USUARIOS_AUTORIZADOS = ['drglauberabreu@gmail.com'];
 
 export default function LoginScreen({ onLogin }: { onLogin: (email: string) => void }) {
   const [email, setEmail] = useState('');
   const [error, setError] = useState('');
+  const [isLoading, setIsLoading] = useState(false);
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     const cleanEmail = email.toLowerCase().trim();
     
-    if (USUARIOS_AUTORIZADOS.includes(cleanEmail)) {
+    // Always allow the admin email for testing/fallback
+    if (cleanEmail === 'drglauberabreu@gmail.com') {
       onLogin(cleanEmail);
-    } else {
-      setError('E-mail não autorizado. Verifique e tente novamente.');
+      return;
+    }
+
+    setIsLoading(true);
+    setError('');
+
+    try {
+      const response = await fetch('/api/auth/login', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ email: cleanEmail }),
+      });
+
+      const data = await response.json();
+
+      if (response.ok && data.success) {
+        onLogin(cleanEmail);
+      } else {
+        setError(data.error || 'E-mail não autorizado. Verifique e tente novamente.');
+      }
+    } catch (err) {
+      setError('Erro ao conectar com o servidor. Tente novamente mais tarde.');
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -66,9 +91,19 @@ export default function LoginScreen({ onLogin }: { onLogin: (email: string) => v
             
             <button
               type="submit"
-              className="w-full py-3.5 px-4 bg-primary hover:bg-primary/90 text-white font-bold rounded-xl transition-all shadow-lg shadow-primary/25 hover:shadow-xl hover:shadow-primary/30 hover:-translate-y-0.5 active:translate-y-0 flex items-center justify-center gap-2"
+              disabled={isLoading}
+              className="w-full py-3.5 px-4 bg-primary hover:bg-primary/90 text-white font-bold rounded-xl transition-all shadow-lg shadow-primary/25 hover:shadow-xl hover:shadow-primary/30 hover:-translate-y-0.5 active:translate-y-0 flex items-center justify-center gap-2 disabled:opacity-70 disabled:cursor-not-allowed disabled:hover:-translate-y-0"
             >
-              Entrar <span className="material-symbols-outlined text-[20px]">arrow_forward</span>
+              {isLoading ? (
+                <>
+                  <span className="material-symbols-outlined text-[20px] animate-spin">progress_activity</span>
+                  Verificando...
+                </>
+              ) : (
+                <>
+                  Entrar <span className="material-symbols-outlined text-[20px]">arrow_forward</span>
+                </>
+              )}
             </button>
           </form>
           

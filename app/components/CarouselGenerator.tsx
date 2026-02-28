@@ -432,7 +432,7 @@ Diretrizes obrigatórias (Diretriz Davinci):
   };
 
   return (
-    <div className="bg-background-light dark:bg-background-dark text-slate-900 dark:text-slate-100 font-display min-h-screen flex flex-col overflow-hidden">
+    <div className="bg-background-light dark:bg-background-dark text-slate-900 dark:text-slate-100 font-display h-[100dvh] flex flex-col overflow-hidden">
       <header className="flex items-center justify-between whitespace-nowrap border-b border-solid border-slate-200 dark:border-border-dark bg-white dark:bg-surface-dark px-6 py-3 shrink-0 z-20">
         <div className="flex items-center gap-4 text-slate-900 dark:text-white">
           <div className="size-8 flex items-center justify-center bg-primary/10 rounded-lg text-primary">
@@ -469,10 +469,10 @@ Diretrizes obrigatórias (Diretriz Davinci):
         </button>
       </div>
 
-      <main className="flex flex-1 overflow-hidden relative flex-col md:flex-row">
+      <main className="flex flex-1 min-h-0 overflow-hidden relative flex-col md:flex-row">
         <aside 
           style={{ width: `${sidebarWidth}px` }}
-          className={`scrollbar-custom flex flex-col border-r border-slate-200 dark:border-border-dark bg-white dark:bg-surface-dark overflow-y-auto shrink-0 z-10 relative transition-[width] duration-0 ${activeMobileTab !== 'config' ? 'max-md:hidden' : 'max-md:!w-full max-md:flex-1'}`}
+          className={`scrollbar-custom flex flex-col min-h-0 border-r border-slate-200 dark:border-border-dark bg-white dark:bg-surface-dark overflow-y-auto shrink-0 z-10 relative transition-[width] duration-0 ${activeMobileTab !== 'config' ? 'max-md:hidden' : 'max-md:!w-full max-md:flex-1'}`}
         >
           <div 
             onMouseDown={startResizing}
@@ -770,7 +770,7 @@ Diretrizes obrigatórias (Diretriz Davinci):
             </div>
           </div>
         </aside>
-        <section className={`flex-1 flex flex-col bg-slate-100 dark:bg-background-dark overflow-hidden relative ${activeMobileTab !== 'preview' ? 'max-md:hidden' : 'max-md:flex max-md:flex-1'}`}>
+        <section className={`flex-1 flex flex-col min-h-0 bg-slate-100 dark:bg-background-dark overflow-hidden relative ${activeMobileTab !== 'preview' ? 'max-md:hidden' : 'max-md:flex max-md:flex-1'}`}>
           <div className="flex flex-wrap items-center justify-between px-2 sm:px-4 md:px-8 py-3 shrink-0 gap-2">
             <div className="flex items-center gap-1 bg-white dark:bg-surface-dark p-1 rounded-lg border border-slate-200 dark:border-border-dark shadow-sm shrink-0">
               <button 

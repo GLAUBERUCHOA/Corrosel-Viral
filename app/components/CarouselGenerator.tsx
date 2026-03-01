@@ -11,11 +11,11 @@ export default function CarouselGenerator({ onLogout }: { onLogout: () => void }
   const [generateWithAI, setGenerateWithAI] = useState(false);
   const [customApiKey, setCustomApiKey] = useState('');
   const [generatingImages, setGeneratingImages] = useState<boolean[]>([]);
-  const [content, setContent] = useState(`5 Dicas para Dominar CSS Grid\n1. Defina seu container grid com display: grid.\n2. Use grid-template-columns para definir tamanhos das trilhas.\n3. Utilize a unidade fr para layouts flexíveis.\n4. Posicione itens explicitamente com grid-column e grid-row.\n5. Use grid-gap para espaçamento consistente.`);
+  const [content, setContent] = useState('');
   const [zoom, setZoom] = useState(100);
   const [activeMobileTab, setActiveMobileTab] = useState<'config' | 'preview'>('config');
-  
-  const [parsedSlides, setParsedSlides] = useState<{title: string, subtitle: string}[]>([
+
+  const [parsedSlides, setParsedSlides] = useState<{ title: string, subtitle: string }[]>([
     { title: "5 Dicas para Dominar CSS Grid", subtitle: "Deslize para ver mais" },
     { title: "Defina seu container grid com display: grid.", subtitle: "" },
     { title: "Use grid-template-columns para definir tamanhos das trilhas.", subtitle: "" },
@@ -23,7 +23,7 @@ export default function CarouselGenerator({ onLogout }: { onLogout: () => void }
     { title: "Posicione itens explicitamente com grid-column e grid-row.", subtitle: "" },
     { title: "Use grid-gap para espaçamento consistente.", subtitle: "" }
   ]);
-  
+
   const slideCount = Math.max(1, parsedSlides.length);
 
   const [uploadedImages, setUploadedImages] = useState<(string | null)[]>(Array(6).fill(null));
@@ -49,7 +49,7 @@ export default function CarouselGenerator({ onLogout }: { onLogout: () => void }
     if (savedKey) {
       setCustomApiKey(savedKey);
     }
-    
+
     const savedPrefs = localStorage.getItem('carousel_preferences');
     if (savedPrefs) {
       try {
@@ -145,20 +145,20 @@ export default function CarouselGenerator({ onLogout }: { onLogout: () => void }
 
   const handleDrop = (index: number) => {
     if (draggedIndex === null || draggedIndex === index) return;
-    
+
     const currentImages = uploadedImages.filter(img => img !== null);
     if (draggedIndex >= currentImages.length) return;
-    
+
     const [draggedImage] = currentImages.splice(draggedIndex, 1);
     const targetIndex = Math.min(index, currentImages.length);
-    
+
     currentImages.splice(targetIndex, 0, draggedImage);
-    
+
     const newUploadedImages: (string | null)[] = [...currentImages];
     while (newUploadedImages.length < slideCount) {
       newUploadedImages.push(null);
     }
-    
+
     setUploadedImages(newUploadedImages);
     setDraggedIndex(null);
   };
@@ -216,7 +216,7 @@ export default function CarouselGenerator({ onLogout }: { onLogout: () => void }
 
   const handleGenerateCarousel = async () => {
     if (!content.trim()) return;
-    
+
     // Parse content locally without AI
     let blocks = content.split(/\n\s*\n/).filter(b => b.trim());
     if (blocks.length === 1) {
@@ -224,14 +224,32 @@ export default function CarouselGenerator({ onLogout }: { onLogout: () => void }
     }
 
     const newSlides = blocks.map((block) => {
-      const lines = block.split('\n').filter(l => l.trim());
-      const title = lines[0].replace(/^(?:Slide\s*\d+\s*[:\-]?\s*|^\d+\.\s*|^-\s*|^:\s*)/i, '').trim();
-      const subtitle = lines.slice(1).join(' ').trim();
+      let title = '';
+      let subtitle = '';
+
+      const singleLineBlock = block.replace(/\n/g, ' ').trim();
+
+      const titleRegex = /\[?T[ÍI]TULO\]?:\s*(.*?)(?=\[SUBT[ÍI]TULO\]:|$)/i;
+      const subtitleRegex = /\[?SUBT[ÍI]TULO\]?:\s*(.*)/i;
+
+      const titleMatch = singleLineBlock.match(titleRegex);
+      const subtitleMatch = singleLineBlock.match(subtitleRegex);
+
+      if (titleMatch || subtitleMatch) {
+        title = titleMatch ? titleMatch[1].replace(/^(?:SLIDE\s*\d+\s*[:\-]?\s*)/i, '').trim() : '';
+        subtitle = subtitleMatch ? subtitleMatch[1].trim() : '';
+      } else {
+        const lines = block.split('\n').filter(l => l.trim());
+        if (lines.length > 0) {
+          title = lines[0].replace(/^(?:SLIDE\s*\d+\s*[:\-]?\s*|^\d+\.\s*|^-\s*|^:\s*)/i, '').trim();
+          subtitle = lines.slice(1).join(' ').trim();
+        }
+      }
       return { title, subtitle };
     });
 
     setParsedSlides(newSlides);
-    
+
     setUploadedImages(prev => {
       const newImages = [...prev];
       while (newImages.length < newSlides.length) newImages.push(null);
@@ -249,7 +267,7 @@ export default function CarouselGenerator({ onLogout }: { onLogout: () => void }
       const ai = new GoogleGenAI({ apiKey });
       const newGenerating = Array(newSlides.length).fill(true);
       setGeneratingImages(newGenerating);
-      
+
       const newImages = [...uploadedImages];
       while (newImages.length < newSlides.length) newImages.push(null);
 
@@ -322,39 +340,39 @@ Diretrizes obrigatórias (Diretriz Davinci):
 
   const getSlideTheme = () => {
     switch (styleModel) {
-      case 'Moderno': 
-        return { 
-          bgClass: 'bg-gradient-to-br from-indigo-500 to-purple-600', 
-          bgStyle: {}, 
-          textClass: 'text-white', 
+      case 'Moderno':
+        return {
+          bgClass: 'bg-gradient-to-br from-indigo-500 to-purple-600',
+          bgStyle: {},
+          textClass: 'text-white',
           subtextClass: 'text-indigo-100'
         };
-      case 'Escuro': 
-        return { 
-          bgClass: 'bg-[#151525]', 
-          bgStyle: {}, 
-          textClass: 'text-white', 
+      case 'Escuro':
+        return {
+          bgClass: 'bg-[#151525]',
+          bgStyle: {},
+          textClass: 'text-white',
           subtextClass: 'text-[#cbd5e1]'
         };
-      case 'Vibrante': 
-        return { 
-          bgClass: 'bg-gradient-to-br from-orange-400 to-pink-500', 
-          bgStyle: {}, 
-          textClass: 'text-white', 
+      case 'Vibrante':
+        return {
+          bgClass: 'bg-gradient-to-br from-orange-400 to-pink-500',
+          bgStyle: {},
+          textClass: 'text-white',
           subtextClass: 'text-orange-100'
         };
-      case 'Minimalista': 
-        return { 
-          bgClass: 'bg-white', 
-          bgStyle: {}, 
-          textClass: 'text-slate-900', 
+      case 'Minimalista':
+        return {
+          bgClass: 'bg-white',
+          bgStyle: {},
+          textClass: 'text-slate-900',
           subtextClass: 'text-slate-600'
         };
-      case 'Regional': 
-        return { 
-          bgClass: 'bg-[#efe9dc]', 
-          bgStyle: {}, 
-          textClass: 'text-slate-900', 
+      case 'Regional':
+        return {
+          bgClass: 'bg-[#efe9dc]',
+          bgStyle: {},
+          textClass: 'text-slate-900',
           subtextClass: 'text-slate-700'
         };
       case 'Personalizado': {
@@ -364,19 +382,19 @@ Diretrizes obrigatórias (Diretriz Davinci):
         const g = parseInt(hex.substr(2, 2), 16) || 0;
         const b = parseInt(hex.substr(4, 2), 16) || 0;
         const isLight = ((r * 299) + (g * 587) + (b * 114)) / 1000 >= 128;
-        
-        return { 
-          bgClass: '', 
-          bgStyle: { backgroundColor: customColor }, 
-          textClass: isLight ? 'text-slate-900' : 'text-white', 
+
+        return {
+          bgClass: '',
+          bgStyle: { backgroundColor: customColor },
+          textClass: isLight ? 'text-slate-900' : 'text-white',
           subtextClass: isLight ? 'text-slate-700' : 'text-slate-200'
         };
       }
-      default: 
-        return { 
-          bgClass: 'bg-[#151525]', 
-          bgStyle: {}, 
-          textClass: 'text-white', 
+      default:
+        return {
+          bgClass: 'bg-[#151525]',
+          bgStyle: {},
+          textClass: 'text-white',
           subtextClass: 'text-[#cbd5e1]'
         };
     }
@@ -441,7 +459,7 @@ Diretrizes obrigatórias (Diretriz Davinci):
           <h2 className="text-lg font-bold leading-tight tracking-tight">Carrossel Viral Lab</h2>
         </div>
         <div className="flex flex-1 justify-end gap-4 items-center">
-          <button 
+          <button
             onClick={onLogout}
             className="text-sm font-semibold text-slate-500 hover:text-red-500 transition-colors flex items-center gap-1"
           >
@@ -449,19 +467,19 @@ Diretrizes obrigatórias (Diretriz Davinci):
             <span className="hidden sm:inline">Sair</span>
           </button>
           <div className="w-px h-6 bg-slate-200 dark:bg-border-dark"></div>
-          <div className="bg-center bg-no-repeat bg-cover rounded-full size-9 ring-2 ring-slate-100 dark:ring-border-dark cursor-pointer" data-alt="User profile picture" style={{backgroundImage: 'url("https://lh3.googleusercontent.com/aida-public/AB6AXuDq8gwC2gYGw_ekJwtNXfCb7lnyQKPM_v5edKwjUZbSvOHK3eYZUrn0j9Zsp7DnI1y5irWu2M9jQ8s27oX9C8VS53cOb9lolxw7slhfmMAVnMrVv7AoCeW5zlCoAc6K89RUNfLyHiuWD2nCP-hNqvC-N3TSMzM6wY_FpkfrN3zKZ4yMFoV73t4WFlcggVqWO74G61RtArjXqmpvvCjTcciK-vFVCqOgWfn7BHR7aqjPLuP0MvRVXmzESNUpycuKFMtYIohCwRulGoY")'}}></div>
+          <div className="bg-center bg-no-repeat bg-cover rounded-full size-9 ring-2 ring-slate-100 dark:ring-border-dark cursor-pointer" data-alt="User profile picture" style={{ backgroundImage: 'url("https://lh3.googleusercontent.com/aida-public/AB6AXuDq8gwC2gYGw_ekJwtNXfCb7lnyQKPM_v5edKwjUZbSvOHK3eYZUrn0j9Zsp7DnI1y5irWu2M9jQ8s27oX9C8VS53cOb9lolxw7slhfmMAVnMrVv7AoCeW5zlCoAc6K89RUNfLyHiuWD2nCP-hNqvC-N3TSMzM6wY_FpkfrN3zKZ4yMFoV73t4WFlcggVqWO74G61RtArjXqmpvvCjTcciK-vFVCqOgWfn7BHR7aqjPLuP0MvRVXmzESNUpycuKFMtYIohCwRulGoY")' }}></div>
         </div>
       </header>
 
       {/* Mobile Tab Switcher */}
       <div className="md:hidden flex border-b border-slate-200 dark:border-border-dark bg-white dark:bg-surface-dark shrink-0">
-        <button 
+        <button
           onClick={() => setActiveMobileTab('config')}
           className={`flex-1 py-3 text-sm font-bold transition-colors ${activeMobileTab === 'config' ? 'text-primary border-b-2 border-primary' : 'text-slate-500'}`}
         >
           Configurações
         </button>
-        <button 
+        <button
           onClick={() => setActiveMobileTab('preview')}
           className={`flex-1 py-3 text-sm font-bold transition-colors ${activeMobileTab === 'preview' ? 'text-primary border-b-2 border-primary' : 'text-slate-500'}`}
         >
@@ -470,11 +488,11 @@ Diretrizes obrigatórias (Diretriz Davinci):
       </div>
 
       <main className="flex flex-1 min-h-0 overflow-hidden relative flex-col md:flex-row">
-        <aside 
+        <aside
           style={{ width: `${sidebarWidth}px` }}
           className={`scrollbar-custom flex flex-col min-h-0 border-r border-slate-200 dark:border-border-dark bg-white dark:bg-surface-dark overflow-y-auto shrink-0 z-10 relative transition-[width] duration-0 ${activeMobileTab !== 'config' ? 'max-md:hidden' : 'max-md:!w-full max-md:flex-1'}`}
         >
-          <div 
+          <div
             onMouseDown={startResizing}
             className="absolute top-0 right-0 w-1.5 h-full cursor-col-resize hover:bg-primary/50 active:bg-primary z-50 transition-colors hidden md:block"
           />
@@ -484,9 +502,10 @@ Diretrizes obrigatórias (Diretriz Davinci):
                 <h3 className="text-slate-900 dark:text-white font-bold text-lg">Conteúdo</h3>
               </div>
               <div className="relative">
-                <textarea 
-                  className="w-full h-48 bg-slate-50 dark:bg-surface-darker border border-slate-200 dark:border-border-dark rounded-xl p-4 text-sm text-slate-700 dark:text-slate-300 focus:ring-2 focus:ring-primary focus:border-transparent resize-none placeholder:text-slate-400 dark:placeholder:text-slate-600 leading-relaxed" 
-                  placeholder="Cole sua postagem de blog, artigo ou tópico aqui. Nós magicamente o transformaremos em um carrossel..." 
+                <textarea
+                  className="w-full h-48 bg-slate-50 dark:bg-surface-darker border border-slate-200 dark:border-border-dark rounded-xl p-4 text-sm text-slate-700 dark:text-slate-300 focus:ring-2 focus:ring-primary focus:border-transparent resize-none placeholder:text-slate-400 dark:placeholder:text-slate-600 leading-relaxed font-sans"
+                  style={{ fontFamily: 'var(--font-poppins), sans-serif' }}
+                  placeholder="Cole o texto dos seus carrosséis aqui, clique em gerar e veja a mágica acontecer..."
                   value={content}
                   onChange={(e) => setContent(e.target.value)}
                 ></textarea>
@@ -498,7 +517,7 @@ Diretrizes obrigatórias (Diretriz Davinci):
               <div className="space-y-2">
                 <label className="text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Proporção</label>
                 <div className="grid grid-cols-2 gap-2">
-                  <button 
+                  <button
                     onClick={() => setAspectRatio('4:5')}
                     className={`flex flex-col items-center justify-center gap-2 p-3 rounded-lg border transition-all group relative ${aspectRatio === '4:5' ? 'border-2 border-primary bg-primary/5 dark:bg-primary/10' : 'border-slate-200 dark:border-border-dark bg-slate-50 dark:bg-surface-darker hover:border-primary/50 hover:bg-primary/5 dark:hover:bg-primary/10'}`}>
                     {aspectRatio === '4:5' && (
@@ -509,7 +528,7 @@ Diretrizes obrigatórias (Diretriz Davinci):
                     <div className={`w-5 h-7 border-2 rounded-sm ${aspectRatio === '4:5' ? 'border-primary' : 'border-slate-400 dark:border-slate-500 group-hover:border-primary'}`}></div>
                     <span className={`text-xs font-medium ${aspectRatio === '4:5' ? 'text-primary' : 'text-slate-600 dark:text-slate-400 group-hover:text-primary'}`}>4:5</span>
                   </button>
-                  <button 
+                  <button
                     onClick={() => setAspectRatio('9:16')}
                     className={`flex flex-col items-center justify-center gap-2 p-3 rounded-lg border transition-all group relative ${aspectRatio === '9:16' ? 'border-2 border-primary bg-primary/5 dark:bg-primary/10' : 'border-slate-200 dark:border-border-dark bg-slate-50 dark:bg-surface-darker hover:border-primary/50 hover:bg-primary/5 dark:hover:bg-primary/10'}`}>
                     {aspectRatio === '9:16' && (
@@ -583,10 +602,10 @@ Diretrizes obrigatórias (Diretriz Davinci):
                   <div className="relative cursor-pointer group" onClick={() => setStyleModel('Personalizado')}>
                     <div className={`h-16 rounded-lg border border-slate-200 flex flex-col items-center justify-center overflow-hidden ring-2 transition-all ${styleModel === 'Personalizado' ? 'ring-primary' : 'ring-transparent group-hover:ring-primary'}`} style={{ backgroundColor: styleModel === 'Personalizado' ? customColor : '#f8fafc' }}>
                       {styleModel === 'Personalizado' ? (
-                        <input 
-                          type="color" 
-                          value={customColor} 
-                          onChange={(e) => setCustomColor(e.target.value)} 
+                        <input
+                          type="color"
+                          value={customColor}
+                          onChange={(e) => setCustomColor(e.target.value)}
                           className="w-8 h-8 rounded cursor-pointer border-0 p-0 bg-transparent"
                           onClick={(e) => e.stopPropagation()}
                         />
@@ -606,11 +625,11 @@ Diretrizes obrigatórias (Diretriz Davinci):
               </div>
               <div className="space-y-3 pt-2">
                 <label className="text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Marca</label>
-                
+
                 <div className="space-y-2">
                   <label className="text-xs text-slate-500 dark:text-slate-400">Arroba / Nome do Perfil</label>
-                  <input 
-                    type="text" 
+                  <input
+                    type="text"
                     value={brandHandle}
                     onChange={(e) => setBrandHandle(e.target.value)}
                     className="w-full bg-slate-50 dark:bg-surface-darker border border-slate-200 dark:border-border-dark rounded-lg px-3 py-2 text-sm text-slate-700 dark:text-slate-300 focus:ring-2 focus:ring-primary focus:border-transparent"
@@ -629,26 +648,26 @@ Diretrizes obrigatórias (Diretriz Davinci):
                         <p className="text-sm font-medium text-slate-900 dark:text-white">Logo Enviado</p>
                         <p className="text-xs text-slate-500">Visível em todos os slides</p>
                       </div>
-                      <button 
+                      <button
                         onClick={() => setBrandLogo(null)}
                         className="p-1 hover:bg-slate-200 dark:hover:bg-slate-700 rounded text-slate-500">
                         <span className="material-symbols-outlined text-[18px]">close</span>
                       </button>
                     </div>
                   ) : (
-                    <button 
+                    <button
                       onClick={() => brandLogoInputRef.current?.click()}
                       className="w-full py-3 flex flex-col items-center justify-center gap-2 text-sm font-medium text-slate-500 dark:text-slate-400 border border-dashed border-slate-300 dark:border-border-dark rounded-lg hover:bg-slate-50 dark:hover:bg-surface-darker hover:text-primary hover:border-primary/50 transition-colors">
                       <span className="material-symbols-outlined text-[24px]">add_photo_alternate</span>
                       Fazer upload da Logo
                     </button>
                   )}
-                  <input 
-                    type="file" 
-                    ref={brandLogoInputRef} 
-                    onChange={handleBrandLogoUpload} 
-                    accept="image/*" 
-                    className="hidden" 
+                  <input
+                    type="file"
+                    ref={brandLogoInputRef}
+                    onChange={handleBrandLogoUpload}
+                    accept="image/*"
+                    className="hidden"
                   />
                 </div>
               </div>
@@ -660,16 +679,16 @@ Diretrizes obrigatórias (Diretriz Davinci):
                   <span className="text-xs text-slate-500 dark:text-slate-400">Usa o modelo Gemini 2.5 Flash</span>
                 </div>
                 <label className="relative inline-flex items-center cursor-pointer">
-                  <input 
-                    type="checkbox" 
-                    className="sr-only peer" 
+                  <input
+                    type="checkbox"
+                    className="sr-only peer"
                     checked={generateWithAI}
                     onChange={(e) => setGenerateWithAI(e.target.checked)}
                   />
                   <div className="w-11 h-6 bg-slate-200 peer-focus:outline-none peer-focus:ring-2 peer-focus:ring-primary/20 dark:peer-focus:ring-primary/30 rounded-full peer dark:bg-slate-700 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all dark:border-gray-600 peer-checked:bg-primary"></div>
                 </label>
               </div>
-              
+
               {generateWithAI && (
                 <div className="space-y-2 mt-4 p-3 bg-slate-50 dark:bg-surface-darker rounded-lg border border-slate-200 dark:border-border-dark">
                   <div className="flex items-center justify-between">
@@ -679,8 +698,8 @@ Diretrizes obrigatórias (Diretriz Davinci):
                   <p className="text-[10px] text-slate-500 dark:text-slate-400 leading-tight">
                     Insira sua chave para uso ilimitado. Ela é <strong>criptografada e salva apenas no seu navegador</strong>. Você só precisa inserir uma vez.
                   </p>
-                  <input 
-                    type="password" 
+                  <input
+                    type="password"
                     value={customApiKey}
                     onChange={handleApiKeyChange}
                     placeholder="Cole sua chave AIzaSy... aqui"
@@ -703,54 +722,54 @@ Diretrizes obrigatórias (Diretriz Davinci):
                   {Array.from({ length: slideCount }).map((_, index) => {
                     const num = index + 1;
                     return (
-                    <div 
-                      key={num} 
-                      draggable={!generateWithAI && !!uploadedImages[index]}
-                      onDragStart={() => handleDragStart(index)}
-                      onDragOver={handleDragOver}
-                      onDrop={() => handleDrop(index)}
-                      onClick={() => handleIndividualUploadClick(index)}
-                      className={`aspect-[4/5] rounded border-2 border-dashed border-slate-200 dark:border-border-dark flex flex-col items-center justify-center gap-1 group transition-colors ${!generateWithAI ? 'cursor-pointer hover:border-primary/50 hover:bg-primary/5' : 'cursor-not-allowed'} overflow-hidden relative ${draggedIndex === index ? 'opacity-50' : ''}`}>
-                      {uploadedImages[index] ? (
-                        <>
-                          <img src={uploadedImages[index] as string} alt={`Slide ${num}`} className="w-full h-full object-cover pointer-events-none" />
-                          <button 
-                            onClick={(e) => handleRemoveImage(index, e)}
-                            className="absolute top-1 right-1 size-5 bg-black/50 hover:bg-red-500 rounded-full flex items-center justify-center text-white opacity-0 group-hover:opacity-100 transition-all z-10"
-                            title="Remover imagem"
-                          >
-                            <span className="material-symbols-outlined text-[12px] font-bold">close</span>
-                          </button>
-                        </>
-                      ) : (
-                        <>
-                          <span className="material-symbols-outlined text-slate-400 text-sm">add</span>
-                          <span className="text-[8px] font-bold text-slate-400">S{num}</span>
-                        </>
-                      )}
-                    </div>
+                      <div
+                        key={num}
+                        draggable={!generateWithAI && !!uploadedImages[index]}
+                        onDragStart={() => handleDragStart(index)}
+                        onDragOver={handleDragOver}
+                        onDrop={() => handleDrop(index)}
+                        onClick={() => handleIndividualUploadClick(index)}
+                        className={`aspect-[4/5] rounded border-2 border-dashed border-slate-200 dark:border-border-dark flex flex-col items-center justify-center gap-1 group transition-colors ${!generateWithAI ? 'cursor-pointer hover:border-primary/50 hover:bg-primary/5' : 'cursor-not-allowed'} overflow-hidden relative ${draggedIndex === index ? 'opacity-50' : ''}`}>
+                        {uploadedImages[index] ? (
+                          <>
+                            <img src={uploadedImages[index] as string} alt={`Slide ${num}`} className="w-full h-full object-cover pointer-events-none" />
+                            <button
+                              onClick={(e) => handleRemoveImage(index, e)}
+                              className="absolute top-1 right-1 size-5 bg-black/50 hover:bg-red-500 rounded-full flex items-center justify-center text-white opacity-0 group-hover:opacity-100 transition-all z-10"
+                              title="Remover imagem"
+                            >
+                              <span className="material-symbols-outlined text-[12px] font-bold">close</span>
+                            </button>
+                          </>
+                        ) : (
+                          <>
+                            <span className="material-symbols-outlined text-slate-400 text-sm">add</span>
+                            <span className="text-[8px] font-bold text-slate-400">S{num}</span>
+                          </>
+                        )}
+                      </div>
                     );
                   })}
                   <div className={`aspect-[4/5] rounded bg-slate-50 dark:bg-surface-darker flex items-center justify-center ${!generateWithAI ? 'cursor-pointer hover:bg-slate-100 dark:hover:bg-slate-800' : 'cursor-not-allowed'}`}>
                     <span className="material-symbols-outlined text-slate-300">more_horiz</span>
                   </div>
                 </div>
-                <input 
-                  type="file" 
-                  multiple 
-                  accept="image/*" 
-                  className="hidden" 
+                <input
+                  type="file"
+                  multiple
+                  accept="image/*"
+                  className="hidden"
                   ref={fileInputRef}
                   onChange={handleFileUpload}
                 />
-                <input 
-                  type="file" 
-                  accept="image/*" 
-                  className="hidden" 
+                <input
+                  type="file"
+                  accept="image/*"
+                  className="hidden"
                   ref={individualFileInputRef}
                   onChange={handleIndividualFileUpload}
                 />
-                <button 
+                <button
                   onClick={handleMassUploadClick}
                   disabled={generateWithAI}
                   className={`w-full mt-4 flex items-center justify-center gap-2 py-2.5 rounded-lg text-xs font-bold transition-colors border ${!generateWithAI ? 'bg-white dark:bg-surface-dark text-slate-700 dark:text-white border-slate-200 dark:border-border-dark hover:bg-slate-50 dark:hover:bg-slate-800 cursor-pointer' : 'bg-slate-100 dark:bg-surface-darker text-slate-400 border-slate-200 dark:border-border-dark cursor-not-allowed'}`}>
@@ -760,7 +779,7 @@ Diretrizes obrigatórias (Diretriz Davinci):
               </div>
             </div>
             <div className="mt-auto p-6 border-t border-slate-200 dark:border-border-dark bg-slate-50 dark:bg-surface-darker sticky bottom-0">
-              <button 
+              <button
                 onClick={handleGenerateCarousel}
                 disabled={!content.trim()}
                 className="w-full flex items-center justify-center gap-2 rounded-xl h-12 bg-primary text-white text-base font-bold shadow-lg shadow-primary/25 hover:bg-primary/90 hover:scale-[1.02] active:scale-[0.98] transition-all disabled:opacity-70 disabled:hover:scale-100 disabled:cursor-not-allowed">
@@ -773,25 +792,25 @@ Diretrizes obrigatórias (Diretriz Davinci):
         <section className={`flex-1 flex flex-col min-h-0 bg-slate-100 dark:bg-background-dark overflow-hidden relative ${activeMobileTab !== 'preview' ? 'max-md:hidden' : 'max-md:flex max-md:flex-1'}`}>
           <div className="flex flex-wrap items-center justify-between px-2 sm:px-4 md:px-8 py-3 shrink-0 gap-2">
             <div className="flex items-center gap-1 bg-white dark:bg-surface-dark p-1 rounded-lg border border-slate-200 dark:border-border-dark shadow-sm shrink-0">
-              <button 
+              <button
                 onClick={() => setViewMode('grid')}
-                className={`p-1.5 rounded hidden sm:block ${viewMode === 'grid' ? 'bg-slate-100 dark:bg-primary/20 text-primary' : 'hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-500 dark:text-slate-400'}`} 
+                className={`p-1.5 rounded hidden sm:block ${viewMode === 'grid' ? 'bg-slate-100 dark:bg-primary/20 text-primary' : 'hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-500 dark:text-slate-400'}`}
                 title="Visualização em Grade"
               >
                 <span className="material-symbols-outlined text-[18px]">grid_view</span>
               </button>
-              <button 
+              <button
                 onClick={() => setViewMode('carousel')}
-                className={`p-1.5 rounded hidden sm:block ${viewMode === 'carousel' ? 'bg-slate-100 dark:bg-primary/20 text-primary' : 'hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-500 dark:text-slate-400'}`} 
+                className={`p-1.5 rounded hidden sm:block ${viewMode === 'carousel' ? 'bg-slate-100 dark:bg-primary/20 text-primary' : 'hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-500 dark:text-slate-400'}`}
                 title="Visualização em Carrossel"
               >
                 <span className="material-symbols-outlined text-[18px]">view_carousel</span>
               </button>
               <div className="w-px h-4 bg-slate-200 dark:bg-border-dark mx-0.5 hidden sm:block"></div>
               <div className="flex items-center gap-1 px-1">
-                <input 
-                  className="w-16 sm:w-24 md:w-24 accent-primary h-1 bg-slate-300 rounded-lg appearance-none cursor-pointer dark:bg-gray-700" 
-                  type="range" 
+                <input
+                  className="w-16 sm:w-24 md:w-24 accent-primary h-1 bg-slate-300 rounded-lg appearance-none cursor-pointer dark:bg-gray-700"
+                  type="range"
                   min="25"
                   max="150"
                   value={zoom}
@@ -801,7 +820,7 @@ Diretrizes obrigatórias (Diretriz Davinci):
               </div>
             </div>
             <div className="flex items-center gap-2 shrink-0 ml-auto">
-              <button 
+              <button
                 onClick={handleDownloadAll}
                 disabled={isDownloading}
                 className="flex items-center gap-1.5 sm:gap-2 px-3 sm:px-4 py-1.5 sm:py-2 bg-primary text-white rounded-lg text-xs sm:text-sm font-semibold hover:bg-primary/90 transition-colors shadow-lg shadow-primary/20 disabled:opacity-70 disabled:cursor-not-allowed whitespace-nowrap">
@@ -815,17 +834,17 @@ Diretrizes obrigatórias (Diretriz Davinci):
             </div>
           </div>
           <div className="scrollbar-custom flex-1 overflow-auto p-4 sm:p-8">
-            <div 
+            <div
               className="origin-top-left transition-transform duration-200"
-              style={{ 
-                transform: `scale(${(isMobile ? 0.65 : 1) * (zoom / 100)})`, 
+              style={{
+                transform: `scale(${(isMobile ? 0.65 : 1) * (zoom / 100)})`,
                 width: `${100 * (100 / zoom)}%`,
               }}
             >
               <div className={`flex ${viewMode === 'grid' ? 'flex-wrap' : 'flex-nowrap'} justify-start gap-6 pb-24 max-w-[2300px]`}>
                 {parsedSlides.map((parsedSlide, index) => {
                   const isFirst = index === 0;
-                  
+
                   const defaultImages = [
                     "https://lh3.googleusercontent.com/aida-public/AB6AXuBEDUi4qtUqrH8-KI69ZbnhQZq-Snc28JyH-ubsgnikhUANHvd-Xzq_3tg9gUpXgSoRx7EXYn6phYh54OADr8Nrn4HgeYKQXuhPIGBhGGy01d9j_isuAcbMkqXfpsXGtVb93CwkoA2WfjLbnuCcsr7TWIy6yjB145itn0mCY7d_aXtyA8r-LPlAqVeC08vNiWPEoEgnK_-UUzehpswrcOMG-LTNMw5WUHn2eDQfsufJyJM9_AcXije1XBQd7-MH75eHSL8NJy5x-_0",
                     "https://lh3.googleusercontent.com/aida-public/AB6AXuAe0_vHIt2A3hxagDcxuywE2lsRTajBr4HnEBFFQ3WjkgVYCAFC7RU1esxK_dyfQXf5xv4hCzwJtU5tuAfDBspIPjNJrpmZmu5M1I468-WspjfQn8OKGwCkUW_tOqliplDMNx--mI2aDq0JzFtqvxFNLnbS-Zon3xqFCsV5eoYduNiHAqUbvMQiMlgbLkQD3n4d4A5kEZW4s4zkQ6FSgmJF5WAA_6zxXUlGB_2VEjPDMKnnY53RRXdcrZTEALC-0KIekgS5zv3fC-Y",
@@ -833,21 +852,21 @@ Diretrizes obrigatórias (Diretriz Davinci):
                   ];
 
                   const slide = {
-                    title: parsedSlide.title || `Slide ${index + 1}`,
+                    title: parsedSlide.title,
                     subtitle: parsedSlide.subtitle,
                     defaultImage: index < defaultImages.length ? defaultImages[index] : `https://picsum.photos/seed/${index}/800/1000`
                   };
 
                   const imageSrc = uploadedImages[index] || slide.defaultImage;
-                  
-                  const titleLength = slide.title.length;
+
+                  const titleLength = slide.title ? slide.title.length : 0;
                   const subtitleLength = slide.subtitle ? slide.subtitle.length : 0;
                   const totalLength = titleLength + subtitleLength;
-                  
+
                   const theme = getSlideTheme();
-                  let titleClass = isFirst ? `font-extrabold ${theme.textClass} leading-tight mb-2 ` : `font-bold ${theme.textClass} leading-snug mb-1.5 `;
-                  let subtitleClass = `${theme.subtextClass} leading-relaxed mt-1 `;
-                  
+                  let titleClass = isFirst ? `font-extrabold ${theme.textClass} leading-tight ` : `font-bold ${theme.textClass} leading-snug `;
+                  let subtitleClass = `${theme.subtextClass} leading-relaxed `;
+
                   if (isFirst) {
                     if (titleLength > 100) titleClass += "text-xl";
                     else if (titleLength > 60) titleClass += "text-2xl";
@@ -878,17 +897,17 @@ Diretrizes obrigatórias (Diretriz Davinci):
                       subtitleClass += "text-base";
                     }
                   }
-                  
+
                   return (
                     <div key={index} className={`relative group/slide ${getSlideDimensions()} shrink-0 rounded-2xl overflow-hidden shadow-2xl transition-transform hover:-translate-y-2 duration-300`}>
-                      <div 
+                      <div
                         ref={(el) => { slideRefs.current[index] = el; }}
-                        className={`absolute inset-0 ${theme.bgClass}`}
+                        className={`absolute inset-0 flex flex-col ${theme.bgClass}`}
                         style={theme.bgStyle}
                       >
-                        <div 
-                          className="absolute inset-x-0 top-0 h-[55%] w-full overflow-hidden group/image z-10"
-                          style={{ WebkitMaskImage: 'linear-gradient(to bottom, black 90%, transparent 100%)', maskImage: 'linear-gradient(to bottom, black 90%, transparent 100%)' }}
+                        <div
+                          className="w-full flex-1 min-h-0 overflow-hidden group/image z-10 relative"
+                          style={{ WebkitMaskImage: 'linear-gradient(to bottom, black 85%, transparent 100%)', maskImage: 'linear-gradient(to bottom, black 85%, transparent 100%)' }}
                         >
                           {(brandHandle || brandLogo) && (
                             <div className="absolute top-4 left-4 flex items-center gap-1 z-50 bg-[rgba(0,0,0,0.15)] backdrop-blur-md px-2 py-0.5 rounded-full border border-[rgba(255,255,255,0.05)]">
@@ -903,39 +922,39 @@ Diretrizes obrigatórias (Diretriz Davinci):
                             </div>
                           )}
                           <a href={imageSrc} target="_blank" rel="noopener noreferrer" className="block h-full w-full relative z-30">
-                            <div className="h-full w-full bg-cover bg-center transition-transform duration-500 group-hover/image:scale-105" style={{backgroundImage: `url('${imageSrc}')`}}></div>
+                            <div className="absolute inset-0 bg-cover bg-center transition-transform duration-500 group-hover/image:scale-105" style={{ backgroundImage: `url('${imageSrc}')` }}></div>
                           </a>
                         </div>
-                        <div className={`absolute inset-x-0 bottom-0 h-[45%] w-full px-8 pt-4 pb-16 flex flex-col justify-center overflow-hidden z-20`}>
-                          <div className="flex flex-col">
-                            <h2 className={titleClass}>{slide.title}</h2>
+                        <div className={`w-full px-8 pt-1 flex flex-col justify-end shrink-0 z-20 relative ${index === 0 ? 'pb-14' : 'pb-8'}`}>
+                          <div className="flex flex-col gap-2">
+                            {slide.title && <h2 className={titleClass}>{slide.title}</h2>}
                             {slide.subtitle && <p className={subtitleClass}>{slide.subtitle}</p>}
                           </div>
                           {index === 0 && (
-                            <div className={`absolute bottom-6 left-8 right-6 flex items-center justify-between ${theme.textClass} opacity-40`}>
-                              <span className="text-xs font-medium uppercase tracking-widest">Deslize para ver mais</span>
-                              <span className="material-symbols-outlined text-[24px]">arrow_forward</span>
+                            <div className={`absolute bottom-5 left-8 right-6 flex items-center justify-end gap-1 ${theme.textClass} opacity-50`}>
+                              <span className="text-[8px] font-bold uppercase tracking-wider">Deslize para ver mais</span>
+                              <span className="material-symbols-outlined text-[14px]">arrow_forward</span>
                             </div>
                           )}
                         </div>
+                      </div>
+                      <div className="absolute inset-0 bg-black/60 opacity-0 group-hover/slide:opacity-100 transition-opacity flex flex-col items-center justify-center gap-3 backdrop-blur-[2px] z-[60] pointer-events-none">
+                        <button
+                          onClick={() => handleEditClick(index)}
+                          className="pointer-events-auto flex items-center gap-2 bg-white text-black px-4 py-2 rounded-full text-sm font-bold hover:bg-slate-200 transition-colors min-w-[140px] justify-center">
+                          <span className="material-symbols-outlined text-[18px]">edit</span> Editar Texto
+                        </button>
+                        <a href={imageSrc} target="_blank" rel="noopener noreferrer" className="pointer-events-auto flex items-center gap-2 bg-white/10 text-white backdrop-blur-md border border-white/20 px-4 py-2 rounded-full text-sm font-bold hover:bg-white/20 transition-colors min-w-[140px] justify-center">
+                          <span className="material-symbols-outlined text-[18px]">open_in_new</span> Ver Imagem
+                        </a>
+                        <button
+                          onClick={() => handleDownloadSingle(index)}
+                          className="pointer-events-auto flex items-center gap-2 bg-white/10 text-white backdrop-blur-md border border-white/20 px-4 py-2 rounded-full text-sm font-bold hover:bg-white/20 transition-colors min-w-[140px] justify-center">
+                          <span className="material-symbols-outlined text-[18px]">download</span> Baixar
+                        </button>
+                      </div>
                     </div>
-                    <div className="absolute inset-0 bg-black/60 opacity-0 group-hover/slide:opacity-100 transition-opacity flex flex-col items-center justify-center gap-3 backdrop-blur-[2px] z-[60] pointer-events-none">
-                      <button 
-                        onClick={() => handleEditClick(index)}
-                        className="pointer-events-auto flex items-center gap-2 bg-white text-black px-4 py-2 rounded-full text-sm font-bold hover:bg-slate-200 transition-colors min-w-[140px] justify-center">
-                        <span className="material-symbols-outlined text-[18px]">edit</span> Editar Texto
-                      </button>
-                      <a href={imageSrc} target="_blank" rel="noopener noreferrer" className="pointer-events-auto flex items-center gap-2 bg-white/10 text-white backdrop-blur-md border border-white/20 px-4 py-2 rounded-full text-sm font-bold hover:bg-white/20 transition-colors min-w-[140px] justify-center">
-                        <span className="material-symbols-outlined text-[18px]">open_in_new</span> Ver Imagem
-                      </a>
-                      <button 
-                        onClick={() => handleDownloadSingle(index)}
-                        className="pointer-events-auto flex items-center gap-2 bg-white/10 text-white backdrop-blur-md border border-white/20 px-4 py-2 rounded-full text-sm font-bold hover:bg-white/20 transition-colors min-w-[140px] justify-center">
-                        <span className="material-symbols-outlined text-[18px]">download</span> Baixar
-                      </button>
-                    </div>
-                  </div>
-                );
+                  );
                 })}
 
                 <button className={`w-[100px] ${aspectRatio === '9:16' ? 'h-[560px]' : 'h-[500px]'} shrink-0 rounded-2xl border-2 border-dashed border-slate-300 dark:border-border-dark flex flex-col items-center justify-center gap-3 text-slate-400 dark:text-slate-500 hover:border-primary hover:text-primary hover:bg-primary/5 transition-all group`}>
@@ -963,7 +982,7 @@ Diretrizes obrigatórias (Diretriz Davinci):
           <div className="bg-white dark:bg-surface-dark rounded-2xl shadow-2xl w-full max-w-lg overflow-hidden flex flex-col">
             <div className="flex items-center justify-between p-4 border-b border-slate-200 dark:border-border-dark">
               <h3 className="text-lg font-bold text-slate-900 dark:text-white">Editar Slide {editingSlideIndex + 1}</h3>
-              <button 
+              <button
                 onClick={() => setEditingSlideIndex(null)}
                 className="p-1 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors">
                 <span className="material-symbols-outlined">close</span>
@@ -972,7 +991,7 @@ Diretrizes obrigatórias (Diretriz Davinci):
             <div className="p-6 space-y-4">
               <div className="space-y-2">
                 <label className="text-sm font-semibold text-slate-700 dark:text-slate-300">Título</label>
-                <textarea 
+                <textarea
                   value={editTitle}
                   onChange={(e) => setEditTitle(e.target.value)}
                   className="w-full bg-slate-50 dark:bg-surface-darker border border-slate-200 dark:border-border-dark rounded-xl p-3 text-sm text-slate-900 dark:text-white focus:ring-2 focus:ring-primary focus:border-transparent resize-none h-24"
@@ -981,7 +1000,7 @@ Diretrizes obrigatórias (Diretriz Davinci):
               </div>
               <div className="space-y-2">
                 <label className="text-sm font-semibold text-slate-700 dark:text-slate-300">Subtítulo / Texto de Apoio</label>
-                <textarea 
+                <textarea
                   value={editSubtitle}
                   onChange={(e) => setEditSubtitle(e.target.value)}
                   className="w-full bg-slate-50 dark:bg-surface-darker border border-slate-200 dark:border-border-dark rounded-xl p-3 text-sm text-slate-900 dark:text-white focus:ring-2 focus:ring-primary focus:border-transparent resize-none h-32"
@@ -990,12 +1009,12 @@ Diretrizes obrigatórias (Diretriz Davinci):
               </div>
             </div>
             <div className="p-4 border-t border-slate-200 dark:border-border-dark bg-slate-50 dark:bg-surface-darker flex justify-end gap-3">
-              <button 
+              <button
                 onClick={() => setEditingSlideIndex(null)}
                 className="px-4 py-2 text-sm font-semibold text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700 rounded-lg transition-colors">
                 Cancelar
               </button>
-              <button 
+              <button
                 onClick={handleSaveEdit}
                 className="px-6 py-2 text-sm font-bold text-white bg-primary hover:bg-primary/90 rounded-lg shadow-md shadow-primary/20 transition-all">
                 Salvar Alterações

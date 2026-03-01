@@ -14,12 +14,20 @@ export default function CarouselGenerator({ onLogout }: { onLogout: () => void }
   const [content, setContent] = useState('');
   const [zoom, setZoom] = useState(100);
   const [activeMobileTab, setActiveMobileTab] = useState<'config' | 'preview'>('config');
+  const [saveDefaults, setSaveDefaults] = useState(true);
 
   const [parsedSlides, setParsedSlides] = useState<{ title: string, subtitle: string }[]>([
     { title: '', subtitle: '' }
   ]);
 
-  const slideCount = Math.max(1, parsedSlides.length);
+  const slideCount = React.useMemo(() => {
+    if (!content.trim()) return Math.max(1, parsedSlides.length);
+    let blocks = content.split(/\n\s*\n/).filter(b => b.trim());
+    if (blocks.length === 1) {
+      blocks = content.split('\n').filter(b => b.trim());
+    }
+    return Math.max(1, blocks.length);
+  }, [content, parsedSlides.length]);
 
   const [uploadedImages, setUploadedImages] = useState<(string | null)[]>(Array(6).fill(null));
   const [draggedIndex, setDraggedIndex] = useState<number | null>(null);
@@ -49,12 +57,18 @@ export default function CarouselGenerator({ onLogout }: { onLogout: () => void }
     if (savedPrefs) {
       try {
         const prefs = JSON.parse(savedPrefs);
-        if (prefs.brandHandle !== undefined) setBrandHandle(prefs.brandHandle);
-        if (prefs.brandLogo !== undefined) setBrandLogo(prefs.brandLogo);
-        if (prefs.styleModel !== undefined) setStyleModel(prefs.styleModel);
-        if (prefs.customColor !== undefined) setCustomColor(prefs.customColor);
-        if (prefs.aspectRatio !== undefined) setAspectRatio(prefs.aspectRatio);
-        if (prefs.content !== undefined) setContent(prefs.content);
+        if (prefs.saveDefaults !== undefined) {
+          setSaveDefaults(prefs.saveDefaults);
+        }
+
+        // Se na última sessão o toggle estava ligado, os dados existem:
+        if (prefs.brandHandle) setBrandHandle(prefs.brandHandle);
+        if (prefs.brandLogo) setBrandLogo(prefs.brandLogo);
+        if (prefs.styleModel) setStyleModel(prefs.styleModel);
+        if (prefs.customColor) setCustomColor(prefs.customColor);
+
+        if (prefs.aspectRatio) setAspectRatio(prefs.aspectRatio);
+        if (prefs.content) setContent(prefs.content);
         if (prefs.parsedSlides && Array.isArray(prefs.parsedSlides) && prefs.parsedSlides.length > 0) {
           setParsedSlides(prefs.parsedSlides);
         }
@@ -72,22 +86,35 @@ export default function CarouselGenerator({ onLogout }: { onLogout: () => void }
 
   useEffect(() => {
     if (isInitialized.current) {
-      const prefs = {
-        brandHandle,
-        brandLogo,
-        styleModel,
-        customColor,
+      const prefs: any = {
         aspectRatio,
         content,
-        parsedSlides
+        parsedSlides,
+        saveDefaults
       };
+
+      if (saveDefaults) {
+        prefs.brandHandle = brandHandle;
+        prefs.brandLogo = brandLogo;
+        prefs.styleModel = styleModel;
+        prefs.customColor = customColor;
+      } else {
+        prefs.brandHandle = '';
+        prefs.brandLogo = null;
+        prefs.styleModel = 'Escuro';
+        prefs.customColor = '#6366f1';
+      }
+
       try {
         localStorage.setItem('carousel_preferences', JSON.stringify(prefs));
       } catch (e) {
-        console.error("Storage limit possibly exceeded", e);
+        // Se a logo for MT gigante (exceder 5MB base64 de localStorage), zera ela pra prevenir crash do app inteiro
+        console.warn("Storage limit exceeded, resetting logo", e);
+        prefs.brandLogo = null;
+        localStorage.setItem('carousel_preferences', JSON.stringify(prefs));
       }
     }
-  }, [brandHandle, brandLogo, styleModel, customColor, aspectRatio, content, parsedSlides]);
+  }, [brandHandle, brandLogo, styleModel, customColor, aspectRatio, content, parsedSlides, saveDefaults]);
 
   const handleApiKeyChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const val = e.target.value;
@@ -128,12 +155,19 @@ export default function CarouselGenerator({ onLogout }: { onLogout: () => void }
       const newImages = Array.from(files).map(file => URL.createObjectURL(file));
       setUploadedImages(prev => {
         const updated = [...prev];
+        while (updated.length < slideCount) updated.push(null);
+
         let newImageIndex = 0;
         for (let i = 0; i < updated.length; i++) {
           if (!updated[i] && newImageIndex < newImages.length) {
             updated[i] = newImages[newImageIndex];
             newImageIndex++;
           }
+        }
+
+        while (newImageIndex < newImages.length) {
+          updated.push(newImages[newImageIndex]);
+          newImageIndex++;
         }
         return updated;
       });
@@ -681,6 +715,25 @@ Diretrizes obrigatórias (Diretriz Davinci):
                     className="hidden"
                   />
                 </div>
+
+                <div className="pt-2">
+                  <div className="flex items-center justify-between bg-primary/5 dark:bg-primary/10 p-3 rounded-lg border border-primary/20">
+                    <div className="flex flex-col">
+                      <span className="text-xs font-bold text-primary dark:text-primary-light">Lembrar Marca & Estilo</span>
+                      <span className="text-[10px] text-slate-500 dark:text-slate-400 leading-tight mt-0.5">Salva a logo, arroba e cores para o futuro</span>
+                    </div>
+                    <label className="relative inline-flex items-center cursor-pointer">
+                      <input
+                        type="checkbox"
+                        className="sr-only peer"
+                        checked={saveDefaults}
+                        onChange={(e) => setSaveDefaults(e.target.checked)}
+                      />
+                      <div className="w-9 h-5 bg-slate-300 peer-focus:outline-none rounded-full peer dark:bg-slate-600 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-primary"></div>
+                    </label>
+                  </div>
+                </div>
+
               </div>
             </div>
             <div className="space-y-4 pt-4 border-t border-slate-100 dark:border-border-dark">

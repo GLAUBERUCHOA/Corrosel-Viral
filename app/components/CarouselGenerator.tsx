@@ -907,7 +907,7 @@ Diretrizes obrigatórias (Diretriz Davinci):
                       >
                         <div
                           className="w-full flex-1 min-h-0 overflow-hidden group/image z-10 relative"
-                          style={{ WebkitMaskImage: 'linear-gradient(to bottom, black 85%, transparent 100%)', maskImage: 'linear-gradient(to bottom, black 85%, transparent 100%)' }}
+                          style={{ WebkitMaskImage: 'linear-gradient(to bottom, black calc(100% - 40px), transparent 100%)', maskImage: 'linear-gradient(to bottom, black calc(100% - 40px), transparent 100%)' }}
                         >
                           {(brandHandle || brandLogo) && (
                             <div className="absolute top-4 left-4 flex items-center gap-1 z-50 bg-[rgba(0,0,0,0.15)] backdrop-blur-md px-2 py-0.5 rounded-full border border-[rgba(255,255,255,0.05)]">

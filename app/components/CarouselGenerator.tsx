@@ -16,12 +16,7 @@ export default function CarouselGenerator({ onLogout }: { onLogout: () => void }
   const [activeMobileTab, setActiveMobileTab] = useState<'config' | 'preview'>('config');
 
   const [parsedSlides, setParsedSlides] = useState<{ title: string, subtitle: string }[]>([
-    { title: "5 Dicas para Dominar CSS Grid", subtitle: "Deslize para ver mais" },
-    { title: "Defina seu container grid com display: grid.", subtitle: "" },
-    { title: "Use grid-template-columns para definir tamanhos das trilhas.", subtitle: "" },
-    { title: "Utilize a unidade fr para layouts flexíveis.", subtitle: "" },
-    { title: "Posicione itens explicitamente com grid-column e grid-row.", subtitle: "" },
-    { title: "Use grid-gap para espaçamento consistente.", subtitle: "" }
+    { title: '', subtitle: '' }
   ]);
 
   const slideCount = Math.max(1, parsedSlides.length);
@@ -54,11 +49,15 @@ export default function CarouselGenerator({ onLogout }: { onLogout: () => void }
     if (savedPrefs) {
       try {
         const prefs = JSON.parse(savedPrefs);
-        if (prefs.brandHandle) setBrandHandle(prefs.brandHandle);
-        if (prefs.brandLogo) setBrandLogo(prefs.brandLogo);
-        if (prefs.styleModel) setStyleModel(prefs.styleModel);
-        if (prefs.customColor) setCustomColor(prefs.customColor);
-        if (prefs.aspectRatio) setAspectRatio(prefs.aspectRatio);
+        if (prefs.brandHandle !== undefined) setBrandHandle(prefs.brandHandle);
+        if (prefs.brandLogo !== undefined) setBrandLogo(prefs.brandLogo);
+        if (prefs.styleModel !== undefined) setStyleModel(prefs.styleModel);
+        if (prefs.customColor !== undefined) setCustomColor(prefs.customColor);
+        if (prefs.aspectRatio !== undefined) setAspectRatio(prefs.aspectRatio);
+        if (prefs.content !== undefined) setContent(prefs.content);
+        if (prefs.parsedSlides && Array.isArray(prefs.parsedSlides) && prefs.parsedSlides.length > 0) {
+          setParsedSlides(prefs.parsedSlides);
+        }
       } catch (e) {
         console.error("Failed to parse saved preferences", e);
       }
@@ -78,11 +77,17 @@ export default function CarouselGenerator({ onLogout }: { onLogout: () => void }
         brandLogo,
         styleModel,
         customColor,
-        aspectRatio
+        aspectRatio,
+        content,
+        parsedSlides
       };
-      localStorage.setItem('carousel_preferences', JSON.stringify(prefs));
+      try {
+        localStorage.setItem('carousel_preferences', JSON.stringify(prefs));
+      } catch (e) {
+        console.error("Storage limit possibly exceeded", e);
+      }
     }
-  }, [brandHandle, brandLogo, styleModel, customColor, aspectRatio]);
+  }, [brandHandle, brandLogo, styleModel, customColor, aspectRatio, content, parsedSlides]);
 
   const handleApiKeyChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const val = e.target.value;
@@ -197,8 +202,14 @@ export default function CarouselGenerator({ onLogout }: { onLogout: () => void }
   const handleBrandLogoUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
     const files = event.target.files;
     if (files && files.length > 0) {
-      const newImage = URL.createObjectURL(files[0]);
-      setBrandLogo(newImage);
+      const file = files[0];
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        if (e.target?.result && typeof e.target.result === 'string') {
+          setBrandLogo(e.target.result);
+        }
+      };
+      reader.readAsDataURL(file);
     }
     if (brandLogoInputRef.current) {
       brandLogoInputRef.current.value = '';

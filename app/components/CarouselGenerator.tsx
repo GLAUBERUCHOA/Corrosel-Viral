@@ -5,12 +5,50 @@ import * as htmlToImage from 'html-to-image';
 import JSZip from 'jszip';
 import { saveAs } from 'file-saver';
 
+const PROMPT_IURY = `🧠 1. PERFIL COGNITIVO (O DNA DO IURY)
+Você é um Diretor de Criação e Engenheiro Narrativo. Você não resume textos; você os metamorfoseia. Sua mente opera em 3 camadas simultâneas:
+- Camada Visceral: O impacto emocional, o soco no estômago, a lição de moral quando o ego do leitor precisa ser quebrado.
+- Camada Intelectual: O uso de repertório (História, Filosofia, Antropologia, Biografias, Falhas Corporativas).
+- Camada Prática: A entrega de valor real. Dicas, checklists ou métodos que transformam o conceito em ação.
+
+✍️ 2. DIRETRIZES DE NARRATIVA (LIBERDADE TOTAL)
+Sinta-se livre para escolher o melhor caminho para o conteúdo, alternando entre:
+- O Caminho do Profeta: Lições de moral duras sobre sociedade, caráter e negligência.
+- O Caminho do Historiador: Conectar o tema a eventos (Ex: O naufrágio do Titanic, a queda da Kodak, a estratégia de Alexandre o Grande).
+- O Caminho do Cientista: Dissecar a biologia ou a psicologia por trás do erro humano.
+
+Estilo de Escrita: Títulos em CAIXA ALTA. Linguagem sem 'marketinglês'. Use expressões como 'sangue no olho', 'cair do cavalo', 'boca do povo'. Se a história precisar de 4 linhas por slide para ser épica, use-as.
+
+📏 3. REGRAS DE ESTRUTURA E LAYOUT
+Slide 01 (CAPA): Manchete de impacto visceral + Contexto de Nicho. PROIBIDO SUBTÍTULO. Somente o Título em CAIXA ALTA.
+Slides Seguintes: Título (Impacto) + Subtítulo (Narrativa livre e profunda). Máximo de 300 caracteres (Título + Subtítulo combinados) para não quebrar o layout, mas com fôlego considerável para storytelling.
+O Último Slide deve invariavelmente trazer a "Camada Prática" ensinando a pessoa o que fazer.
+
+EXEMPLO DE OUTPUT ESPERADO:
+SLIDE 01:
+[TÍTULO]: O COMPLEXO DE DEUS QUE ESTÁ MATANDO O SEU LUCRO NA MEDICINA.
+[SUBTÍTULO]: 
+SLIDE 02:
+[TÍTULO]: A SÍNDROME DA BLOCKBUSTER.
+[SUBTÍTULO]: Em 2000, a Blockbuster riu da Netflix. Você ri do seu concorrente que publica vídeos enquanto apenas debruça numa mesa de consultório esperando 'indicação'. O mercado não liga para sua soberba, liga para acesso.
+SLIDE 03:
+[TÍTULO]: A VERDADE QUE INCOMODA.
+[SUBTÍTULO]: Enquanto você foca em pendurar diplomas na parede, o concorrente 'amador' foca no trauma do paciente. Autoridade não se compra; se conquista com convicção ao bater na mesa com a verdade.
+SLIDE 04:
+[TÍTULO]: COMO MUDAR O JOGO HOJE.
+[SUBTÍTULO]: 1. Implante captação ativa. 2. Conte histórias de erros na profissão, humanize o jaleco. 3. Desligue a tela e aplique agora.
+
+Aja conforme a persona descrita e transforme brutalmente o texto abaixo:
+`;
+
 export default function CarouselGenerator({ onLogout }: { onLogout: () => void }) {
   const [aspectRatio, setAspectRatio] = useState('4:5');
   const [styleModel, setStyleModel] = useState('Escuro');
   const [generateWithAI, setGenerateWithAI] = useState(false);
   const [customApiKey, setCustomApiKey] = useState('');
   const [generatingImages, setGeneratingImages] = useState<boolean[]>([]);
+  const [isIuryMode, setIsIuryMode] = useState(false);
+  const [isGeneratingText, setIsGeneratingText] = useState(false);
   const [content, setContent] = useState('');
   const [zoom, setZoom] = useState(100);
   const [activeMobileTab, setActiveMobileTab] = useState<'config' | 'preview'>('config');
@@ -259,13 +297,10 @@ export default function CarouselGenerator({ onLogout }: { onLogout: () => void }
     });
   };
 
-  const handleGenerateCarousel = async () => {
-    if (!content.trim()) return;
-
-    // Parse content locally without AI
-    let blocks = content.split(/\n\s*\n/).filter(b => b.trim());
+  const processTextIntoSlides = (textToParse: string) => {
+    let blocks = textToParse.split(/\n\s*\n/).filter(b => b.trim());
     if (blocks.length === 1) {
-      blocks = content.split('\n').filter(b => b.trim());
+      blocks = textToParse.split('\n').filter(b => b.trim());
     }
 
     const newSlides = blocks.map((block) => {
@@ -301,6 +336,51 @@ export default function CarouselGenerator({ onLogout }: { onLogout: () => void }
       return newImages;
     });
 
+    return newSlides;
+  };
+
+  const executarIury = async () => {
+    if (!content.trim()) return;
+
+    const apiKey = customApiKey || process.env.NEXT_PUBLIC_GEMINI_API_KEY;
+    if (!apiKey) {
+      alert("Chave da API Gemini não encontrada. Por favor, insira sua chave nas configurações para usar o Modo Iury.");
+      return;
+    }
+
+    setIsGeneratingText(true);
+    try {
+      const ai = new GoogleGenAI({ apiKey });
+      const response = await ai.models.generateContent({
+        model: 'gemini-2.5-flash',
+        contents: `${PROMPT_IURY}\n\nRASCUNHO DO USUÁRIO:\n${content}`,
+      });
+
+      const generatedText = response.text || '';
+      setContent(generatedText); // Sobrescreve a caixa
+      return processTextIntoSlides(generatedText); // Processa e retorna
+    } catch (error) {
+      console.error("Erro ao gerar Modo Iury:", error);
+      alert("Ocorreu um erro ao processar o texto pelo Iury. Tente novamente.");
+      return null;
+    } finally {
+      setIsGeneratingText(false);
+    }
+  };
+
+  const handleGenerateCarousel = async () => {
+    if (!content.trim()) return;
+
+    let newSlides: { title: string, subtitle: string }[] = [];
+
+    if (isIuryMode) {
+      const generated = await executarIury();
+      if (!generated) return;
+      newSlides = generated;
+    } else {
+      newSlides = processTextIntoSlides(content);
+    }
+
     if (generateWithAI) {
       const apiKey = customApiKey || process.env.NEXT_PUBLIC_GEMINI_API_KEY;
       if (!apiKey) {
@@ -318,16 +398,17 @@ export default function CarouselGenerator({ onLogout }: { onLogout: () => void }
 
       for (let i = 0; i < newSlides.length; i++) {
         try {
-          const prompt = `Crie uma imagem no estilo Hiper-realismo Cinematográfico baseada no seguinte texto:
-Título: ${newSlides[i].title}
-Subtítulo: ${newSlides[i].subtitle}
+          const prompt = `Crie UMA ÚNICA IMAGEM de "Cinematografia Multimodal" de altíssimo nível, baseada na seguinte semente emocional do texto do slide:
+Título do Slide: "${newSlides[i].title}"
+Subtítulo: "${newSlides[i].subtitle}"
 
-Diretrizes obrigatórias (Diretriz Davinci):
-- Realismo Cru: texturas humanas reais, poros visíveis, suor, rugas de expressão e fios de cabelo detalhados. Nada de peles perfeitamente lisas ou artificiais.
-- Iluminação Dramática: Uso de Chiaroscuro (contraste forte entre luz e sombra) para criar profundidade e foco no sujeito principal.
-- Metáforas Visuais: Em vez de conceitos abstratos, use objetos físicos e situações literais para representar sentimentos.
-- Foco Seletivo: Uso de profundidade de campo (bokeh) para manter o protagonista nítido enquanto o fundo permanece suave.
-- Consistência Texto-Imagem: A imagem deve ser uma extensão visual do texto, mostrando o impacto físico e literal da mensagem.`;
+🎨 DIRETRIZES VISUAIS (CINEMATOGRAFIA MULTIMODAL):
+A sua função não é descrever o texto, mas sim dar suporte ao SENTIMENTO dele. Baseie-se apenas na metáfora e sentimento, nunca no tema literal.
+1. Raciocínio Abstrato (Não Literal): PROIBIDO CLICHÊS DE NICHO. Se o slide fala de "Nutrição/Comida", NÃO mostre pratos e frutas. Se for "Psicologia", NÃO mostre cérebros e divãs. Gere metáforas puras. Ex: Se o sentimento for 'disciplina rígida', mostre "um escudo de bronze cravejado de flechas iluminado por um pôr do sol épico". Se for 'falsa perfecção', mostre "um deserto cheio de vidro trincado" ou "uma estátua renascentista sendo pichada com neon". Vá nas profundezas da abstração.
+2. Variação de Escolas Visuais: Cada slide deve gerar um choque independente. A não ser que exigido, alterne sua inspiração artística livremente entre: Cyberpunk Gélido, Barroco Dramático, Minimalismo High-Tech ou Surrealismo de Salvador Dalí.
+3. Iluminação e Cor Vibrante: Nunca seja 100% fotorealista cinza/monocromático de escritório. Incorpore contrastes violentos de cores complementares ou neon (Ex: Azul Profundo da Água contrastando com Reflexos de Fogo Laranja, ou Roxos contra Verdes Limas) ou aposte no peso do "Chiaroscuro Noir" de cinema (luz fortíssima rasgando a meia-noite).
+4. Restrição Absoluta de Textos Nativos: É VERBEMENTE PROIBIDO criar qualquer frase, palavra ou explicação legível ilustrada dentro da arte! A imagem PRECISA ser muda. O texto longo será redigido por nós por cima. 
+5. Assimetria e Espaço Negativo (UX): Sempre posicione a beleza artística explodindo nos CANTOS do frame, de modo que o gigantesco Espaço Negativo em volta sirva de descanso para a diagramação sobrepor.`;
 
           const response = await ai.models.generateContent({
             model: 'gemini-2.5-flash-image',
@@ -343,8 +424,12 @@ Diretrizes obrigatórias (Diretriz Davinci):
             if (part.inlineData) {
               const base64 = part.inlineData.data;
               const imageUrl = `data:${part.inlineData.mimeType || 'image/png'};base64,${base64}`;
-              newImages[i] = imageUrl;
-              setUploadedImages([...newImages]);
+              setUploadedImages(prev => {
+                const updated = [...prev];
+                while (updated.length < newSlides.length) updated.push(null);
+                updated[i] = imageUrl;
+                return updated;
+              });
               break;
             }
           }
@@ -546,11 +631,27 @@ Diretrizes obrigatórias (Diretriz Davinci):
               <div className="flex justify-between items-center">
                 <h3 className="text-slate-900 dark:text-white font-bold text-lg">Conteúdo</h3>
               </div>
+
+              <div className="flex bg-slate-100 dark:bg-surface-darker rounded-lg p-1.5 shrink-0 gap-1 border border-slate-200 dark:border-border-dark">
+                <button
+                  onClick={() => setIsIuryMode(false)}
+                  className={`flex-1 py-2 text-sm font-bold rounded-md transition-all flex items-center justify-center gap-2 ${!isIuryMode ? 'bg-white dark:bg-surface-dark text-slate-800 dark:text-white shadow-sm ring-1 ring-black/5 dark:ring-white/10' : 'text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-200'}`}>
+                  <span className="material-symbols-outlined text-[16px]">edit_note</span>
+                  Modo Manual
+                </button>
+                <button
+                  onClick={() => setIsIuryMode(true)}
+                  className={`flex-1 py-2 text-sm font-bold rounded-md transition-all flex items-center justify-center gap-2 ${isIuryMode ? 'bg-primary text-white shadow-md shadow-primary/20' : 'text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-200'}`}>
+                  <span className="material-symbols-outlined text-[16px]">psychology</span>
+                  Modo Iury
+                </button>
+              </div>
+
               <div className="relative">
                 <textarea
-                  className="w-full h-48 bg-slate-50 dark:bg-surface-darker border border-slate-200 dark:border-border-dark rounded-xl p-4 text-sm text-slate-700 dark:text-slate-300 focus:ring-2 focus:ring-primary focus:border-transparent resize-none placeholder:text-slate-400 dark:placeholder:text-slate-600 leading-relaxed font-sans"
+                  className={`w-full h-48 border rounded-xl p-4 text-sm focus:ring-2 focus:ring-primary focus:border-transparent resize-none leading-relaxed font-sans transition-colors ${isIuryMode ? 'bg-primary/5 dark:bg-primary/10 border-primary/20 text-indigo-900 dark:text-indigo-100 placeholder:text-indigo-400 dark:placeholder:text-indigo-300' : 'bg-slate-50 dark:bg-surface-darker border-slate-200 dark:border-border-dark text-slate-700 dark:text-slate-300 placeholder:text-slate-400 dark:placeholder:text-slate-600'}`}
                   style={{ fontFamily: 'var(--font-poppins), sans-serif' }}
-                  placeholder="Cole o texto dos seus carrosséis aqui, clique em gerar e veja a mágica acontecer..."
+                  placeholder={isIuryMode ? 'Deixe o Iury fazer o trabalho. Escreva um tema, cole um rascunho completo, reclame de um nicho... e veja a mágica visceral acontecer.' : 'Cole o texto dos seus carrosséis aqui, clique em gerar e veja a mágica acontecer...'}
                   value={content}
                   onChange={(e) => setContent(e.target.value)}
                 ></textarea>
@@ -845,10 +946,14 @@ Diretrizes obrigatórias (Diretriz Davinci):
             <div className="mt-auto p-6 border-t border-slate-200 dark:border-border-dark bg-slate-50 dark:bg-surface-darker sticky bottom-0">
               <button
                 onClick={handleGenerateCarousel}
-                disabled={!content.trim()}
-                className="w-full flex items-center justify-center gap-2 rounded-xl h-12 bg-primary text-white text-base font-bold shadow-lg shadow-primary/25 hover:bg-primary/90 hover:scale-[1.02] active:scale-[0.98] transition-all disabled:opacity-70 disabled:hover:scale-100 disabled:cursor-not-allowed">
-                <span className="material-symbols-outlined">auto_fix_high</span>
-                Gerar Carrossel
+                disabled={!content.trim() || isGeneratingText}
+                className={`w-full flex items-center justify-center gap-2 rounded-xl h-12 text-white text-base font-bold shadow-lg transition-all disabled:opacity-70 disabled:hover:scale-100 disabled:cursor-not-allowed ${isIuryMode ? 'bg-indigo-600 hover:bg-indigo-700 shadow-indigo-600/25' : 'bg-primary hover:bg-primary/90 hover:scale-[1.02] shadow-primary/25 active:scale-[0.98]'}`}>
+                {isGeneratingText ? (
+                  <span className="material-symbols-outlined animate-spin">progress_activity</span>
+                ) : (
+                  <span className="material-symbols-outlined">{isIuryMode ? 'psychology' : 'auto_fix_high'}</span>
+                )}
+                {isGeneratingText ? 'Pensando de Forma Visceral...' : isIuryMode ? 'Gerar com Iury' : 'Gerar Carrossel'}
               </button>
             </div>
           </div>

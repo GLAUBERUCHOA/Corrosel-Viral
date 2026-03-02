@@ -171,7 +171,7 @@ export default function CarouselGenerator({ onLogout }: { onLogout: () => void }
   const [saveDefaults, setSaveDefaults] = useState(true);
 
   const [addCtaSlide, setAddCtaSlide] = useState(false);
-  const [ctaContent, setCtaContent] = useState('Gostou do conteúdo? Salve para não esquecer e me siga para mais!');
+  const [ctaContent, setCtaContent] = useState('O que você achou? Deixe nos comentários e salve este post para não esquecer!');
   const [ctaImage, setCtaImage] = useState<string | null>(null);
   const ctaImageInputRef = useRef<HTMLInputElement>(null);
 
@@ -1024,7 +1024,7 @@ export default function CarouselGenerator({ onLogout }: { onLogout: () => void }
                         setCtaContent(val);
                         if (!isIuryMode) processTextIntoSlides(content, addCtaSlide, val);
                       }}
-                      placeholder="Gostou do conteúdo? Salve e siga para mais!"
+                      placeholder="Deixe sua mensagem final..."
                     />
 
                     <div className="flex items-center justify-between border-t border-slate-100 dark:border-border-dark pt-3">
@@ -1527,29 +1527,27 @@ export default function CarouselGenerator({ onLogout }: { onLogout: () => void }
                             style={theme.bgStyle}
                           >
 
-                            {(brandHandle || brandLogo) && (
-                              <div className={`flex flex-col items-center justify-center w-full mb-6 mt-4 ${theme.textClass}`}>
-                                <div className="flex items-center justify-center w-full max-w-[200px] mb-2">
-                                  <div className="h-[1px] flex-1 opacity-40" style={{ backgroundImage: 'linear-gradient(to right, transparent, currentColor)' }}></div>
-                                  {brandLogo && (
-                                    <div className={`size-8 sm:size-10 rounded-full overflow-hidden shrink-0 mx-3 shadow-sm ring-1 ring-current/20`}>
-                                      <img src={brandLogo} alt="Logo" className="w-full h-full object-cover" />
-                                    </div>
-                                  )}
-                                  <div className="h-[1px] flex-1 opacity-40" style={{ backgroundImage: 'linear-gradient(to left, transparent, currentColor)' }}></div>
-                                </div>
-                                {brandHandle && (
-                                  <div className={`flex items-center gap-1 text-[10px] sm:text-xs font-bold tracking-wider`}>
-                                    {brandHandle}
-                                    <span className="material-symbols-outlined text-[14px] text-blue-500 fill" style={{ fontVariationSettings: "'FILL' 1" }}>verified</span>
-                                  </div>
-                                )}
+                            {ctaImage && (
+                              <div className="w-[85%] aspect-[16/9] sm:aspect-video rounded-[20px] overflow-hidden shadow-xl shrink-0 border border-white/10 mt-2 mb-0 relative z-10 mx-auto">
+                                <img src={ctaImage} alt="CTA Landscape" className="w-full h-full object-cover" />
                               </div>
                             )}
 
-                            {ctaImage && (
-                              <div className="w-[85%] aspect-[16/9] sm:aspect-video rounded-[20px] overflow-hidden shadow-xl shrink-0 border border-white/10 mb-8 relative z-10 mx-auto">
-                                <img src={ctaImage} alt="CTA Landscape" className="w-full h-full object-cover" />
+                            {(brandHandle || brandLogo) && (
+                              <div className={`w-full h-0 shrink-0 relative z-[60] flex items-center justify-center ${!ctaImage ? 'mb-12 mt-4' : ''}`}>
+                                <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-black/30 backdrop-blur-md border border-white/10 shadow-lg absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2">
+                                  {brandLogo && (
+                                    <div className={`size-5 sm:size-6 rounded-full overflow-hidden shrink-0 shadow-sm ring-1 ring-white/50`}>
+                                      <img src={brandLogo} alt="Logo" className="w-full h-full object-cover" />
+                                    </div>
+                                  )}
+                                  {brandHandle && (
+                                    <div className={`flex items-center gap-0.5 text-[10px] sm:text-[11px] font-bold tracking-wider text-white drop-shadow-md`}>
+                                      <span className="material-symbols-outlined text-[12px] sm:text-[14px] text-blue-500 fill" style={{ fontVariationSettings: "'FILL' 1" }}>verified</span>
+                                      <span className="ml-0.5">{brandHandle}</span>
+                                    </div>
+                                  )}
+                                </div>
                               </div>
                             )}
 
@@ -1604,26 +1602,26 @@ export default function CarouselGenerator({ onLogout }: { onLogout: () => void }
                               <div className="absolute inset-0 bg-cover transition-transform duration-500 pointer-events-none" style={{ backgroundImage: `url('${imageSrc}')`, backgroundPosition: `center ${imagePosMap[index] ?? 50}%` }}></div>
                             </div>
                           </div>
-                          <div className={`w-full px-8 flex flex-col shrink-0 z-20 relative pt-12 pb-12 ${textAlign}`} style={{ fontFamily }}>
+
+                          <div className="w-full h-0 shrink-0 relative z-[60] flex items-center justify-center">
                             {(brandHandle || brandLogo) && (
-                              <div className={`flex flex-col items-center justify-center w-full mb-6 ${theme.textClass}`}>
-                                <div className="flex items-center justify-center w-full max-w-[200px] mb-2">
-                                  <div className="h-[1px] flex-1 opacity-40" style={{ backgroundImage: 'linear-gradient(to right, transparent, currentColor)' }}></div>
-                                  {brandLogo && (
-                                    <div className={`size-8 sm:size-10 rounded-full overflow-hidden shrink-0 mx-3 shadow-sm ring-1 ring-current/20`}>
-                                      <img src={brandLogo} alt="Logo" className="w-full h-full object-cover" />
-                                    </div>
-                                  )}
-                                  <div className="h-[1px] flex-1 opacity-40" style={{ backgroundImage: 'linear-gradient(to left, transparent, currentColor)' }}></div>
-                                </div>
+                              <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-black/30 backdrop-blur-md border border-white/10 shadow-lg absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2">
+                                {brandLogo && (
+                                  <div className={`size-5 sm:size-6 rounded-full overflow-hidden shrink-0 shadow-sm ring-1 ring-white/50`}>
+                                    <img src={brandLogo} alt="Logo" className="w-full h-full object-cover" />
+                                  </div>
+                                )}
                                 {brandHandle && (
-                                  <div className={`flex items-center gap-1 text-[10px] sm:text-xs font-bold tracking-wider`}>
-                                    {brandHandle}
-                                    <span className="material-symbols-outlined text-[14px] text-blue-500 fill" style={{ fontVariationSettings: "'FILL' 1" }}>verified</span>
+                                  <div className={`flex items-center gap-0.5 text-[10px] sm:text-[11px] font-bold tracking-wider text-white drop-shadow-md`}>
+                                    <span className="material-symbols-outlined text-[12px] sm:text-[14px] text-blue-500 fill" style={{ fontVariationSettings: "'FILL' 1" }}>verified</span>
+                                    <span className="ml-0.5">{brandHandle}</span>
                                   </div>
                                 )}
                               </div>
                             )}
+                          </div>
+
+                          <div className={`w-full px-8 flex flex-col shrink-0 z-20 relative pt-12 pb-12 ${textAlign}`} style={{ fontFamily }}>
                             <div className={`flex flex-col gap-2 ${textAlign === 'text-center' ? 'items-center text-center' : textAlign === 'text-right' ? 'items-end text-right' : 'items-start text-left'}`}>
                               {slide.title && <h2 className={titleClass}>{slide.title}</h2>}
                               {slide.subtitle && <p className={subtitleClass}>{slide.subtitle}</p>}

@@ -483,6 +483,10 @@ export default function CarouselGenerator({ onLogout }: { onLogout: () => void }
       return { title, subtitle };
     });
 
+    if (newSlides.length === 0) {
+      newSlides.push({ title: '', subtitle: '' });
+    }
+
     setParsedSlides(newSlides);
 
     setUploadedImages(prev => {
@@ -880,7 +884,12 @@ export default function CarouselGenerator({ onLogout }: { onLogout: () => void }
                   style={{ fontFamily: 'var(--font-poppins), sans-serif' }}
                   placeholder={isIuryMode ? 'Deixe o Iury fazer o trabalho. Escreva um tema, cole um rascunho completo, reclame de um nicho... e veja a mágica visceral acontecer.' : 'Modo manual ativado. Cole SEU TEXTO FORMATADO aqui e clique em gerar.\n\n⚠️ REGRA DE OURO:\nSeu slide não pode ter mais que 250 caracteres (linhas de texto demais vão sobrescrever sua foto principal!).\n\nUse este formato nativo para cada slide:\n\nSLIDE 01:\n[TÍTULO]: Título explosivo aqui\n[SUBTÍTULO]: Texto da narrativa curto aqui...\n\nSLIDE 02:\n[TÍTULO]: Segundo título...'}
                   value={content}
-                  onChange={(e) => setContent(e.target.value)}
+                  onChange={(e) => {
+                    setContent(e.target.value);
+                    if (!isIuryMode) {
+                      processTextIntoSlides(e.target.value);
+                    }
+                  }}
                 ></textarea>
                 <div className="absolute bottom-3 right-3 text-xs text-slate-400 font-medium bg-slate-100 dark:bg-border-dark px-2 py-1 rounded">{content.length} caracteres</div>
               </div>

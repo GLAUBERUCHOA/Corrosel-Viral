@@ -2,6 +2,7 @@
 
 import React, { useEffect, useRef } from 'react';
 import { Sparkles, Zap, Image as ImageIcon, LayoutTemplate, Calendar, Video, BookOpen, Infinity, CheckCircle2, ChevronDown, ShieldCheck } from 'lucide-react';
+import ViralCoverflow from './components/ViralCoverflow';
 
 // Efeito de intersecção suave (Fade-in ao rolar)
 const useScrollFade = () => {
@@ -95,6 +96,26 @@ export default function HomePage() {
               <p className="font-medium z-20">[ESPAÇO 1] Insira aqui a foto da capa ou mockups do Sistema</p>
               <span className="text-xs text-slate-600 z-20">(Sugestão: 1200x800px)</span>
             </div>
+          </FadeInSection>
+        </section>
+
+        {/* VIRAL CAROUSEL SHOWCASE */}
+        <section className="py-20 relative overflow-hidden bg-slate-950/50">
+          <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,rgba(168,85,247,0.05)_0%,transparent_70%)] pointer-events-none"></div>
+
+          <div className="max-w-6xl mx-auto px-6 mb-2 text-center relative z-10">
+            <FadeInSection>
+              <h2 className="text-3xl sm:text-4xl md:text-5xl font-extrabold text-white mb-4">
+                Veja o poder dos <span className="text-transparent bg-clip-text bg-gradient-to-r from-purple-400 to-indigo-400">Carrosséis Virais</span>
+              </h2>
+              <p className="text-slate-400 text-base sm:text-lg max-w-2xl mx-auto">
+                No celular, passe o dedo para o lado e veja como transformamos assuntos comuns em postagens impossíveis de ignorar.
+              </p>
+            </FadeInSection>
+          </div>
+
+          <FadeInSection delay="delay-100">
+            <ViralCoverflow />
           </FadeInSection>
         </section>
 

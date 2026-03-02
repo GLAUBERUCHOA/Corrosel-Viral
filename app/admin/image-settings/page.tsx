@@ -1,4 +1,4 @@
-﻿import { prisma } from '@/lib/prisma';
+import { prisma } from '@/lib/prisma';
 import Sidebar from '../components/Sidebar';
 import { ImageSettingsForm } from './ImageSettingsForm';
 
@@ -12,7 +12,7 @@ export default async function ImageSettingsPage() {
     const globalInstruction = rawSettings.find((p: { nicheKey: string }) => p.nicheKey === 'GLOBAL_IMAGE');
     const specificNiches = rawSettings.filter((p: { nicheKey: string }) => p.nicheKey !== 'GLOBAL_IMAGE');
 
-    // Assegura que a instruÃ§Ã£o global estÃ¡ sempre no topo
+    // Assegura que a instrução global está sempre no topo
     const settings = globalInstruction ? [globalInstruction, ...specificNiches] : specificNiches;
 
     return (
@@ -23,9 +23,9 @@ export default async function ImageSettingsPage() {
                 <div className="mb-8">
                     <h1 className="text-2xl font-bold text-slate-900 dark:text-white flex items-center gap-2">
                         <span className="material-symbols-outlined text-emerald-500">imagesmode</span>
-                        Nichos de Imagem (DireÃ§Ã£o de Arte)
+                        Nichos de Imagem (Direção de Arte)
                     </h1>
-                    <p className="text-slate-500 dark:text-slate-400 mt-1">Configure o olhar crÃ­tico do Iury para gerar imagens adequadas a cada setor, ou crie novos nichos.</p>
+                    <p className="text-slate-500 dark:text-slate-400 mt-1">Configure o olhar crítico do Iury para gerar imagens adequadas a cada setor, ou crie novos nichos.</p>
                 </div>
 
                 <div className="max-w-4xl">

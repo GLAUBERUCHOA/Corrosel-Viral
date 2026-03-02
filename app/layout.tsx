@@ -1,4 +1,4 @@
-﻿import type { Metadata } from 'next';
+import type { Metadata } from 'next';
 import { Poppins } from 'next/font/google';
 import './globals.css';
 
@@ -10,7 +10,7 @@ const poppins = Poppins({
 
 export const metadata: Metadata = {
   title: 'Criador de Carrossel',
-  description: 'Painel de CriaÃ§Ã£o de Carrossel',
+  description: 'Painel de Criação de Carrossel',
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {

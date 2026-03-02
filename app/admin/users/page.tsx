@@ -1,4 +1,4 @@
-﻿'use client';
+'use client';
 
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
@@ -57,17 +57,17 @@ export default function UsersPage() {
     };
 
     const handleDelete = async (id: string) => {
-        if (!confirm('Tem certeza que deseja excluir permanentemente este usuÃ¡rio?')) return;
+        if (!confirm('Tem certeza que deseja excluir permanentemente este usuário?')) return;
         try {
             const res = await fetch(`/api/admin/users?id=${id}`, { method: 'DELETE' });
             if (res.ok) {
                 setUsers(users.filter(u => u.id !== id));
             } else {
                 const data = await res.json();
-                alert(data.error || 'Erro ao excluir usuÃ¡rio.');
+                alert(data.error || 'Erro ao excluir usuário.');
             }
         } catch (err) {
-            alert('Erro de conexÃ£o.');
+            alert('Erro de conexão.');
         }
     };
 
@@ -92,10 +92,10 @@ export default function UsersPage() {
                 setIsModalOpen(false);
                 loadUsers();
             } else {
-                alert(data.error || 'Erro ao salvar usuÃ¡rio.');
+                alert(data.error || 'Erro ao salvar usuário.');
             }
         } catch (err) {
-            alert('Erro de conexÃ£o ao salvar.');
+            alert('Erro de conexão ao salvar.');
         } finally {
             setIsSaving(false);
         }
@@ -123,7 +123,7 @@ export default function UsersPage() {
                     </Link>
                     <Link href="/admin/users" className="flex items-center gap-3 px-4 py-3 rounded-lg bg-primary/20 text-white font-medium">
                         <span className="material-symbols-outlined text-[20px]">people</span>
-                        UsuÃ¡rios
+                        Usuários
                     </Link>
                     <Link href="/admin/settings" className="flex items-center gap-3 px-4 py-3 rounded-lg hover:bg-slate-800 hover:text-white transition-colors">
                         <span className="material-symbols-outlined text-[20px]">tune</span>
@@ -135,15 +135,15 @@ export default function UsersPage() {
             <main className="flex-1 overflow-auto bg-slate-50 dark:bg-background-dark p-8 relative">
                 <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-8 gap-4">
                     <div>
-                        <h1 className="text-2xl font-bold text-slate-900 dark:text-white">UsuÃ¡rios do Sistema</h1>
-                        <p className="text-slate-500 dark:text-slate-400">Gerencie quem tem acesso Ã  plataforma.</p>
+                        <h1 className="text-2xl font-bold text-slate-900 dark:text-white">Usuários do Sistema</h1>
+                        <p className="text-slate-500 dark:text-slate-400">Gerencie quem tem acesso à plataforma.</p>
                     </div>
                     <div className="flex flex-col sm:flex-row items-center gap-3 w-full md:w-auto">
                         <div className="relative w-full sm:w-64">
                             <span className="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 text-[20px]">search</span>
                             <input
                                 type="text"
-                                placeholder="Buscar usuÃ¡rios..."
+                                placeholder="Buscar usuários..."
                                 value={searchTerm}
                                 onChange={(e) => setSearchTerm(e.target.value)}
                                 className="w-full pl-10 pr-4 py-2 bg-white dark:bg-surface-dark border border-slate-200 dark:border-border-dark rounded-lg focus:ring-2 focus:ring-primary outline-none transition-shadow text-sm text-slate-700 dark:text-slate-200"
@@ -154,7 +154,7 @@ export default function UsersPage() {
                             className="w-full sm:w-auto bg-primary hover:bg-primary/90 text-white px-4 py-2 rounded-lg font-medium shadow-md flex items-center justify-center gap-2 transition-colors whitespace-nowrap"
                         >
                             <span className="material-symbols-outlined text-lg">add</span>
-                            Novo UsuÃ¡rio
+                            Novo Usuário
                         </button>
                     </div>
                 </div>
@@ -166,14 +166,14 @@ export default function UsersPage() {
                                 <th className="px-6 py-4">Nome</th>
                                 <th className="px-6 py-4">Email</th>
                                 <th className="px-6 py-4">Acesso</th>
-                                <th className="px-6 py-4 text-right">AÃ§Ãµes</th>
+                                <th className="px-6 py-4 text-right">Ações</th>
                             </tr>
                         </thead>
                         <tbody className="divide-y divide-slate-100 dark:divide-border-dark">
                             {isLoading ? (
-                                <tr><td colSpan={4} className="p-8 text-center text-slate-500">Carregando usuÃ¡rios...</td></tr>
+                                <tr><td colSpan={4} className="p-8 text-center text-slate-500">Carregando usuários...</td></tr>
                             ) : filteredUsers.length === 0 ? (
-                                <tr><td colSpan={4} className="p-8 text-center text-slate-500">Nenhum usuÃ¡rio encontrado.</td></tr>
+                                <tr><td colSpan={4} className="p-8 text-center text-slate-500">Nenhum usuário encontrado.</td></tr>
                             ) : (
                                 filteredUsers.map((u) => (
                                     <tr key={u.id} className="hover:bg-slate-50 dark:hover:bg-surface-darker transition-colors">
@@ -210,7 +210,7 @@ export default function UsersPage() {
                         <div className="bg-white dark:bg-surface-darker rounded-2xl shadow-xl w-full max-w-md overflow-hidden">
                             <div className="p-6 border-b border-slate-100 dark:border-border-dark flex justify-between items-center">
                                 <h3 className="text-xl font-bold text-slate-900 dark:text-white">
-                                    {editingUser ? 'Editar UsuÃ¡rio' : 'Novo UsuÃ¡rio'}
+                                    {editingUser ? 'Editar Usuário' : 'Novo Usuário'}
                                 </h3>
                                 <button onClick={() => setIsModalOpen(false)} className="text-slate-400 hover:text-slate-600 dark:hover:text-slate-200">
                                     <span className="material-symbols-outlined">close</span>
@@ -232,7 +232,7 @@ export default function UsersPage() {
                                     />
                                 </div>
                                 <div>
-                                    <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Senha {editingUser && <span className="text-xs text-slate-400 font-normal">(Deixe em branco para nÃ£o alterar)</span>}</label>
+                                    <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Senha {editingUser && <span className="text-xs text-slate-400 font-normal">(Deixe em branco para não alterar)</span>}</label>
                                     <input
                                         type="password" required={!editingUser} value={password} onChange={(e) => setPassword(e.target.value)}
                                         className="w-full px-3 py-2 border border-slate-300 dark:border-slate-600 rounded-lg bg-transparent focus:ring-2 focus:ring-primary outline-none"
@@ -250,7 +250,7 @@ export default function UsersPage() {
                                         className="px-4 py-2 bg-primary text-white font-medium rounded-lg hover:bg-primary/90 flex items-center gap-2"
                                     >
                                         {isSaving && <span className="material-symbols-outlined animate-spin text-[16px]">progress_activity</span>}
-                                        {isSaving ? 'Salvando...' : 'Salvar UsuÃ¡rio'}
+                                        {isSaving ? 'Salvando...' : 'Salvar Usuário'}
                                     </button>
                                 </div>
                             </form>

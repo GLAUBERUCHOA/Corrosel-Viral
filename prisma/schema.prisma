@@ -23,3 +23,12 @@ model PromptSetting {
   instruction String   @db.Text
   updatedAt   DateTime @updatedAt
 }
+
+model ImagePromptSetting {
+  id          String   @id @default(cuid())
+  nicheKey    String   @unique // e.g., 'GLOBAL_IMAGE', 'SAUDE'
+  label       String   // e.g., 'Instruções Gerais (Imagens)', 'Saúde'
+  instruction String   @db.Text
+  isDeletable Boolean  @default(true) // Impede deleção da instrução global
+  updatedAt   DateTime @updatedAt
+}

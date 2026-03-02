@@ -53,9 +53,43 @@ CRIANDO COM BASE NO SEU TOM SELECIONADO ACIMA, metamorfoseie brutalmente o segui
 `;
 };
 
+const getImagePrompt = (nicheMode: string, dynamicImageInstructions: Record<string, string>, title: string, subtitle: string) => {
+  const globalInstruction = dynamicImageInstructions['GLOBAL_IMAGE'] ||
+    `🎨 1. PADRÃO ESTÉTICO OBRIGATÓRIO:
+Você opera sempre no estilo "Theatrical Dark Cinematic" (Cinematográfico Escuro e Teatral) com foco em Chiaroscuro (contraste dramático) e efeito Bokeh (fundo elegantemente distorcido).
+
+📸 2. REGRAS DE DIREÇÃO DE ARTE:
+- Ângulos: Evite sempre visões padrão (eye-level). Alterne entre Low Angle (de baixo pra cima, denota poder/imposição), High Angle (vulnerabilidade), Over-the-shoulder e Close-ups detalhados.
+- Iluminação: Luzes de recorte dramáticas, sombras marcadas. Iluminação lateral misteriosa.
+- Metáforas: NUNCA crie interpretações literais e óbvias do texto. Se o texto for sobre "ganhar dinheiro", NÃO crie de pessoas segurando dinheiro ou cifrões. Crie algo como: "A close-up of a sleek black mechanical watch with gold gears turning amidst dark smoke".
+
+🧠 3. COMPOSIÇÃO:
+- Cores: Paleta Industrial e Terrosa (Preto, chumbo, ouro envelhecido, cobre escuro, verde musgo).
+- Sempre inclua: "High end, 8k resolution, raw photo, highly detailed, sharp focus" no final do seu prompt.`;
+
+  const nicheInstruction = dynamicImageInstructions[nicheMode] ||
+    'Crie algo focado em cinematografia dark de altíssimo nível com as regras gerais acima.';
+
+  return `Crie UMA ÚNICA IMAGEM de "Cinematografia Multimodal" de altíssimo nível, baseada na seguinte semente emocional do texto do slide:
+Título do Slide: "${title}"
+Subtítulo: "${subtitle}"
+
+INSTRUÇÕES GERAIS DE ARTE (BASE):
+${globalInstruction}
+
+DIRETRIZ ESPECÍFICA DO NICHO ESCOLHIDO (IMPRESCINDÍVEL):
+${nicheInstruction}
+
+5. Restrição Absoluta de Textos Nativos: É VERBEMENTE PROIBIDO criar qualquer frase, palavra ou explicação legível ilustrada dentro da arte! A imagem PRECISA ser muda. O texto longo será redigido por nós por cima. 
+6. Composição Vertical (Top-Heavy) - LEI INQUEBRÁVEL: O texto descritivo ocupará quase toda a METADE INFERIOR (Bottom Half) do slide. Portanto, posicione os objetos centrais, personagens e elementos dramáticos EXCLUSIVAMENTE NA METADE SUPERIOR (Top Half). A metade inferior DEVE SER um imenso e pesado VAZIO ESCURO (Negative Space), garantindo contraste absoluto para leitura.`;
+};
+
 export default function CarouselGenerator({ onLogout }: { onLogout: () => void }) {
   const [dbPrompts, setDbPrompts] = useState<Record<string, string>>({});
   const [dbLabels, setDbLabels] = useState<{ key: string, label: string }[]>([]);
+  const [dbImagePrompts, setDbImagePrompts] = useState<Record<string, string>>({});
+  const [dbImageLabels, setDbImageLabels] = useState<{ key: string, label: string }[]>([]);
+  const [imageNiche, setImageNiche] = useState('SAUDE');
   const [aspectRatio, setAspectRatio] = useState('4:5');
   const [styleModel, setStyleModel] = useState('Escuro');
   const [generateWithAI, setGenerateWithAI] = useState(false);
@@ -132,25 +166,42 @@ export default function CarouselGenerator({ onLogout }: { onLogout: () => void }
     }
     isInitialized.current = true;
 
-    const fetchPrompts = async () => {
+    const fetchSettings = async () => {
       try {
-        const res = await fetch('/api/admin/settings');
-        const data = await res.json();
-        if (data.success && data.prompts) {
+        const [promptsRes, imageRes] = await Promise.all([
+          fetch('/api/admin/settings'),
+          fetch('/api/admin/image-settings')
+        ]);
+
+        const promptsData = await promptsRes.json();
+        const imageData = await imageRes.json();
+
+        if (promptsData.success && promptsData.prompts) {
           const instructionsMap: Record<string, string> = {};
           const labelsArr: { key: string, label: string }[] = [];
-          data.prompts.forEach((p: any) => {
+          promptsData.prompts.forEach((p: any) => {
             instructionsMap[p.toneKey] = p.instruction;
             labelsArr.push({ key: p.toneKey, label: p.label });
           });
           setDbPrompts(instructionsMap);
           setDbLabels(labelsArr);
         }
+
+        if (imageData.success && imageData.settings) {
+          const imgInstructionsMap: Record<string, string> = {};
+          const imgLabelsArr: { key: string, label: string }[] = [];
+          imageData.settings.forEach((s: any) => {
+            imgInstructionsMap[s.nicheKey] = s.instruction;
+            imgLabelsArr.push({ key: s.nicheKey, label: s.label });
+          });
+          setDbImagePrompts(imgInstructionsMap);
+          setDbImageLabels(imgLabelsArr);
+        }
       } catch (err) {
-        console.error("Failed to fetch dynamic prompts:", err);
+        console.error("Failed to fetch dynamic dynamic configurations:", err);
       }
     };
-    fetchPrompts();
+    fetchSettings();
 
     const checkMobile = () => setIsMobile(window.innerWidth < 768);
     checkMobile();
@@ -451,18 +502,7 @@ export default function CarouselGenerator({ onLogout }: { onLogout: () => void }
 
     try {
       const ai = new GoogleGenAI({ apiKey });
-      const prompt = `Crie UMA ÚNICA IMAGEM de "Cinematografia Multimodal" de altíssimo nível, baseada na seguinte semente emocional do texto do slide:
-Título do Slide: "${slide.title}"
-Subtítulo: "${slide.subtitle}"
-
-🎨 DIRETRIZES VISUAIS (THEATRICAL DARK CINEMATIC):
-A sua função não é descrever o texto, mas sim dar suporte ao SENTIMENTO dele através de Metáforas Visuais Cruas.
-1. Estilo e Iluminação: Estritamente "Theatrical Dark Cinematic" com efeitos profundos de "Chiaroscuro" e "Bokeh". Brinque com alto contraste de luz e sombra, parecendo um filme de suspense ou documentário premiado.
-2. Coesão com o Nicho Visual (MUITO IMPORTANTE): Identifique o nicho e adeque a metáfora. Exemplo: Para textos de Nutrição/Biologia, NEVER crie robôs/ciborgues futuristas ou cabos brilhantes; use maçãs murchas, frascos de veneno em mesas de madeira escura, carne brilhante, natureza sinistra de raízes negras. Apenas crie algo hiper-futurista se o texto for estritamente sobre Inteligência Artificial, TI ou Robótica.
-3. Paleta de Cores: Utilize "Industrial e Terrosa" (cobre, mármore, ferrugem, chumbo, marrom profundo e muito preto absoluto).
-4. Raciocínio Abstrato (Não Literal): PROIBIDO CLICHÊS DE NICHO. Se o sentimento for 'falsa promessa' na saúde, mostre um cálice luxuoso jorrando piche escuro e denso. Empregue ângulos tensos como plongée e close-up extremo para gerar autoridade brutal.
-5. Restrição Absoluta de Textos Nativos: É VERBEMENTE PROIBIDO criar qualquer frase, palavra ou explicação legível ilustrada dentro da arte! A imagem PRECISA ser muda. O texto longo será redigido por nós por cima. 
-6. Composição Vertical (Top-Heavy) - LEI INQUEBRÁVEL: O texto descritivo ocupará quase toda a METADE INFERIOR (Bottom Half) do slide. Portanto, posicione os objetos centrais, personagens e elementos dramáticos EXCLUSIVAMENTE NA METADE SUPERIOR (Top Half). A metade inferior DEVE SER um imenso e pesado VAZIO ESCURO (Negative Space), garantindo contraste absoluto para leitura.`;
+      const prompt = getImagePrompt(imageNiche, dbImagePrompts, slide.title, slide.subtitle);
 
       const response = await ai.models.generateContent({
         model: 'gemini-2.5-flash-image',
@@ -529,18 +569,7 @@ A sua função não é descrever o texto, mas sim dar suporte ao SENTIMENTO dele
 
       for (let i = 0; i < newSlides.length; i++) {
         try {
-          const prompt = `Crie UMA ÚNICA IMAGEM de "Cinematografia Multimodal" de altíssimo nível, baseada na seguinte semente emocional do texto do slide:
-Título do Slide: "${newSlides[i].title}"
-Subtítulo: "${newSlides[i].subtitle}"
-
-🎨 DIRETRIZES VISUAIS (THEATRICAL DARK CINEMATIC):
-A sua função não é descrever o texto, mas sim dar suporte ao SENTIMENTO dele através de Metáforas Visuais Cruas.
-1. Estilo e Iluminação: Estritamente "Theatrical Dark Cinematic" com efeitos profundos de "Chiaroscuro" e "Bokeh". Brinque com alto contraste de luz e sombra, parecendo um filme de suspense ou documentário premiado.
-2. Coesão com o Nicho Visual (MUITO IMPORTANTE): Identifique o nicho e adeque a metáfora. Exemplo: Para textos de Nutrição/Biologia, NEVER crie robôs/ciborgues futuristas ou cabos brilhantes; use maçãs murchas, frascos de veneno em mesas de madeira escura, carne brilhante, natureza sinistra de raízes negras. Apenas crie algo hiper-futurista se o texto for estritamente sobre Inteligência Artificial, TI ou Robótica.
-3. Paleta de Cores: Utilize "Industrial e Terrosa" (cobre, mármore, ferrugem, chumbo, marrom profundo e muito preto absoluto).
-4. Raciocínio Abstrato (Não Literal): PROIBIDO CLICHÊS DE NICHO. Se o sentimento for 'falsa promessa' na saúde, mostre um cálice luxuoso jorrando piche escuro e denso. Empregue ângulos tensos como plongée e close-up extremo para gerar autoridade brutal.
-5. Restrição Absoluta de Textos Nativos: É VERBEMENTE PROIBIDO criar qualquer frase, palavra ou explicação legível ilustrada dentro da arte! A imagem PRECISA ser muda. O texto longo será redigido por nós por cima. 
-6. Composição Vertical (Top-Heavy) - LEI INQUEBRÁVEL: O texto descritivo ocupará quase toda a METADE INFERIOR (Bottom Half) do slide. Portanto, posicione os objetos centrais, personagens e elementos dramáticos EXCLUSIVAMENTE NA METADE SUPERIOR (Top Half). A metade inferior DEVE SER um imenso e pesado VAZIO ESCURO (Negative Space), garantindo contraste absoluto para leitura.`;
+          const prompt = getImagePrompt(imageNiche, dbImagePrompts, newSlides[i].title, newSlides[i].subtitle);
 
           const response = await ai.models.generateContent({
             model: 'gemini-2.5-flash-image',
@@ -1013,27 +1042,50 @@ A sua função não é descrever o texto, mas sim dar suporte ao SENTIMENTO dele
               </div>
 
               {generateWithAI && (
-                <div className="space-y-2 mt-4 p-3 bg-slate-50 dark:bg-surface-darker rounded-lg border border-slate-200 dark:border-border-dark">
-                  <div className="flex items-center justify-between">
-                    <label className="text-xs font-semibold text-slate-700 dark:text-slate-300">Sua Chave da API Gemini (Opcional)</label>
-                    {customApiKey && <span className="text-[10px] text-emerald-600 font-bold flex items-center gap-1"><span className="material-symbols-outlined text-[12px]">lock</span> Salva</span>}
+                <>
+                  <div className="space-y-2 mt-2 p-3 bg-emerald-50 dark:bg-emerald-900/10 rounded-lg border border-emerald-200 dark:border-emerald-800">
+                    <label className="text-xs font-semibold text-emerald-800 dark:text-emerald-300 uppercase tracking-wider flex items-center gap-1">
+                      <span className="material-symbols-outlined text-[14px]">imagesmode</span> Nicho Visual da Imagem
+                    </label>
+                    <select
+                      value={imageNiche}
+                      onChange={(e) => setImageNiche(e.target.value)}
+                      className="w-full bg-white dark:bg-surface-dark border border-emerald-200 dark:border-emerald-700 rounded-lg px-3 py-2 text-sm text-emerald-900 dark:text-emerald-100 focus:ring-2 focus:ring-emerald-500 outline-none cursor-pointer font-medium"
+                    >
+                      {dbImageLabels.filter(label => label.key !== 'GLOBAL_IMAGE').length > 0 ? (
+                        dbImageLabels.filter(label => label.key !== 'GLOBAL_IMAGE').map(label => (
+                          <option key={label.key} value={label.key}>{label.label}</option>
+                        ))
+                      ) : (
+                        <>
+                          <option value="SAUDE">🍎 Saúde, Nutrição</option>
+                          <option value="MINDSET">🧠 Mindset, Psicologia</option>
+                        </>
+                      )}
+                    </select>
                   </div>
-                  <p className="text-[10px] text-slate-500 dark:text-slate-400 leading-tight">
-                    Insira sua chave para uso ilimitado. Ela é <strong>criptografada e salva apenas no seu navegador</strong>. Você só precisa inserir uma vez.
-                  </p>
-                  <input
-                    type="password"
-                    value={customApiKey}
-                    onChange={handleApiKeyChange}
-                    placeholder="Cole sua chave AIzaSy... aqui"
-                    className="w-full bg-white dark:bg-surface-dark border border-slate-200 dark:border-border-dark rounded-md px-3 py-2 text-xs text-slate-700 dark:text-slate-300 focus:ring-2 focus:ring-primary focus:border-transparent"
-                  />
-                  <div className="flex justify-end">
-                    <a href="https://aistudio.google.com/app/apikey" target="_blank" rel="noopener noreferrer" className="text-[10px] text-primary hover:underline flex items-center gap-1">
-                      Pegar minha chave gratuita <span className="material-symbols-outlined text-[10px]">open_in_new</span>
-                    </a>
+                  <div className="space-y-2 mt-4 p-3 bg-slate-50 dark:bg-surface-darker rounded-lg border border-slate-200 dark:border-border-dark">
+                    <div className="flex items-center justify-between">
+                      <label className="text-xs font-semibold text-slate-700 dark:text-slate-300">Sua Chave da API Gemini (Opcional)</label>
+                      {customApiKey && <span className="text-[10px] text-emerald-600 font-bold flex items-center gap-1"><span className="material-symbols-outlined text-[12px]">lock</span> Salva</span>}
+                    </div>
+                    <p className="text-[10px] text-slate-500 dark:text-slate-400 leading-tight">
+                      Insira sua chave para uso ilimitado. Ela é <strong>criptografada e salva apenas no seu navegador</strong>. Você só precisa inserir uma vez.
+                    </p>
+                    <input
+                      type="password"
+                      value={customApiKey}
+                      onChange={handleApiKeyChange}
+                      placeholder="Cole sua chave AIzaSy... aqui"
+                      className="w-full bg-white dark:bg-surface-dark border border-slate-200 dark:border-border-dark rounded-md px-3 py-2 text-xs text-slate-700 dark:text-slate-300 focus:ring-2 focus:ring-primary focus:border-transparent"
+                    />
+                    <div className="flex justify-end">
+                      <a href="https://aistudio.google.com/app/apikey" target="_blank" rel="noopener noreferrer" className="text-[10px] text-primary hover:underline flex items-center gap-1">
+                        Pegar minha chave gratuita <span className="material-symbols-outlined text-[10px]">open_in_new</span>
+                      </a>
+                    </div>
                   </div>
-                </div>
+                </>
               )}
 
               <div className={`${generateWithAI ? 'opacity-50 pointer-events-none filter grayscale mt-4' : 'mt-4'} transition-all duration-300`}>
@@ -1334,52 +1386,54 @@ A sua função não é descrever o texto, mas sim dar suporte ao SENTIMENTO dele
       </main>
 
       {/* Edit Text Modal */}
-      {editingSlideIndex !== null && (
-        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-[100] flex items-center justify-center p-4">
-          <div className="bg-white dark:bg-surface-dark rounded-2xl shadow-2xl w-full max-w-lg overflow-hidden flex flex-col">
-            <div className="flex items-center justify-between p-4 border-b border-slate-200 dark:border-border-dark">
-              <h3 className="text-lg font-bold text-slate-900 dark:text-white">Editar Slide {editingSlideIndex + 1}</h3>
-              <button
-                onClick={() => setEditingSlideIndex(null)}
-                className="p-1 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors">
-                <span className="material-symbols-outlined">close</span>
-              </button>
-            </div>
-            <div className="p-6 space-y-4">
-              <div className="space-y-2">
-                <label className="text-sm font-semibold text-slate-700 dark:text-slate-300">Título</label>
-                <textarea
-                  value={editTitle}
-                  onChange={(e) => setEditTitle(e.target.value)}
-                  className="w-full bg-slate-50 dark:bg-surface-darker border border-slate-200 dark:border-border-dark rounded-xl p-3 text-sm text-slate-900 dark:text-white focus:ring-2 focus:ring-primary focus:border-transparent resize-none h-24"
-                  placeholder="Digite o título do slide..."
-                />
+      {
+        editingSlideIndex !== null && (
+          <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-[100] flex items-center justify-center p-4">
+            <div className="bg-white dark:bg-surface-dark rounded-2xl shadow-2xl w-full max-w-lg overflow-hidden flex flex-col">
+              <div className="flex items-center justify-between p-4 border-b border-slate-200 dark:border-border-dark">
+                <h3 className="text-lg font-bold text-slate-900 dark:text-white">Editar Slide {editingSlideIndex + 1}</h3>
+                <button
+                  onClick={() => setEditingSlideIndex(null)}
+                  className="p-1 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors">
+                  <span className="material-symbols-outlined">close</span>
+                </button>
               </div>
-              <div className="space-y-2">
-                <label className="text-sm font-semibold text-slate-700 dark:text-slate-300">Subtítulo / Texto de Apoio</label>
-                <textarea
-                  value={editSubtitle}
-                  onChange={(e) => setEditSubtitle(e.target.value)}
-                  className="w-full bg-slate-50 dark:bg-surface-darker border border-slate-200 dark:border-border-dark rounded-xl p-3 text-sm text-slate-900 dark:text-white focus:ring-2 focus:ring-primary focus:border-transparent resize-none h-32"
-                  placeholder="Digite o texto de apoio (opcional)..."
-                />
+              <div className="p-6 space-y-4">
+                <div className="space-y-2">
+                  <label className="text-sm font-semibold text-slate-700 dark:text-slate-300">Título</label>
+                  <textarea
+                    value={editTitle}
+                    onChange={(e) => setEditTitle(e.target.value)}
+                    className="w-full bg-slate-50 dark:bg-surface-darker border border-slate-200 dark:border-border-dark rounded-xl p-3 text-sm text-slate-900 dark:text-white focus:ring-2 focus:ring-primary focus:border-transparent resize-none h-24"
+                    placeholder="Digite o título do slide..."
+                  />
+                </div>
+                <div className="space-y-2">
+                  <label className="text-sm font-semibold text-slate-700 dark:text-slate-300">Subtítulo / Texto de Apoio</label>
+                  <textarea
+                    value={editSubtitle}
+                    onChange={(e) => setEditSubtitle(e.target.value)}
+                    className="w-full bg-slate-50 dark:bg-surface-darker border border-slate-200 dark:border-border-dark rounded-xl p-3 text-sm text-slate-900 dark:text-white focus:ring-2 focus:ring-primary focus:border-transparent resize-none h-32"
+                    placeholder="Digite o texto de apoio (opcional)..."
+                  />
+                </div>
               </div>
-            </div>
-            <div className="p-4 border-t border-slate-200 dark:border-border-dark bg-slate-50 dark:bg-surface-darker flex justify-end gap-3">
-              <button
-                onClick={() => setEditingSlideIndex(null)}
-                className="px-4 py-2 text-sm font-semibold text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700 rounded-lg transition-colors">
-                Cancelar
-              </button>
-              <button
-                onClick={handleSaveEdit}
-                className="px-6 py-2 text-sm font-bold text-white bg-primary hover:bg-primary/90 rounded-lg shadow-md shadow-primary/20 transition-all">
-                Salvar Alterações
-              </button>
+              <div className="p-4 border-t border-slate-200 dark:border-border-dark bg-slate-50 dark:bg-surface-darker flex justify-end gap-3">
+                <button
+                  onClick={() => setEditingSlideIndex(null)}
+                  className="px-4 py-2 text-sm font-semibold text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700 rounded-lg transition-colors">
+                  Cancelar
+                </button>
+                <button
+                  onClick={handleSaveEdit}
+                  className="px-6 py-2 text-sm font-bold text-white bg-primary hover:bg-primary/90 rounded-lg shadow-md shadow-primary/20 transition-all">
+                  Salvar Alterações
+                </button>
+              </div>
             </div>
           </div>
-        </div>
-      )}
-    </div>
+        )
+      }
+    </div >
   );
 }

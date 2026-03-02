@@ -10,7 +10,8 @@ export default function Sidebar() {
     const links = [
         { href: '/admin', icon: 'dashboard', label: 'Painel Geral' },
         { href: '/admin/users', icon: 'people', label: 'Usuários' },
-        { href: '/admin/settings', icon: 'tune', label: 'Modos do Iury' },
+        { href: '/admin/settings', icon: 'tune', label: 'Textos (Modos Iury)' },
+        { href: '/admin/image-settings', icon: 'imagesmode', label: 'Imagens (Nichos)' },
     ];
 
     return (
@@ -29,8 +30,8 @@ export default function Sidebar() {
                             key={link.href}
                             href={link.href}
                             className={`flex items-center gap-3 px-4 py-3 rounded-lg transition-colors font-medium ${isActive
-                                    ? 'bg-primary/20 text-white'
-                                    : 'hover:bg-slate-800 hover:text-white'
+                                ? 'bg-primary/20 text-white'
+                                : 'hover:bg-slate-800 hover:text-white'
                                 }`}
                         >
                             <span className="material-symbols-outlined text-[20px]">{link.icon}</span>

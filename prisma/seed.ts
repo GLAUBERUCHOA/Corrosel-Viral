@@ -87,6 +87,52 @@ Sempre separe slides com a tag nativa (Ex: SLIDE 01:).`
         });
     }
 
+    const imagePrompts = [
+        {
+            nicheKey: 'GLOBAL_IMAGE',
+            label: '🌟 INSTRUÇÕES GERAIS DE IMAGEM (Visual Base)',
+            instruction: `🎨 1. PADRÃO ESTÉTICO OBRIGATÓRIO:
+Você opera sempre no estilo "Theatrical Dark Cinematic" (Cinematográfico Escuro e Teatral) com foco em Chiaroscuro (contraste dramático) e efeito Bokeh (fundo elegantemente distorcido).
+
+📸 2. REGRAS DE DIREÇÃO DE ARTE:
+- Ângulos: Evite sempre visões padrão (eye-level). Alterne entre Low Angle (de baixo pra cima, denota poder/imposição), High Angle (vulnerabilidade), Over-the-shoulder e Close-ups detalhados.
+- Iluminação: Luzes de recorte dramáticas, sombras marcadas. Iluminação lateral misteriosa.
+- Metáforas: NUNCA crie interpretações literais e óbvias do texto. Se o texto for sobre "ganhar dinheiro", NÃO crie de pessoas segurando dinheiro ou cifrões. Crie algo como: "A close-up of a sleek black mechanical watch with gold gears turning amidst dark smoke".
+
+🧠 3. COMPOSIÇÃO:
+- Cores: Paleta Industrial e Terrosa (Preto, chumbo, ouro envelhecido, cobre escuro, verde musgo).
+- Sempre inclua: "High end, 8k resolution, raw photo, highly detailed, sharp focus" no final do seu prompt.`,
+        },
+        {
+            nicheKey: 'SAUDE',
+            label: '🍎 Saúde, Nutrição e Metabolismo',
+            instruction: 'Crie visuais focados em saúde hiper-realista. Exemplos de metáforas: O corpo humano como uma máquina complexa (engrenagens metálicas elegantes), frutas escuras e brilhantes, sangue fluindo como energia pura. Foque na biologia vista por uma lente cinematográfica.',
+        },
+        {
+            nicheKey: 'EMPREENDEDORISMO',
+            label: '💼 Negócios e Empreendedorismo',
+            instruction: 'Crie visuais de poder, controle e solidão corporativa. Salas de reuniões escuras, mesas de mogno, peças de xadrez em detalhes, arquitetura brutalista, relógios de luxo.',
+        },
+        {
+            nicheKey: 'TECNOLOGIA',
+            label: '💻 Tecnologia e Código',
+            instruction: 'Crie visuais focados em precisão cirúrgica e frio digital. Cabos de fibra ótica, servidores imersos em líquido de resfriamento escuro, neons sutis em verde, macrofotografia de microchips.',
+        },
+        {
+            nicheKey: 'MINDSET',
+            label: '🧠 Psicologia e Mindset',
+            instruction: 'Visuais abstratos e metafóricos sobre o lado sombrio e poderoso da mente. Labirintos obscuros iluminados por uma única tocha, espelhos estilhaçados, correntes de prata se quebrando, tempestades silenciosas no horizonte.',
+        },
+    ];
+
+    for (const imgPrompt of imagePrompts) {
+        await prisma.imagePromptSetting.upsert({
+            where: { nicheKey: imgPrompt.nicheKey },
+            update: {},
+            create: imgPrompt,
+        });
+    }
+
     console.log('Seed completed.');
 }
 

@@ -56,15 +56,15 @@ export default function HomePage() {
               <Sparkles className="w-4 h-4" /> NOVO SISTEMA DE CRIAÇÃO VIRAL
             </div>
 
-            <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-extrabold text-white tracking-tight leading-tight mb-8">
+            <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-extrabold text-white tracking-tight leading-tight mb-6">
               Transforme seu Instagram em uma <br className="hidden lg:block" />
               <span className="text-transparent bg-clip-text bg-gradient-to-r from-orange-400 to-amber-400">
                 MÁQUINA de vendas automática
               </span><br className="hidden md:block" />
-              <span className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl mt-2 block">com carrosséis virais criados com APENAS 1 CLIQUE</span>
+              <span className="text-xl sm:text-2xl md:text-3xl lg:text-4xl mt-3 block">com carrosséis virais criados com APENAS 1 CLIQUE</span>
             </h1>
 
-            <p className="text-base sm:text-lg md:text-xl text-slate-400 max-w-3xl mx-auto leading-relaxed mb-12">
+            <p className="text-sm sm:text-base md:text-lg text-slate-400 max-w-3xl mx-auto leading-relaxed mb-10 px-2">
               Domine a criação de conteúdo com o sistema que já gerou mais de 20 milhões de alcance mensal e ajudou mais de 2.540 pessoas a saírem do invisível para o topo do algoritmo — usando IA para criar posts completos em segundos.
             </p>
 
@@ -80,10 +80,9 @@ export default function HomePage() {
 
               <a
                 href="/login"
-                className="relative z-10 inline-flex items-center justify-center gap-3 bg-gradient-to-r from-orange-500 to-amber-500 text-white font-black uppercase tracking-wide text-lg sm:text-xl px-10 py-5 rounded-full hover:scale-105 transition-all duration-300 shadow-[0_0_50px_rgba(245,158,11,0.6)] border border-orange-400/80 w-full sm:w-auto"
+                className="relative z-10 inline-flex flex-col sm:flex-row items-center justify-center gap-1 sm:gap-3 bg-gradient-to-r from-orange-500 to-amber-500 text-white font-black uppercase tracking-wide text-base sm:text-lg px-8 py-4 sm:px-10 sm:py-5 rounded-full hover:scale-105 transition-all duration-300 shadow-[0_0_50px_rgba(245,158,11,0.6)] border border-orange-400/80 w-[95%] sm:w-auto text-center leading-snug"
               >
-                SIM, EU QUERO VIRALIZAR HOJE!
-                <ChevronDown className="w-6 h-6 animate-bounce" />
+                <span>SIM, EU QUERO VIRALIZAR HOJE!</span>
               </a>
 
               <span className="text-sm sm:text-base font-medium text-amber-200/80 mt-4 relative z-10 flex items-center gap-2">
@@ -301,22 +300,23 @@ export default function HomePage() {
                     ÚLTIMAS HORAS DA OFERTA ESPECIAL
                   </div>
 
-                  <div className="text-slate-400 font-medium mb-4 text-lg">Saia do amadorismo pelo preço de uma pizza por mês 🍕<br /> De <span className="line-through">R$ 397,00</span> por apenas:</div>
+                  <div className="text-slate-400 font-medium mb-4 text-base sm:text-lg max-w-xs mx-auto">Saia do amadorismo pelo preço de uma pizza por mês 🍕<br /> De <span className="line-through">R$ 397,00</span> por apenas:</div>
 
-                  <div className="flex flex-col items-center justify-center gap-2 mb-10">
-                    <div className="flex items-baseline gap-2">
-                      <span className="text-3xl font-bold text-purple-400">12x de</span>
-                      <span className="text-7xl font-black text-transparent bg-clip-text bg-gradient-to-r from-orange-400 to-amber-400">R$ 9,74</span>
-                    </div>
-                    <div className="text-slate-500 font-medium">ou R$ 97,00 à vista no PIX</div>
+                  <div className="flex flex-col sm:flex-row items-center justify-center gap-2 mb-10 mt-6">
+                    <span className="text-2xl sm:text-3xl font-bold text-purple-400">12x de</span>
+                    <span className="text-6xl sm:text-7xl font-black text-transparent bg-clip-text bg-gradient-to-r from-orange-400 to-amber-400 leading-none">R$ 9,74</span>
                   </div>
+                  <div className="text-slate-500 font-medium mb-8">ou R$ 97,00 à vista no PIX</div>
 
-                  <a
-                    href="/login"
-                    className="inline-block w-full sm:w-auto bg-gradient-to-r from-orange-500 to-amber-500 text-white font-black uppercase tracking-widest text-lg sm:text-xl px-12 py-5 rounded-full hover:scale-105 transition-transform shadow-[0_0_40px_rgba(245,158,11,0.4)] border border-orange-400/50 mb-6"
-                  >
-                    QUERO MEU ACESSO VITALÍCIO AGORA
-                  </a>
+                  <div className="flex flex-col items-center justify-center relative">
+                    <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-full h-[120%] bg-orange-500/20 blur-[50px] rounded-full pointer-events-none z-0 animate-pulse"></div>
+                    <a
+                      href="/login"
+                      className="relative z-10 inline-block w-[95%] sm:w-auto bg-gradient-to-r from-orange-500 to-amber-500 text-white font-black uppercase tracking-widest text-base sm:text-lg px-8 py-5 rounded-full hover:scale-105 transition-transform shadow-[0_0_40px_rgba(245,158,11,0.5)] border border-orange-400/50 mb-6 leading-snug"
+                    >
+                      QUERO MEU ACESSO VITALÍCIO AGORA
+                    </a>
+                  </div>
                   <p className="text-sm text-slate-500 flex items-center justify-center gap-2">
                     <ShieldCheck className="w-4 h-4 text-green-400" /> Acesso liberado no seu e-mail imediatamente logo após a compra.
                   </p>
@@ -353,13 +353,18 @@ export default function HomePage() {
                   { q: "Preciso ser designer?", a: "Não. O DaVinci e os templates fazem tudo com um clique." },
                   { q: "O acesso é vitalício mesmo?", a: "Sim, para quem comprar nesta oferta atual." }
                 ].map((faq, i) => (
-                  <div key={i} className="bg-slate-900/30 border border-slate-800 p-6 rounded-2xl">
-                    <h4 className="text-white font-bold text-lg mb-2 flex items-start gap-3">
-                      <span className="text-purple-500 shrink-0 mt-1"><CheckCircle2 size={18} /></span>
-                      {faq.q}
-                    </h4>
-                    <p className="text-slate-400 pl-7 leading-relaxed">{faq.a}</p>
-                  </div>
+                  <details key={i} className="bg-slate-900/40 border border-slate-800 rounded-2xl group overflow-hidden">
+                    <summary className="text-white font-bold text-lg p-6 flex items-center justify-between cursor-pointer list-none appearance-none outline-none">
+                      <div className="flex items-start gap-4">
+                        <span className="text-purple-500 shrink-0 mt-0.5"><CheckCircle2 size={20} /></span>
+                        {faq.q}
+                      </div>
+                      <ChevronDown className="w-5 h-5 text-slate-400 group-open:-rotate-180 transition-transform duration-300" />
+                    </summary>
+                    <div className="px-6 pb-6 pt-0 ml-9 border-t border-white/5 mt-2">
+                      <p className="text-slate-400 leading-relaxed pt-4">{faq.a}</p>
+                    </div>
+                  </details>
                 ))}
               </div>
             </FadeInSection>
@@ -410,12 +415,15 @@ export default function HomePage() {
               </div>
             </div>
 
-            <a
-              href="/login"
-              className="inline-block w-full sm:w-auto bg-gradient-to-r from-orange-500 to-amber-500 text-white font-black uppercase tracking-widest text-lg sm:text-xl px-12 py-6 rounded-full hover:scale-105 transition-transform shadow-[0_0_40px_rgba(245,158,11,0.4)] border border-orange-400/50 mb-16"
-            >
-              APROVEITE O DESCONTO E GARANTA SUA VAGA
-            </a>
+            <div className="flex flex-col items-center justify-center relative mb-16">
+              <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[80%] h-[150%] bg-orange-500/20 blur-[50px] rounded-full pointer-events-none z-0 animate-pulse"></div>
+              <a
+                href="/login"
+                className="relative z-10 inline-block w-[95%] sm:w-auto bg-gradient-to-r from-orange-500 to-amber-500 text-white font-black uppercase text-base sm:text-lg px-8 py-5 rounded-full hover:scale-105 transition-transform shadow-[0_0_40px_rgba(245,158,11,0.5)] border border-orange-400/50 leading-snug"
+              >
+                APROVEITE O DESCONTO E GARANTA SUA VAGA
+              </a>
+            </div>
 
             <div className="text-slate-600 text-sm flex flex-col items-center gap-2">
               <p>© 2026 Carrossel Viral Lab. Todos os direitos reservados.</p>

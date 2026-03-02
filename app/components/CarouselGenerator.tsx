@@ -86,6 +86,7 @@ ${nicheInstruction}
 
 const SimpleRichTextEditor = ({ value, onChange, placeholder }: { value: string, onChange: (val: string) => void, placeholder: string }) => {
   const editorRef = useRef<HTMLDivElement>(null);
+  const [savedSelection, setSavedSelection] = useState<Range | null>(null);
 
   useEffect(() => {
     if (editorRef.current && editorRef.current.innerHTML !== value && document.activeElement !== editorRef.current) {
@@ -97,6 +98,23 @@ const SimpleRichTextEditor = ({ value, onChange, placeholder }: { value: string,
     document.execCommand(command, false, val);
     if (editorRef.current) onChange(editorRef.current.innerHTML);
     editorRef.current?.focus();
+  };
+
+  const saveSelection = () => {
+    const sel = window.getSelection();
+    if (sel && sel.rangeCount > 0) {
+      setSavedSelection(sel.getRangeAt(0).cloneRange());
+    }
+  };
+
+  const execWithColor = (command: string, color: string) => {
+    if (savedSelection) {
+      const sel = window.getSelection();
+      sel?.removeAllRanges();
+      sel?.addRange(savedSelection);
+    }
+    document.execCommand(command, false, color);
+    if (editorRef.current) onChange(editorRef.current.innerHTML);
   };
 
   const fgColors = ['#ffffff', '#000000', '#ef4444', '#f59e0b', '#22c55e', '#3b82f6', '#ec4899'];
@@ -114,7 +132,9 @@ const SimpleRichTextEditor = ({ value, onChange, placeholder }: { value: string,
         <span className="text-[10px] text-slate-500 font-bold uppercase ml-1">Letra:</span>
         <input
           type="color"
-          onChange={(e) => { exec('foreColor', e.target.value); }}
+          onMouseDown={saveSelection}
+          onClick={saveSelection}
+          onInput={(e) => { execWithColor('foreColor', e.currentTarget.value); }}
           className="size-6 cursor-pointer border-0 p-0 bg-transparent rounded-full shadow-sm"
           title="Cor da Letra"
           defaultValue="#ffffff"
@@ -127,7 +147,9 @@ const SimpleRichTextEditor = ({ value, onChange, placeholder }: { value: string,
           </button>
           <input
             type="color"
-            onChange={(e) => { exec('hiliteColor', e.target.value); }}
+            onMouseDown={saveSelection}
+            onClick={saveSelection}
+            onInput={(e) => { execWithColor('hiliteColor', e.currentTarget.value); }}
             className="size-4 cursor-pointer border-0 p-0 bg-transparent"
             title="Cor de Fundo"
             defaultValue="#000000"
@@ -1556,16 +1578,16 @@ export default function CarouselGenerator({ onLogout }: { onLogout: () => void }
 
                             {(brandHandle || brandLogo) && (
                               <div className={`w-full h-0 shrink-0 relative z-[60] flex items-center justify-center ${!ctaImage ? 'mb-10 mt-2' : ''}`}>
-                                <div className="flex items-center gap-[2px] pr-1.5 pl-0.5 py-0.5 rounded-full bg-black/40 backdrop-blur-lg shadow-lg absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 mt-0.5 border border-white/10" style={{ minWidth: 'fit-content' }}>
+                                <div className="flex items-center gap-[1.5px] pr-1 pl-[1px] py-[1.5px] rounded-full bg-black/40 backdrop-blur-lg shadow-lg absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 mt-0.5 border border-white/10" style={{ minWidth: 'fit-content' }}>
                                   {brandLogo && (
-                                    <div className={`size-3.5 sm:size-4 rounded-full overflow-hidden shrink-0 shadow-sm bg-white`}>
+                                    <div className={`size-[10px] sm:size-[12px] rounded-full overflow-hidden shrink-0 shadow-sm bg-white`}>
                                       <img src={brandLogo} alt="Logo" className="w-full h-full object-cover" />
                                     </div>
                                   )}
                                   {brandHandle && (
-                                    <div className={`flex items-center gap-0.5 text-[6px] sm:text-[7px] font-bold tracking-wider text-white drop-shadow-md`}>
-                                      <span className="ml-[1px]">{brandHandle}</span>
-                                      <span className="material-symbols-outlined text-[5px] sm:text-[6px] text-blue-500 fill translate-y-[0.5px]" style={{ fontVariationSettings: "'FILL' 1" }}>verified</span>
+                                    <div className={`flex items-center gap-[0.5px] text-[5px] sm:text-[6px] font-bold tracking-wider text-white drop-shadow-md pb-[0.5px]`}>
+                                      <span className="ml-[0.5px]">{brandHandle}</span>
+                                      <span className="material-symbols-outlined text-[4px] sm:text-[4px] text-blue-500 fill" style={{ fontVariationSettings: "'FILL' 1" }}>verified</span>
                                     </div>
                                   )}
                                 </div>
@@ -1626,16 +1648,16 @@ export default function CarouselGenerator({ onLogout }: { onLogout: () => void }
 
                           <div className="w-full h-0 shrink-0 relative z-[60] flex items-center justify-center">
                             {(brandHandle || brandLogo) && (
-                              <div className="flex items-center gap-[2px] pr-1.5 pl-0.5 py-0.5 rounded-full bg-black/40 backdrop-blur-lg shadow-lg absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 mt-0.5 border border-white/10" style={{ minWidth: 'fit-content' }}>
+                              <div className="flex items-center gap-[1.5px] pr-1 pl-[1px] py-[1.5px] rounded-full bg-black/40 backdrop-blur-lg shadow-lg absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 mt-0.5 border border-white/10" style={{ minWidth: 'fit-content' }}>
                                 {brandLogo && (
-                                  <div className={`size-3.5 sm:size-4 rounded-full overflow-hidden shrink-0 shadow-sm bg-white`}>
+                                  <div className={`size-[10px] sm:size-[12px] rounded-full overflow-hidden shrink-0 shadow-sm bg-white`}>
                                     <img src={brandLogo} alt="Logo" className="w-full h-full object-cover" />
                                   </div>
                                 )}
                                 {brandHandle && (
-                                  <div className={`flex items-center gap-0.5 text-[6px] sm:text-[7px] font-bold tracking-wider text-white drop-shadow-md`}>
-                                    <span className="ml-[1px]">{brandHandle}</span>
-                                    <span className="material-symbols-outlined text-[5px] sm:text-[6px] text-blue-500 fill translate-y-[0.5px]" style={{ fontVariationSettings: "'FILL' 1" }}>verified</span>
+                                  <div className={`flex items-center gap-[0.5px] text-[5px] sm:text-[6px] font-bold tracking-wider text-white drop-shadow-md pb-[0.5px]`}>
+                                    <span className="ml-[0.5px]">{brandHandle}</span>
+                                    <span className="material-symbols-outlined text-[4px] sm:text-[4px] text-blue-500 fill" style={{ fontVariationSettings: "'FILL' 1" }}>verified</span>
                                   </div>
                                 )}
                               </div>

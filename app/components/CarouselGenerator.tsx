@@ -270,7 +270,13 @@ export default function CarouselGenerator({ onLogout }: { onLogout: () => void }
         if (prefs.content) setContent(prefs.content);
         if (prefs.toneMode) setToneMode(prefs.toneMode);
         if (prefs.addCtaSlide !== undefined) setAddCtaSlide(prefs.addCtaSlide);
-        if (prefs.ctaContent !== undefined) setCtaContent(prefs.ctaContent);
+        if (prefs.ctaContent !== undefined) {
+          if (prefs.ctaContent.includes('Gostou do conteúdo')) {
+            setCtaContent('O que você achou? Deixe nos comentários e salve este post para não esquecer!');
+          } else {
+            setCtaContent(prefs.ctaContent);
+          }
+        }
         if (prefs.ctaImage !== undefined) setCtaImage(prefs.ctaImage);
         if (prefs.parsedSlides && Array.isArray(prefs.parsedSlides) && prefs.parsedSlides.length > 0) {
           setParsedSlides(prefs.parsedSlides);
@@ -1535,16 +1541,16 @@ export default function CarouselGenerator({ onLogout }: { onLogout: () => void }
 
                             {(brandHandle || brandLogo) && (
                               <div className={`w-full h-0 shrink-0 relative z-[60] flex items-center justify-center ${!ctaImage ? 'mb-12 mt-4' : ''}`}>
-                                <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-black/30 backdrop-blur-md border border-white/10 shadow-lg absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2">
+                                <div className="flex items-center gap-1 px-2.5 py-1 rounded-full bg-black/40 backdrop-blur-lg border border-white/20 shadow-lg absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 mt-0.5">
                                   {brandLogo && (
-                                    <div className={`size-5 sm:size-6 rounded-full overflow-hidden shrink-0 shadow-sm ring-1 ring-white/50`}>
+                                    <div className={`size-3.5 sm:size-4 rounded-full overflow-hidden shrink-0 shadow-sm ring-1 ring-white/50`}>
                                       <img src={brandLogo} alt="Logo" className="w-full h-full object-cover" />
                                     </div>
                                   )}
                                   {brandHandle && (
-                                    <div className={`flex items-center gap-0.5 text-[10px] sm:text-[11px] font-bold tracking-wider text-white drop-shadow-md`}>
-                                      <span className="material-symbols-outlined text-[12px] sm:text-[14px] text-blue-500 fill" style={{ fontVariationSettings: "'FILL' 1" }}>verified</span>
+                                    <div className={`flex items-center gap-0.5 text-[7px] sm:text-[8px] font-bold tracking-wider text-white drop-shadow-md`}>
                                       <span className="ml-0.5">{brandHandle}</span>
+                                      <span className="material-symbols-outlined text-[8px] sm:text-[9px] text-blue-500 fill" style={{ fontVariationSettings: "'FILL' 1" }}>verified</span>
                                     </div>
                                   )}
                                 </div>
@@ -1605,16 +1611,16 @@ export default function CarouselGenerator({ onLogout }: { onLogout: () => void }
 
                           <div className="w-full h-0 shrink-0 relative z-[60] flex items-center justify-center">
                             {(brandHandle || brandLogo) && (
-                              <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-black/30 backdrop-blur-md border border-white/10 shadow-lg absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2">
+                              <div className="flex items-center gap-1 px-2.5 py-1 rounded-full bg-black/40 backdrop-blur-lg border border-white/20 shadow-lg absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 mt-0.5">
                                 {brandLogo && (
-                                  <div className={`size-5 sm:size-6 rounded-full overflow-hidden shrink-0 shadow-sm ring-1 ring-white/50`}>
+                                  <div className={`size-3.5 sm:size-4 rounded-full overflow-hidden shrink-0 shadow-sm ring-1 ring-white/50`}>
                                     <img src={brandLogo} alt="Logo" className="w-full h-full object-cover" />
                                   </div>
                                 )}
                                 {brandHandle && (
-                                  <div className={`flex items-center gap-0.5 text-[10px] sm:text-[11px] font-bold tracking-wider text-white drop-shadow-md`}>
-                                    <span className="material-symbols-outlined text-[12px] sm:text-[14px] text-blue-500 fill" style={{ fontVariationSettings: "'FILL' 1" }}>verified</span>
+                                  <div className={`flex items-center gap-0.5 text-[7px] sm:text-[8px] font-bold tracking-wider text-white drop-shadow-md`}>
                                     <span className="ml-0.5">{brandHandle}</span>
+                                    <span className="material-symbols-outlined text-[8px] sm:text-[9px] text-blue-500 fill" style={{ fontVariationSettings: "'FILL' 1" }}>verified</span>
                                   </div>
                                 )}
                               </div>

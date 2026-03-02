@@ -255,15 +255,29 @@ export default function CarouselGenerator({ onLogout }: { onLogout: () => void }
     }
   };
 
+  const handleIndividualUploadAction = (index: number) => {
+    setTargetUploadIndex(index);
+    if (individualFileInputRef.current) {
+      individualFileInputRef.current.click();
+    }
+  };
+
   const handleIndividualFileUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
     const files = event.target.files;
     if (files && files.length > 0 && targetUploadIndex !== null) {
-      const newImage = URL.createObjectURL(files[0]);
-      setUploadedImages(prev => {
-        const updated = [...prev];
-        updated[targetUploadIndex] = newImage;
-        return updated;
-      });
+      const file = files[0];
+      const reader = new FileReader();
+      const currentTargetIndex = targetUploadIndex;
+      reader.onload = (e) => {
+        if (e.target?.result && typeof e.target.result === 'string') {
+          setUploadedImages(prev => {
+            const updated = [...prev];
+            updated[currentTargetIndex] = e.target!.result as string;
+            return updated;
+          });
+        }
+      };
+      reader.readAsDataURL(file);
     }
     setTargetUploadIndex(null);
     if (individualFileInputRef.current) {
@@ -368,6 +382,83 @@ export default function CarouselGenerator({ onLogout }: { onLogout: () => void }
     }
   };
 
+  const regenerateImageForSlide = async (index: number) => {
+    const slide = parsedSlides[index];
+    if (!slide) return;
+
+    const apiKey = customApiKey || process.env.NEXT_PUBLIC_GEMINI_API_KEY;
+    if (!apiKey) {
+      alert("Chave da API Gemini não encontrada. Insira sua chave nas configurações para regerar imagens com IA.");
+      return;
+    }
+
+    setGeneratingImages(prev => {
+      const updated = [...prev];
+      while (updated.length <= index) updated.push(false);
+      updated[index] = true;
+      return updated;
+    });
+
+    try {
+      const ai = new GoogleGenAI({ apiKey });
+      const prompt = `Crie UMA ÚNICA IMAGEM de "Cinematografia Multimodal" de altíssimo nível, baseada na seguinte semente emocional do texto do slide:
+Título do Slide: "${slide.title}"
+Subtítulo: "${slide.subtitle}"
+
+🎨 DIRETRIZES VISUAIS (CINEMATOGRAFIA MULTIMODAL):
+A sua função não é descrever o texto, mas sim dar suporte ao SENTIMENTO dele. Baseie-se apenas na metáfora e sentimento, nunca no tema literal.
+1. Raciocínio Abstrato (Não Literal): PROIBIDO CLICHÊS DE NICHO. Se o slide fala de "Nutrição/Comida", NÃO mostre pratos e frutas. Se for "Psicologia", NÃO mostre cérebros e divãs. Gere metáforas puras. Ex: Se o sentimento for 'disciplina rígida', mostre "um escudo de bronze cravejado de flechas iluminado por um pôr do sol épico". Se for 'falsa perfecção', mostre "um deserto cheio de vidro trincado" ou "uma estátua renascentista sendo pichada com neon". Vá nas profundezas da abstração.
+2. Direção de Arte por Nicho (Leitura de Contexto): Identifique o nicho do texto e OBRIGATORIAMENTE aplique a escola visual correspondente:
+- Nutrição & Saúde: "Realismo Orgânico & Macro" (Foca em texturas vivas, frescor e vida, com nitidez cirúrgica).
+- Psicologia & Mentalidade: "Surrealismo Conceitual" (Usa metáforas de espelhos, sombras e labirintos para representar a mente).
+- Marketing & Vendas: "Minimalismo High-End" (Estética de revista de luxo ou "Apple". Espaços limpos, objetos de desejo, ordem).
+- Empreendedorismo & Business: "Cinematografia Industrial" (Ambientes modernos, arquitetura imponente, sensação de escala e movimento).
+- Tecnologia & IA: "Futurismo Brutalista" (Mistura digital abstrata com texturas físicas como concreto, vidro e metal).
+- Finanças & Investimentos: "Classicismo Moderno" (Símbolos de herança e segurança como mármore e couro, mais gráficos limpos).
+- Educação & Treinamento: "Documentarista Editorial" (Fotos espontâneas "no momento", foco e desfoque destacando a humanidade).
+- Direito & Advocacia: "Solidez Monolítica" (Foco em peso, simetria e autoridade; a força da lei e a sobriedade das instituições).
+- Esporte & Performance: "Hiper-Realismo Dinâmico" (Esforço, suor e anatomia. Imagens com alto contraste que exalam energia de superação).
+- Espiritualidade & Religião: "Eterealismo Atmosférico" (Luzes difusas, natureza épica, paz e vastidão).
+- Outros/Genérico: "Estilo Abstrato Cinematográfico" (Revele *como o tema se sente*. Texto pesado = imagem escura/densa; inspirador = clara/aberta).
+3. Iluminação e Cor Vibrante: Nunca seja 100% fotorealista cinza/monocromático de escritório. Incorpore contrastes violentos de cores complementares ou neon (Ex: Azul Profundo da Água contrastando com Reflexos de Fogo Laranja, ou Roxos contra Verdes Limas) ou aposte no peso do "Chiaroscuro Noir" de cinema (luz fortíssima rasgando a meia-noite).
+4. Restrição Absoluta de Textos Nativos: É VERBEMENTE PROIBIDO criar qualquer frase, palavra ou explicação legível ilustrada dentro da arte! A imagem PRECISA ser muda. O texto longo será redigido por nós por cima. 
+5. Composição Vertical (Top-Heavy) - LEI INQUEBRÁVEL: O texto descritivo ocupará quase toda a METADE INFERIOR (Bottom Half) do slide. Portanto, posicione os objetos centrais, personagens e elementos dramáticos EXCLUSIVAMENTE NA METADE SUPERIOR (Top Half). A metade inferior DEVE SER um imenso e pesado VAZIO ESCURO (Negative Space), garantindo contraste absoluto para leitura.`;
+
+      const response = await ai.models.generateContent({
+        model: 'gemini-2.5-flash-image',
+        contents: prompt,
+        config: {
+          imageConfig: {
+            aspectRatio: aspectRatio === '9:16' ? '9:16' : '3:4',
+          }
+        }
+      });
+
+      for (const part of response.candidates?.[0]?.content?.parts || []) {
+        if (part.inlineData) {
+          const base64 = part.inlineData.data;
+          const imageUrl = `data:${part.inlineData.mimeType || 'image/png'};base64,${base64}`;
+          setUploadedImages(prev => {
+            const updated = [...prev];
+            while (updated.length <= index) updated.push(null);
+            updated[index] = imageUrl;
+            return updated;
+          });
+          break;
+        }
+      }
+    } catch (error) {
+      console.error("Erro ao regerar imagem:", error);
+      alert("Falha ao regerar a imagem. Tente novamente.");
+    } finally {
+      setGeneratingImages(prev => {
+        const updated = [...prev];
+        updated[index] = false;
+        return updated;
+      });
+    }
+  };
+
   const handleGenerateCarousel = async () => {
     if (!content.trim()) return;
 
@@ -405,10 +496,21 @@ Subtítulo: "${newSlides[i].subtitle}"
 🎨 DIRETRIZES VISUAIS (CINEMATOGRAFIA MULTIMODAL):
 A sua função não é descrever o texto, mas sim dar suporte ao SENTIMENTO dele. Baseie-se apenas na metáfora e sentimento, nunca no tema literal.
 1. Raciocínio Abstrato (Não Literal): PROIBIDO CLICHÊS DE NICHO. Se o slide fala de "Nutrição/Comida", NÃO mostre pratos e frutas. Se for "Psicologia", NÃO mostre cérebros e divãs. Gere metáforas puras. Ex: Se o sentimento for 'disciplina rígida', mostre "um escudo de bronze cravejado de flechas iluminado por um pôr do sol épico". Se for 'falsa perfecção', mostre "um deserto cheio de vidro trincado" ou "uma estátua renascentista sendo pichada com neon". Vá nas profundezas da abstração.
-2. Variação de Escolas Visuais: Cada slide deve gerar um choque independente. A não ser que exigido, alterne sua inspiração artística livremente entre: Cyberpunk Gélido, Barroco Dramático, Minimalismo High-Tech ou Surrealismo de Salvador Dalí.
+2. Direção de Arte por Nicho (Leitura de Contexto): Identifique o nicho do texto e OBRIGATORIAMENTE aplique a escola visual correspondente:
+- Nutrição & Saúde: "Realismo Orgânico & Macro" (Foca em texturas vivas, frescor e vida, com nitidez cirúrgica).
+- Psicologia & Mentalidade: "Surrealismo Conceitual" (Usa metáforas de espelhos, sombras e labirintos para representar a mente).
+- Marketing & Vendas: "Minimalismo High-End" (Estética de revista de luxo ou "Apple". Espaços limpos, objetos de desejo, ordem).
+- Empreendedorismo & Business: "Cinematografia Industrial" (Ambientes modernos, arquitetura imponente, sensação de escala e movimento).
+- Tecnologia & IA: "Futurismo Brutalista" (Mistura digital abstrata com texturas físicas como concreto, vidro e metal).
+- Finanças & Investimentos: "Classicismo Moderno" (Símbolos de herança e segurança como mármore e couro, mais gráficos limpos).
+- Educação & Treinamento: "Documentarista Editorial" (Fotos espontâneas "no momento", foco e desfoque destacando a humanidade).
+- Direito & Advocacia: "Solidez Monolítica" (Foco em peso, simetria e autoridade; a força da lei e a sobriedade das instituições).
+- Esporte & Performance: "Hiper-Realismo Dinâmico" (Esforço, suor e anatomia. Imagens com alto contraste que exalam energia de superação).
+- Espiritualidade & Religião: "Eterealismo Atmosférico" (Luzes difusas, natureza épica, paz e vastidão).
+- Outros/Genérico: "Estilo Abstrato Cinematográfico" (Revele *como o tema se sente*. Texto pesado = imagem escura/densa; inspirador = clara/aberta).
 3. Iluminação e Cor Vibrante: Nunca seja 100% fotorealista cinza/monocromático de escritório. Incorpore contrastes violentos de cores complementares ou neon (Ex: Azul Profundo da Água contrastando com Reflexos de Fogo Laranja, ou Roxos contra Verdes Limas) ou aposte no peso do "Chiaroscuro Noir" de cinema (luz fortíssima rasgando a meia-noite).
 4. Restrição Absoluta de Textos Nativos: É VERBEMENTE PROIBIDO criar qualquer frase, palavra ou explicação legível ilustrada dentro da arte! A imagem PRECISA ser muda. O texto longo será redigido por nós por cima. 
-5. Assimetria e Espaço Negativo (UX): Sempre posicione a beleza artística explodindo nos CANTOS do frame, de modo que o gigantesco Espaço Negativo em volta sirva de descanso para a diagramação sobrepor.`;
+5. Composição Vertical (Top-Heavy) - LEI INQUEBRÁVEL: O texto descritivo ocupará quase toda a METADE INFERIOR (Bottom Half) do slide. Portanto, posicione os objetos centrais, personagens e elementos dramáticos EXCLUSIVAMENTE NA METADE SUPERIOR (Top Half). A metade inferior DEVE SER um imenso e pesado VAZIO ESCURO (Negative Space), garantindo contraste absoluto para leitura.`;
 
           const response = await ai.models.generateContent({
             model: 'gemini-2.5-flash-image',
@@ -1107,20 +1209,51 @@ A sua função não é descrever o texto, mas sim dar suporte ao SENTIMENTO dele
                           )}
                         </div>
                       </div>
-                      <div className="absolute inset-0 bg-black/60 opacity-0 group-hover/slide:opacity-100 transition-opacity flex flex-col items-center justify-center gap-3 backdrop-blur-[2px] z-[60] pointer-events-none">
-                        <button
-                          onClick={() => handleEditClick(index)}
-                          className="pointer-events-auto flex items-center gap-2 bg-white text-black px-4 py-2 rounded-full text-sm font-bold hover:bg-slate-200 transition-colors min-w-[140px] justify-center">
-                          <span className="material-symbols-outlined text-[18px]">edit</span> Editar Texto
-                        </button>
-                        <a href={imageSrc} target="_blank" rel="noopener noreferrer" className="pointer-events-auto flex items-center gap-2 bg-white/10 text-white backdrop-blur-md border border-white/20 px-4 py-2 rounded-full text-sm font-bold hover:bg-white/20 transition-colors min-w-[140px] justify-center">
-                          <span className="material-symbols-outlined text-[18px]">open_in_new</span> Ver Imagem
-                        </a>
-                        <button
-                          onClick={() => handleDownloadSingle(index)}
-                          className="pointer-events-auto flex items-center gap-2 bg-white/10 text-white backdrop-blur-md border border-white/20 px-4 py-2 rounded-full text-sm font-bold hover:bg-white/20 transition-colors min-w-[140px] justify-center">
-                          <span className="material-symbols-outlined text-[18px]">download</span> Baixar
-                        </button>
+                      <div className="absolute inset-0 bg-black/80 opacity-0 group-hover/slide:opacity-100 transition-opacity flex flex-col items-center justify-center p-6 backdrop-blur-[4px] z-[60] pointer-events-none">
+                        <div className="flex w-full h-full gap-4 items-center justify-center">
+                          <div className="flex flex-col gap-2 w-1/2 max-w-[160px]">
+                            <span className="text-[10px] text-white/50 font-bold uppercase tracking-wider mb-1">Conteúdo</span>
+                            <button
+                              onClick={() => handleEditClick(index)}
+                              className="pointer-events-auto flex items-center justify-start gap-3 bg-white/10 text-white hover:bg-white/20 px-4 py-2.5 rounded-xl text-xs font-bold transition-all border border-white/10">
+                              <span className="material-symbols-outlined text-[16px]">edit</span> Editar Texto
+                            </button>
+                            <button
+                              onClick={() => handleDownloadSingle(index)}
+                              className="pointer-events-auto flex items-center justify-start gap-3 bg-white/10 text-white hover:bg-white/20 px-4 py-2.5 rounded-xl text-xs font-bold transition-all border border-white/10">
+                              <span className="material-symbols-outlined text-[16px]">download</span> Baixar
+                            </button>
+                            {imageSrc && (
+                              <a href={imageSrc} target="_blank" rel="noopener noreferrer" className="pointer-events-auto flex items-center justify-start gap-3 bg-white/10 text-white hover:bg-white/20 px-4 py-2.5 rounded-xl text-xs font-bold transition-all border border-white/10">
+                                <span className="material-symbols-outlined text-[16px]">open_in_new</span> Expandir
+                              </a>
+                            )}
+                          </div>
+
+                          <div className="w-px h-[80%] bg-white/10 shrink-0"></div>
+
+                          <div className="flex flex-col gap-2 w-1/2 max-w-[160px]">
+                            <span className="text-[10px] text-white/50 font-bold uppercase tracking-wider mb-1">Mídia</span>
+                            <button
+                              onClick={() => regenerateImageForSlide(index)}
+                              disabled={generatingImages[index]}
+                              className="pointer-events-auto flex items-center justify-start gap-3 bg-indigo-600/90 text-white hover:bg-indigo-500 px-4 py-2.5 rounded-xl text-xs font-bold transition-all border border-indigo-500/30 disabled:opacity-50">
+                              <span className={`material-symbols-outlined text-[16px] ${generatingImages[index] ? 'animate-spin' : ''}`}>
+                                {generatingImages[index] ? 'progress_activity' : 'auto_awesome'}
+                              </span> Regerar IA
+                            </button>
+                            <button
+                              onClick={() => handleIndividualUploadAction(index)}
+                              className="pointer-events-auto flex items-center justify-start gap-3 bg-white/10 text-white hover:bg-white/20 px-4 py-2.5 rounded-xl text-xs font-bold transition-all border border-white/10">
+                              <span className="material-symbols-outlined text-[16px]">cloud_upload</span> Upload
+                            </button>
+                            <button
+                              onClick={(e) => handleRemoveImage(index, e)}
+                              className="pointer-events-auto flex items-center justify-start gap-3 bg-red-500/20 text-red-100 hover:bg-red-500/40 px-4 py-2.5 rounded-xl text-xs font-bold transition-all border border-red-500/30">
+                              <span className="material-symbols-outlined text-[16px]">delete</span> Remover
+                            </button>
+                          </div>
+                        </div>
                       </div>
                     </div>
                   );

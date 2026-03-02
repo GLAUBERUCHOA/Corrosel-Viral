@@ -587,7 +587,7 @@ export default function CarouselGenerator({ onLogout }: { onLogout: () => void }
     }
 
     if (useCta && ctaText.trim()) {
-      newSlides.push({ title: 'GOSTOU DO CONTEÚDO?', subtitle: ctaText, isCta: true });
+      newSlides.push({ title: '', subtitle: ctaText, isCta: true });
     }
 
     setParsedSlides(newSlides);
@@ -1523,37 +1523,39 @@ export default function CarouselGenerator({ onLogout }: { onLogout: () => void }
                         <div className="relative group/slide w-full h-full rounded-2xl overflow-hidden shadow-2xl transition-transform hover:-translate-y-2 duration-300">
                           <div
                             ref={(el) => { slideRefs.current[index] = el; }}
-                            className={`absolute inset-0 flex flex-col items-center justify-center p-8 text-center ${theme.bgClass}`}
+                            className={`absolute inset-0 flex flex-col items-center justify-start pt-12 text-center ${theme.bgClass}`}
                             style={theme.bgStyle}
                           >
-                            {ctaImage && (
-                              <div className="absolute inset-0 z-0">
-                                <div className="absolute inset-0 bg-cover bg-center opacity-40 pointer-events-none" style={{ backgroundImage: `url('${ctaImage}')` }}></div>
-                                <div className={`absolute inset-0 ${theme.bgClass === '' ? 'bg-gradient-to-t from-black/80 via-black/40 to-black/80' : 'bg-black/30'}`}></div>
+
+                            {(brandHandle || brandLogo) && (
+                              <div className={`flex flex-col items-center justify-center w-full mb-6 mt-4 ${theme.textClass}`}>
+                                <div className="flex items-center justify-center w-full max-w-[200px] mb-2">
+                                  <div className="h-[1px] flex-1 opacity-40" style={{ backgroundImage: 'linear-gradient(to right, transparent, currentColor)' }}></div>
+                                  {brandLogo && (
+                                    <div className={`size-8 sm:size-10 rounded-full overflow-hidden shrink-0 mx-3 shadow-sm ring-1 ring-current/20`}>
+                                      <img src={brandLogo} alt="Logo" className="w-full h-full object-cover" />
+                                    </div>
+                                  )}
+                                  <div className="h-[1px] flex-1 opacity-40" style={{ backgroundImage: 'linear-gradient(to left, transparent, currentColor)' }}></div>
+                                </div>
+                                {brandHandle && (
+                                  <div className={`flex items-center gap-1 text-[10px] sm:text-xs font-bold tracking-wider`}>
+                                    {brandHandle}
+                                    <span className="material-symbols-outlined text-[14px] text-blue-500 fill" style={{ fontVariationSettings: "'FILL' 1" }}>verified</span>
+                                  </div>
+                                )}
                               </div>
                             )}
 
-                            {(brandHandle || brandLogo) && (
-                              <div className="flex flex-col items-center gap-4 mb-8 z-[60]">
-                                {brandLogo ? (
-                                  <div className="size-24 sm:size-28 rounded-full overflow-hidden bg-white shadow-2xl flex shrink-0 ring-4 ring-white/20">
-                                    <img src={brandLogo} alt="Logo" className="w-full h-full object-cover" />
-                                  </div>
-                                ) : (
-                                  <div className="size-24 sm:size-28 rounded-full bg-slate-200 dark:bg-slate-700 shadow-2xl flex shrink-0 ring-4 ring-white/20 items-center justify-center">
-                                    <span className="material-symbols-outlined text-[40px] text-slate-400">person</span>
-                                  </div>
-                                )}
-                                {brandHandle && (
-                                  <span className={`text-sm sm:text-base font-bold tracking-widest uppercase ${theme.textClass}`}>
-                                    {brandHandle}
-                                  </span>
-                                )}
+                            {ctaImage && (
+                              <div className="w-[85%] aspect-[16/9] sm:aspect-video rounded-[20px] overflow-hidden shadow-xl shrink-0 border border-white/10 mb-8 relative z-10 mx-auto">
+                                <img src={ctaImage} alt="CTA Landscape" className="w-full h-full object-cover" />
                               </div>
                             )}
-                            <div className="w-full flex-1 flex flex-col items-center justify-center gap-4 shrink-0 z-20 relative" style={{ fontFamily }}>
-                              <h2 className={`font-extrabold text-2xl sm:text-3xl ${ctaImage && !theme.textClass.includes('white') ? 'text-white drop-shadow-md' : theme.textClass} leading-tight uppercase`}>{slide.title}</h2>
-                              <div className={`text-base sm:text-lg ${ctaImage && !theme.subtextClass.includes('white') ? 'text-white drop-shadow-md' : theme.subtextClass} font-medium leading-relaxed whitespace-pre-wrap [&_span]:!bg-transparent focus:outline-none`} dangerouslySetInnerHTML={{ __html: slide.subtitle }}></div>
+
+                            <div className={`w-full flex-1 flex flex-col items-center p-8 shrink-0 z-20 relative ${ctaImage ? 'justify-start' : 'justify-center'} ${theme.textClass}`} style={{ fontFamily }}>
+                              {slide.title && <h2 className={`font-extrabold text-2xl sm:text-3xl leading-tight uppercase mb-4`}>{slide.title}</h2>}
+                              <div className={`text-base sm:text-lg ${theme.subtextClass} font-medium leading-relaxed whitespace-pre-wrap [&_span]:!bg-transparent focus:outline-none w-[90%] mx-auto`} dangerouslySetInnerHTML={{ __html: slide.subtitle }}></div>
                             </div>
                           </div>
 
@@ -1593,29 +1595,8 @@ export default function CarouselGenerator({ onLogout }: { onLogout: () => void }
                           className={`absolute inset-0 flex ${contentOrder} ${theme.bgClass}`}
                           style={theme.bgStyle}
                         >
-                          {(brandHandle || brandLogo) && (
-                            <div
-                              className={`absolute top-5 left-1/2 -translate-x-1/2 flex items-center gap-2.5 z-[60] px-4 py-2 rounded-full shadow-xl border ${theme.bgClass.includes('white') || theme.bgClass === '' ? 'border-slate-200' : 'border-white/10'} ${theme.bgClass}`}
-                              style={{
-                                ...theme.bgStyle,
-                                backdropFilter: 'blur(10px)',
-                                boxShadow: '0 10px 25px -5px rgba(0, 0, 0, 0.4), 0 8px 10px -6px rgba(0, 0, 0, 0.2)'
-                              }}
-                            >
-                              {brandLogo && (
-                                <div className="size-6 sm:size-7 rounded-full overflow-hidden bg-white shadow-inner flex shrink-0 ring-2 ring-white/20">
-                                  <img src={brandLogo} alt="Logo" className="w-full h-full object-cover" />
-                                </div>
-                              )}
-                              {brandHandle && (
-                                <span className={`text-[10px] sm:text-xs font-bold tracking-wider ${theme.textClass}`} style={{ textShadow: theme.textClass.includes('white') ? '0 1px 3px rgba(0,0,0,0.5)' : 'none' }}>
-                                  {brandHandle}
-                                </span>
-                              )}
-                            </div>
-                          )}
                           <div
-                            className="w-full flex-1 min-h-0 overflow-hidden group/image z-10 relative"
+                            className="w-full flex-1 min-h-[35%] overflow-hidden group/image z-10 relative"
                           >
                             <div
                               className="block h-full w-full relative z-30 pointer-events-none"
@@ -1623,7 +1604,26 @@ export default function CarouselGenerator({ onLogout }: { onLogout: () => void }
                               <div className="absolute inset-0 bg-cover transition-transform duration-500 pointer-events-none" style={{ backgroundImage: `url('${imageSrc}')`, backgroundPosition: `center ${imagePosMap[index] ?? 50}%` }}></div>
                             </div>
                           </div>
-                          <div className={`w-full px-8 flex flex-col shrink-0 z-20 relative ${textAlignmentPadding} ${textAlign}`} style={{ fontFamily }}>
+                          <div className={`w-full px-8 flex flex-col shrink-0 z-20 relative pt-12 pb-12 ${textAlign}`} style={{ fontFamily }}>
+                            {(brandHandle || brandLogo) && (
+                              <div className={`flex flex-col items-center justify-center w-full mb-6 ${theme.textClass}`}>
+                                <div className="flex items-center justify-center w-full max-w-[200px] mb-2">
+                                  <div className="h-[1px] flex-1 opacity-40" style={{ backgroundImage: 'linear-gradient(to right, transparent, currentColor)' }}></div>
+                                  {brandLogo && (
+                                    <div className={`size-8 sm:size-10 rounded-full overflow-hidden shrink-0 mx-3 shadow-sm ring-1 ring-current/20`}>
+                                      <img src={brandLogo} alt="Logo" className="w-full h-full object-cover" />
+                                    </div>
+                                  )}
+                                  <div className="h-[1px] flex-1 opacity-40" style={{ backgroundImage: 'linear-gradient(to left, transparent, currentColor)' }}></div>
+                                </div>
+                                {brandHandle && (
+                                  <div className={`flex items-center gap-1 text-[10px] sm:text-xs font-bold tracking-wider`}>
+                                    {brandHandle}
+                                    <span className="material-symbols-outlined text-[14px] text-blue-500 fill" style={{ fontVariationSettings: "'FILL' 1" }}>verified</span>
+                                  </div>
+                                )}
+                              </div>
+                            )}
                             <div className={`flex flex-col gap-2 ${textAlign === 'text-center' ? 'items-center text-center' : textAlign === 'text-right' ? 'items-end text-right' : 'items-start text-left'}`}>
                               {slide.title && <h2 className={titleClass}>{slide.title}</h2>}
                               {slide.subtitle && <p className={subtitleClass}>{slide.subtitle}</p>}

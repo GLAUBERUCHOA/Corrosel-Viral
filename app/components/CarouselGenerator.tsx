@@ -135,31 +135,37 @@ export default function CarouselGenerator({ onLogout }: { onLogout: () => void }
   const isDraggingImg = useRef<{ index: number, startY: number, startPos: number } | null>(null);
 
   useEffect(() => {
-    const handleMouseMove = (e: MouseEvent) => {
+    const handleMove = (e: MouseEvent | TouchEvent) => {
       if (isDraggingImg.current) {
         const { index, startY, startPos } = isDraggingImg.current;
-        const deltaY = e.clientY - startY;
+        const clientY = 'touches' in e ? e.touches[0].clientY : e.clientY;
+        const deltaY = clientY - startY;
         const deltaPercent = (deltaY / window.innerHeight) * 150;
         let newPos = startPos + deltaPercent;
         newPos = Math.max(0, Math.min(100, newPos));
         setImagePosMap(prev => ({ ...prev, [index]: newPos }));
       }
     };
-    const handleMouseUp = () => {
+    const handleUp = () => {
       isDraggingImg.current = null;
     };
-    window.addEventListener('mousemove', handleMouseMove);
-    window.addEventListener('mouseup', handleMouseUp);
+    window.addEventListener('mousemove', handleMove, { passive: false });
+    window.addEventListener('touchmove', handleMove, { passive: false });
+    window.addEventListener('mouseup', handleUp);
+    window.addEventListener('touchend', handleUp);
     return () => {
-      window.removeEventListener('mousemove', handleMouseMove);
-      window.removeEventListener('mouseup', handleMouseUp);
+      window.removeEventListener('mousemove', handleMove);
+      window.removeEventListener('touchmove', handleMove);
+      window.removeEventListener('mouseup', handleUp);
+      window.removeEventListener('touchend', handleUp);
     };
   }, []);
 
-  const handleImgMouseDown = (e: React.MouseEvent, index: number) => {
-    e.preventDefault();
+  const handleImgDragStart = (e: React.MouseEvent | React.TouchEvent, index: number) => {
+    if (e.cancelable) e.preventDefault();
     const currentPos = imagePosMap[index] ?? 50;
-    isDraggingImg.current = { index, startY: e.clientY, startPos: currentPos };
+    const clientY = 'touches' in e ? e.touches[0].clientY : (e as React.MouseEvent).clientY;
+    isDraggingImg.current = { index, startY: clientY, startPos: currentPos };
   };
 
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -1361,107 +1367,111 @@ export default function CarouselGenerator({ onLogout }: { onLogout: () => void }
                   }
 
                   return (
-                    <div key={index} className={`relative group/slide ${getSlideDimensions()} shrink-0 rounded-2xl overflow-hidden shadow-2xl transition-transform hover:-translate-y-2 duration-300 snap-center`}>
-                      {totalLength > 250 && !isIuryMode && (
-                        <div className="absolute top-4 left-0 right-0 z-[100] flex justify-center pointer-events-none">
-                          <div className="bg-red-600/95 backdrop-blur-sm border border-red-400 text-white text-[10px] sm:text-xs font-bold px-3 py-1.5 rounded-full shadow-2xl shadow-red-500/50 flex items-center gap-1.5 animate-pulse">
-                            <span className="material-symbols-outlined text-[14px]">warning</span> Texto muito longo ({totalLength} carac.)
+                    <div key={index} className="relative shrink-0 snap-center flex items-center group/slide-wrapper">
+                      <div className={`relative group/slide ${getSlideDimensions()} w-full h-full rounded-2xl overflow-hidden shadow-2xl transition-transform hover:-translate-y-2 duration-300`}>
+                        {totalLength > 250 && !isIuryMode && (
+                          <div className="absolute top-4 left-0 right-0 z-[100] flex justify-center pointer-events-none">
+                            <div className="bg-red-600/95 backdrop-blur-sm border border-red-400 text-white text-[10px] sm:text-xs font-bold px-3 py-1.5 rounded-full shadow-2xl shadow-red-500/50 flex items-center gap-1.5 animate-pulse">
+                              <span className="material-symbols-outlined text-[14px]">warning</span> Texto muito longo ({totalLength} carac.)
+                            </div>
                           </div>
-                        </div>
-                      )}
-                      <div
-                        ref={(el) => { slideRefs.current[index] = el; }}
-                        className={`absolute inset-0 flex flex-col ${theme.bgClass}`}
-                        style={theme.bgStyle}
-                      >
+                        )}
                         <div
-                          className="w-full flex-1 min-h-0 overflow-hidden group/image z-10 relative"
+                          ref={(el) => { slideRefs.current[index] = el; }}
+                          className={`absolute inset-0 flex flex-col ${theme.bgClass}`}
+                          style={theme.bgStyle}
                         >
-                          {(brandHandle || brandLogo) && (
-                            <div className="absolute top-4 left-4 flex items-center gap-1 z-50 bg-[rgba(0,0,0,0.15)] backdrop-blur-md px-2 py-0.5 rounded-full border border-[rgba(255,255,255,0.05)]">
-                              {brandLogo && (
-                                <div className="size-3 rounded-full overflow-hidden bg-[#ffffff] opacity-90">
-                                  <img src={brandLogo} alt="Logo" className="w-full h-full object-cover" />
-                                </div>
-                              )}
-                              {brandHandle && (
-                                <span className="text-[6px] text-[rgba(255,255,255,0.7)] font-medium tracking-wide">{brandHandle}</span>
-                              )}
-                            </div>
-                          )}
                           <div
-                            className="block h-full w-full relative z-30 cursor-ns-resize group/imgdrag"
-                            onMouseDown={(e) => handleImgMouseDown(e, index)}
+                            className="w-full flex-1 min-h-0 overflow-hidden group/image z-10 relative"
                           >
-                            <div className="absolute inset-0 bg-cover transition-transform duration-500 pointer-events-none" style={{ backgroundImage: `url('${imageSrc}')`, backgroundPosition: `center ${imagePosMap[index] ?? 50}%` }}></div>
-                            <div className="absolute top-4 right-4 bg-black/60 text-white text-[10px] px-2 py-1 rounded-lg backdrop-blur-sm opacity-0 group-hover/imgdrag:opacity-100 transition-opacity flex items-center gap-1.5 pointer-events-none shadow-lg border border-white/10">
-                              <span className="material-symbols-outlined text-[14px] animate-bounce">swap_vert</span> Arraste p/ mover
+                            {(brandHandle || brandLogo) && (
+                              <div className="absolute top-4 left-4 flex items-center gap-1 z-50 bg-[rgba(0,0,0,0.15)] backdrop-blur-md px-2 py-0.5 rounded-full border border-[rgba(255,255,255,0.05)]">
+                                {brandLogo && (
+                                  <div className="size-3 rounded-full overflow-hidden bg-[#ffffff] opacity-90">
+                                    <img src={brandLogo} alt="Logo" className="w-full h-full object-cover" />
+                                  </div>
+                                )}
+                                {brandHandle && (
+                                  <span className="text-[6px] text-[rgba(255,255,255,0.7)] font-medium tracking-wide">{brandHandle}</span>
+                                )}
+                              </div>
+                            )}
+                            <div
+                              className="block h-full w-full relative z-30 pointer-events-none"
+                            >
+                              <div className="absolute inset-0 bg-cover transition-transform duration-500 pointer-events-none" style={{ backgroundImage: `url('${imageSrc}')`, backgroundPosition: `center ${imagePosMap[index] ?? 50}%` }}></div>
                             </div>
                           </div>
-                        </div>
-                        <div className={`w-full px-8 pt-6 flex flex-col justify-end shrink-0 z-20 relative ${index === 0 ? 'pb-14' : 'pb-8'} ${textAlign}`} style={{ fontFamily }}>
-                          <div className={`flex flex-col gap-2 ${textAlign === 'text-center' ? 'items-center text-center' : textAlign === 'text-right' ? 'items-end text-right' : 'items-start text-left'}`}>
-                            {slide.title && <h2 className={titleClass}>{slide.title}</h2>}
-                            {slide.subtitle && <p className={subtitleClass}>{slide.subtitle}</p>}
-                          </div>
-                          {index === 0 && (
-                            <div className={`absolute bottom-5 left-8 right-6 flex items-center justify-end gap-1 ${theme.textClass} opacity-50`}>
-                              <span className="text-[8px] font-bold uppercase tracking-wider">Deslize para ver mais</span>
-                              <span className="material-symbols-outlined text-[14px]">arrow_forward</span>
+                          <div className={`w-full px-8 pt-6 flex flex-col justify-end shrink-0 z-20 relative ${index === 0 ? 'pb-14' : 'pb-8'} ${textAlign}`} style={{ fontFamily }}>
+                            <div className={`flex flex-col gap-2 ${textAlign === 'text-center' ? 'items-center text-center' : textAlign === 'text-right' ? 'items-end text-right' : 'items-start text-left'}`}>
+                              {slide.title && <h2 className={titleClass}>{slide.title}</h2>}
+                              {slide.subtitle && <p className={subtitleClass}>{slide.subtitle}</p>}
                             </div>
-                          )}
-                        </div>
-                      </div>
-                      <div className="absolute inset-0 bg-black/80 opacity-0 group-active/slide:opacity-100 sm:group-hover/slide:opacity-100 transition-opacity flex flex-col items-center justify-center p-6 backdrop-blur-[4px] z-[60] pointer-events-none">
-                        <div className="flex w-full h-full gap-2 sm:gap-4 items-center justify-center">
-                          <div className="flex flex-col gap-2 w-1/2 max-w-[160px]">
-                            <span className="text-[10px] text-white/50 font-bold uppercase tracking-wider mb-1">Conteúdo</span>
-                            <button
-                              onClick={() => handleEditClick(index)}
-                              className="pointer-events-auto flex items-center justify-start gap-3 bg-white/10 text-white hover:bg-white/20 px-4 py-2.5 rounded-xl text-xs font-bold transition-all border border-white/10">
-                              <span className="material-symbols-outlined text-[16px]">edit</span> Editar Texto
-                            </button>
-                            <button
-                              onClick={() => handleDownloadSingle(index)}
-                              className="pointer-events-auto flex items-center justify-start gap-3 bg-white/10 text-white hover:bg-white/20 px-4 py-2.5 rounded-xl text-xs font-bold transition-all border border-white/10">
-                              <span className="material-symbols-outlined text-[16px]">download</span> Baixar
-                            </button>
-                            {imageSrc && (
-                              <a href={imageSrc} target="_blank" rel="noopener noreferrer" className="pointer-events-auto flex items-center justify-start gap-3 bg-white/10 text-white hover:bg-white/20 px-4 py-2.5 rounded-xl text-xs font-bold transition-all border border-white/10">
-                                <span className="material-symbols-outlined text-[16px]">open_in_new</span> Expandir
-                              </a>
+                            {index === 0 && (
+                              <div className={`absolute bottom-5 left-8 right-6 flex items-center justify-end gap-1 ${theme.textClass} opacity-50`}>
+                                <span className="text-[8px] font-bold uppercase tracking-wider">Deslize para ver mais</span>
+                                <span className="material-symbols-outlined text-[14px]">arrow_forward</span>
+                              </div>
                             )}
                           </div>
+                        </div>
+                        <div className="absolute inset-0 bg-black/80 opacity-0 group-active/slide:opacity-100 sm:group-hover/slide:opacity-100 transition-opacity flex flex-col items-center justify-center p-6 backdrop-blur-[4px] z-[60] pointer-events-none">
+                          <div className="flex w-full h-full gap-2 sm:gap-4 items-center justify-center">
+                            <div className="flex flex-col gap-2 w-1/2 max-w-[160px]">
+                              <span className="text-[10px] text-white/50 font-bold uppercase tracking-wider mb-1">Conteúdo</span>
+                              <button
+                                onClick={() => handleEditClick(index)}
+                                className="pointer-events-auto flex items-center justify-start gap-3 bg-white/10 text-white hover:bg-white/20 px-4 py-2.5 rounded-xl text-xs font-bold transition-all border border-white/10">
+                                <span className="material-symbols-outlined text-[16px]">edit</span> Editar Texto
+                              </button>
+                              <button
+                                onClick={() => handleDownloadSingle(index)}
+                                className="pointer-events-auto flex items-center justify-start gap-3 bg-white/10 text-white hover:bg-white/20 px-4 py-2.5 rounded-xl text-xs font-bold transition-all border border-white/10">
+                                <span className="material-symbols-outlined text-[16px]">download</span> Baixar
+                              </button>
+                              {imageSrc && (
+                                <a href={imageSrc} target="_blank" rel="noopener noreferrer" className="pointer-events-auto flex items-center justify-start gap-3 bg-white/10 text-white hover:bg-white/20 px-4 py-2.5 rounded-xl text-xs font-bold transition-all border border-white/10">
+                                  <span className="material-symbols-outlined text-[16px]">open_in_new</span> Expandir
+                                </a>
+                              )}
+                            </div>
 
-                          <div className="w-px h-[80%] bg-white/10 shrink-0"></div>
+                            <div className="w-px h-[80%] bg-white/10 shrink-0"></div>
 
-                          <div className="flex flex-col gap-2 w-1/2 max-w-[160px]">
-                            <span className="text-[10px] text-white/50 font-bold uppercase tracking-wider mb-1">Mídia</span>
-                            <button
-                              onClick={() => regenerateImageForSlide(index)}
-                              disabled={generatingImages[index]}
-                              className="pointer-events-auto flex items-center justify-start gap-3 bg-indigo-600/90 text-white hover:bg-indigo-500 px-4 py-2.5 rounded-xl text-xs font-bold transition-all border border-indigo-500/30 disabled:opacity-50">
-                              <span className={`material-symbols-outlined text-[16px] ${generatingImages[index] ? 'animate-spin' : ''}`}>
-                                {generatingImages[index] ? 'progress_activity' : 'auto_awesome'}
-                              </span> Regerar IA
-                            </button>
-                            <button
-                              onClick={() => handleIndividualUploadAction(index)}
-                              className="pointer-events-auto flex items-center justify-start gap-3 bg-white/10 text-white hover:bg-white/20 px-4 py-2.5 rounded-xl text-xs font-bold transition-all border border-white/10">
-                              <span className="material-symbols-outlined text-[16px]">cloud_upload</span> Upload
-                            </button>
-                            <button
-                              onMouseDown={(e) => handleImgMouseDown(e, index)}
-                              className="pointer-events-auto flex items-center justify-start gap-3 bg-white/10 text-white hover:bg-white/20 px-4 py-2.5 rounded-xl text-xs font-bold transition-all border border-white/10 cursor-ns-resize shadow-lg shadow-black/20 ring-1 ring-white/20">
-                              <span className="material-symbols-outlined text-[16px] animate-pulse">height</span> Ajustar Foto
-                            </button>
-                            <button
-                              onClick={(e) => handleRemoveImage(index, e)}
-                              className="pointer-events-auto flex items-center justify-start gap-3 bg-red-500/20 text-red-100 hover:bg-red-500/40 px-4 py-2.5 rounded-xl text-xs font-bold transition-all border border-red-500/30">
-                              <span className="material-symbols-outlined text-[16px]">delete</span> Remover
-                            </button>
+                            <div className="flex flex-col gap-2 w-1/2 max-w-[160px]">
+                              <span className="text-[10px] text-white/50 font-bold uppercase tracking-wider mb-1">Mídia</span>
+                              <button
+                                onClick={() => regenerateImageForSlide(index)}
+                                disabled={generatingImages[index]}
+                                className="pointer-events-auto flex items-center justify-start gap-3 bg-indigo-600/90 text-white hover:bg-indigo-500 px-4 py-2.5 rounded-xl text-xs font-bold transition-all border border-indigo-500/30 disabled:opacity-50">
+                                <span className={`material-symbols-outlined text-[16px] ${generatingImages[index] ? 'animate-spin' : ''}`}>
+                                  {generatingImages[index] ? 'progress_activity' : 'auto_awesome'}
+                                </span> Regerar IA
+                              </button>
+                              <button
+                                onClick={() => handleIndividualUploadAction(index)}
+                                className="pointer-events-auto flex items-center justify-start gap-3 bg-white/10 text-white hover:bg-white/20 px-4 py-2.5 rounded-xl text-xs font-bold transition-all border border-white/10">
+                                <span className="material-symbols-outlined text-[16px]">cloud_upload</span> Upload
+                              </button>
+
+                              <button
+                                onClick={(e) => handleRemoveImage(index, e)}
+                                className="pointer-events-auto flex items-center justify-start gap-3 bg-red-500/20 text-red-100 hover:bg-red-500/40 px-4 py-2.5 rounded-xl text-xs font-bold transition-all border border-red-500/30">
+                                <span className="material-symbols-outlined text-[16px]">delete</span> Remover
+                              </button>
+                            </div>
                           </div>
                         </div>
+                      </div>
+                      <div className="absolute top-1/2 -translate-y-1/2 -right-12 sm:-right-14 opacity-0 group-hover/slide-wrapper:opacity-100 transition-opacity z-50">
+                        <button
+                          onMouseDown={(e) => handleImgDragStart(e, index)}
+                          onTouchStart={(e) => handleImgDragStart(e, index)}
+                          className="bg-white/50 backdrop-blur-md p-2 rounded-full cursor-ns-resize shadow-xl border border-white/40 hover:bg-white transition-colors flex items-center justify-center text-slate-700"
+                          title="Arraste para ajustar"
+                        >
+                          <span className="material-symbols-outlined text-[20px] sm:text-[24px]">swap_vert</span>
+                        </button>
                       </div>
                     </div>
                   );
@@ -1483,8 +1493,8 @@ export default function CarouselGenerator({ onLogout }: { onLogout: () => void }
             <button className="text-slate-500 hover:text-primary"><span className="material-symbols-outlined text-[18px] sm:text-[24px]">chevron_right</span></button>
             <button className="text-slate-500 hover:text-primary"><span className="material-symbols-outlined text-[18px] sm:text-[24px]">last_page</span></button>
           </div>
-        </section>
-      </main>
+        </section >
+      </main >
 
       {/* Edit Text Modal */}
       {

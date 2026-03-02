@@ -1,4 +1,4 @@
-'use client';
+﻿'use client';
 
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
@@ -30,7 +30,7 @@ export default function AdminLogin() {
                 setError(data.error || 'Erro ao fazer login.');
             }
         } catch (err) {
-            setError('Erro de conexão. Tente novamente.');
+            setError('Erro de conexÃ£o. Tente novamente.');
         } finally {
             setIsLoading(false);
         }
@@ -79,7 +79,7 @@ export default function AdminLogin() {
                                     value={password}
                                     onChange={(e) => setPassword(e.target.value)}
                                     className="w-full bg-slate-50 dark:bg-surface-darker border border-slate-200 dark:border-border-dark rounded-xl pl-10 pr-4 py-2.5 text-slate-900 dark:text-white focus:ring-2 focus:ring-primary focus:border-transparent transition-all outline-none"
-                                    placeholder="••••••••"
+                                    placeholder="â€¢â€¢â€¢â€¢â€¢â€¢â€¢â€¢"
                                     required
                                 />
                             </div>

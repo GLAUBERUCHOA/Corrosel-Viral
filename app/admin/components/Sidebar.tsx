@@ -1,4 +1,4 @@
-'use client';
+﻿'use client';
 
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
@@ -9,7 +9,7 @@ export default function Sidebar() {
 
     const links = [
         { href: '/admin', icon: 'dashboard', label: 'Painel Geral' },
-        { href: '/admin/users', icon: 'people', label: 'Usuários' },
+        { href: '/admin/users', icon: 'people', label: 'UsuÃ¡rios' },
         { href: '/admin/settings', icon: 'tune', label: 'Textos (Modos Iury)' },
         { href: '/admin/image-settings', icon: 'imagesmode', label: 'Imagens (Nichos)' },
     ];

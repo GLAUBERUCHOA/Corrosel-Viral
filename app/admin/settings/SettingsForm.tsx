@@ -1,4 +1,4 @@
-'use client';
+﻿'use client';
 
 import { useState } from 'react';
 
@@ -33,12 +33,12 @@ export function SettingsForm({ initialPrompts }: { initialPrompts: PromptSetting
             });
 
             if (res.ok) {
-                setMessage('Configurações aterradas com sucesso!');
+                setMessage('ConfiguraÃ§Ãµes aterradas com sucesso!');
             } else {
-                setMessage('Erro ao salvar as configurações.');
+                setMessage('Erro ao salvar as configuraÃ§Ãµes.');
             }
         } catch (err) {
-            setMessage('Erro de conexão. Tente novamente.');
+            setMessage('Erro de conexÃ£o. Tente novamente.');
         } finally {
             setIsSaving(false);
             setTimeout(() => setMessage(''), 3000);
@@ -77,7 +77,7 @@ export function SettingsForm({ initialPrompts }: { initialPrompts: PromptSetting
                     ) : (
                         <span className="material-symbols-outlined">save</span>
                     )}
-                    {isSaving ? 'Salvando...' : 'Salvar Alterações Globais'}
+                    {isSaving ? 'Salvando...' : 'Salvar AlteraÃ§Ãµes Globais'}
                 </button>
             </div>
         </form>

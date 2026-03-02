@@ -1,4 +1,4 @@
-import { NextRequest, NextResponse } from 'next/server';
+﻿import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { getSession } from '@/lib/auth/session';
 
@@ -23,20 +23,20 @@ export async function GET() {
                 data: [
                     {
                         nicheKey: 'GLOBAL_IMAGE',
-                        label: 'Instruções Gerais (Imagens)',
-                        instruction: '🎨 1. PADRÃO ESTÉTICO OBRIGATÓRIO:\nVocê opera sempre no estilo "Theatrical Dark Cinematic" (Cinematográfico Escuro e Teatral) com foco em Chiaroscuro (contraste dramático) e efeito Bokeh (fundo elegantemente distorcido).\n\n📸 2. REGRAS DE DIREÇÃO DE ARTE:\n- Ângulos: Evite sempre visões padrão (eye-level). Alterne entre Low Angle (de baixo pra cima, denota poder/imposição), High Angle (vulnerabilidade), Over-the-shoulder e Close-ups detalhados.\n- Iluminação: Luzes de recorte dramáticas, sombras marcadas. Iluminação lateral misteriosa.\n- Metáforas: NUNCA crie interpretações literais e óbvias do texto. Se o texto for sobre "ganhar dinheiro", NÃO crie de pessoas segurando dinheiro ou cifrões. Crie algo como: "A close-up of a sleek black mechanical watch with gold gears turning amidst dark smoke".\n\n🧠 3. COMPOSIÇÃO:\n- Cores: Paleta Industrial e Terrosa (Preto, chumbo, ouro envelhecido, cobre escuro, verde musgo).\n- Sempre inclua: "High end, 8k resolution, raw photo, highly detailed, sharp focus" no final do seu prompt.',
+                        label: 'InstruÃ§Ãµes Gerais (Imagens)',
+                        instruction: 'ðŸŽ¨ 1. PADRÃƒO ESTÃ‰TICO OBRIGATÃ“RIO:\nVocÃª opera sempre no estilo "Theatrical Dark Cinematic" (CinematogrÃ¡fico Escuro e Teatral) com foco em Chiaroscuro (contraste dramÃ¡tico) e efeito Bokeh (fundo elegantemente distorcido).\n\nðŸ“¸ 2. REGRAS DE DIREÃ‡ÃƒO DE ARTE:\n- Ã‚ngulos: Evite sempre visÃµes padrÃ£o (eye-level). Alterne entre Low Angle (de baixo pra cima, denota poder/imposiÃ§Ã£o), High Angle (vulnerabilidade), Over-the-shoulder e Close-ups detalhados.\n- IluminaÃ§Ã£o: Luzes de recorte dramÃ¡ticas, sombras marcadas. IluminaÃ§Ã£o lateral misteriosa.\n- MetÃ¡foras: NUNCA crie interpretaÃ§Ãµes literais e Ã³bvias do texto. Se o texto for sobre "ganhar dinheiro", NÃƒO crie de pessoas segurando dinheiro ou cifrÃµes. Crie algo como: "A close-up of a sleek black mechanical watch with gold gears turning amidst dark smoke".\n\nðŸ§  3. COMPOSIÃ‡ÃƒO:\n- Cores: Paleta Industrial e Terrosa (Preto, chumbo, ouro envelhecido, cobre escuro, verde musgo).\n- Sempre inclua: "High end, 8k resolution, raw photo, highly detailed, sharp focus" no final do seu prompt.',
                         isDeletable: false,
                     },
                     {
                         nicheKey: 'SAUDE',
-                        label: 'Saúde & Nutrição',
-                        instruction: 'Crie imagens focadas em transformar elementos de saúde (frutas escuras, stetoscópios sombrios, anatomia clássica) em obras de arte cinematográficas. Evite rostos sorridentes, foque em texturas e close-ups.',
+                        label: 'SaÃºde & NutriÃ§Ã£o',
+                        instruction: 'Crie imagens focadas em transformar elementos de saÃºde (frutas escuras, stetoscÃ³pios sombrios, anatomia clÃ¡ssica) em obras de arte cinematogrÃ¡ficas. Evite rostos sorridentes, foque em texturas e close-ups.',
                         isDeletable: true,
                     },
                     {
                         nicheKey: 'MINDSET',
                         label: 'Mindset & Psicologia',
-                        instruction: 'Use metáforas visuais de profundidade psicológica: espelhos quebrados, xadrez, labirintos, nevoeiro. Mantenha o tom escuro e intelectual.',
+                        instruction: 'Use metÃ¡foras visuais de profundidade psicolÃ³gica: espelhos quebrados, xadrez, labirintos, nevoeiro. Mantenha o tom escuro e intelectual.',
                         isDeletable: true,
                     }
                 ]
@@ -48,7 +48,7 @@ export async function GET() {
 
         return NextResponse.json({ success: true, settings });
     } catch (error) {
-        return NextResponse.json({ error: 'Não autorizado' }, { status: 401 });
+        return NextResponse.json({ error: 'NÃ£o autorizado' }, { status: 401 });
     }
 }
 
@@ -59,7 +59,7 @@ export async function PUT(req: NextRequest) {
         const { settings } = body;
 
         if (!Array.isArray(settings)) {
-            return NextResponse.json({ error: 'Payload inválido' }, { status: 400 });
+            return NextResponse.json({ error: 'Payload invÃ¡lido' }, { status: 400 });
         }
 
         // We use a transaction to update existing or create new ones

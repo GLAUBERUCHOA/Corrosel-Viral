@@ -1,4 +1,4 @@
-'use client';
+﻿'use client';
 import React, { useState, useRef, useEffect } from 'react';
 import { GoogleGenAI } from "@google/genai";
 import * as htmlToImage from 'html-to-image';
@@ -7,46 +7,46 @@ import { saveAs } from 'file-saver';
 
 const getIuryPrompt = (toneMode: string, dynamicInstructions: Record<string, string>) => {
   const selectedToneInstruction = dynamicInstructions[toneMode] ||
-    'Modo PROVOCATIVO (O Soco no Estômago): Focado em quebrar o ego, expor o erro e gerar desconforto. Seu tom é irônico, inteligente e instigador. Ideal para criar identificação extrema pela dor (topo de funil).';
+    'Modo PROVOCATIVO (O Soco no EstÃ´mago): Focado em quebrar o ego, expor o erro e gerar desconforto. Seu tom Ã© irÃ´nico, inteligente e instigador. Ideal para criar identificaÃ§Ã£o extrema pela dor (topo de funil).';
 
   const globalInstruction = dynamicInstructions['GLOBAL_INSTRUCTIONS'] ||
-    `🧠 1. PERFIL COGNITIVO DO IURY
-Você é um Diretor de Criação e Engenheiro Narrativo. NUNCA resuma textos; você usa a ideia do usuário apenas como uma SEMENTE para criar narrativas autorais, densas e poderosas.
+    `ðŸ§  1. PERFIL COGNITIVO DO IURY
+VocÃª Ã© um Diretor de CriaÃ§Ã£o e Engenheiro Narrativo. NUNCA resuma textos; vocÃª usa a ideia do usuÃ¡rio apenas como uma SEMENTE para criar narrativas autorais, densas e poderosas.
 
-Sua mente opera em camadas (Visceral para prender atenção, Intelecto com repertório de biografia/história, e Prática no último slide).
+Sua mente opera em camadas (Visceral para prender atenÃ§Ã£o, Intelecto com repertÃ³rio de biografia/histÃ³ria, e PrÃ¡tica no Ãºltimo slide).
 
-✍️ 3. DIRETRIZES DE ESCRITA
-- Títulos SEMPRE em CAIXA ALTA, com expressões autênticas e zero 'marketinglês'.
-- Formatação de Tópicos: Quando houver listas ou dicas (bullets), você DEVE quebrar a linha sistematicamente (um item abaixo do outro).
+âœï¸ 3. DIRETRIZES DE ESCRITA
+- TÃ­tulos SEMPRE em CAIXA ALTA, com expressÃµes autÃªnticas e zero 'marketinglÃªs'.
+- FormataÃ§Ã£o de TÃ³picos: Quando houver listas ou dicas (bullets), vocÃª DEVE quebrar a linha sistematicamente (um item abaixo do outro).
 
-📏 4. REGRAS DE LAYOUT E ESTRUTURA (RESTRIÇÃO MORTAL)
-Slide 01 (CAPA): Manchete visceral em CAIXA ALTA + Contexto. PROIBIDO SUBTÍTULO. Somente Título.
-Slides Seguintes: [TÍTULO] curto + [SUBTÍTULO] narrativo longo.
-LIMITE ABSOLUTO: MÁXIMO DE 250 CARACTERES POR SLIDE (Título + Subtítulo). Escreva com poder, mas conciso. Em hipótese alguma passe desse limite.
+ðŸ“ 4. REGRAS DE LAYOUT E ESTRUTURA (RESTRIÃ‡ÃƒO MORTAL)
+Slide 01 (CAPA): Manchete visceral em CAIXA ALTA + Contexto. PROIBIDO SUBTÃTULO. Somente TÃ­tulo.
+Slides Seguintes: [TÃTULO] curto + [SUBTÃTULO] narrativo longo.
+LIMITE ABSOLUTO: MÃXIMO DE 250 CARACTERES POR SLIDE (TÃ­tulo + SubtÃ­tulo). Escreva com poder, mas conciso. Em hipÃ³tese alguma passe desse limite.
 
 EXEMPLO DE OUTPUT ESPERADO COM LISTAS:
 SLIDE 01:
-[TÍTULO]: O COMPLEXO DE DEUS QUE MATA O SEU LUCRO.
-[SUBTÍTULO]: 
+[TÃTULO]: O COMPLEXO DE DEUS QUE MATA O SEU LUCRO.
+[SUBTÃTULO]: 
 SLIDE 02:
-[TÍTULO]: A SÍNDROME DA BLOCKBUSTER.
-[SUBTÍTULO]: Em 2000, eles riram da Netflix. A arrogância cega. O mercado não liga para sua soberba acadêmica.
+[TÃTULO]: A SÃNDROME DA BLOCKBUSTER.
+[SUBTÃTULO]: Em 2000, eles riram da Netflix. A arrogÃ¢ncia cega. O mercado nÃ£o liga para sua soberba acadÃªmica.
 SLIDE 03:
-[TÍTULO]: COMO MUDAR O JOGO AGORA.
-[SUBTÍTULO]: 
-- Desça do pedestal;
+[TÃTULO]: COMO MUDAR O JOGO AGORA.
+[SUBTÃTULO]: 
+- DesÃ§a do pedestal;
 - Exponha a falha calculada;
 - Aprenda a vender ou morra esquecido.
 
-🚨 REGRA CRÍITCA DE FORMATAÇÃO:
-PROIBIDO gerar qualquer texto fora das tags [TÍTULO]: e [SUBTÍTULO]:.
-NUNCA repita o texto do título dentro do subtítulo.
+ðŸš¨ REGRA CRÃITCA DE FORMATAÃ‡ÃƒO:
+PROIBIDO gerar qualquer texto fora das tags [TÃTULO]: e [SUBTÃTULO]:.
+NUNCA repita o texto do tÃ­tulo dentro do subtÃ­tulo.
 Sempre separe slides com a tag nativa (Ex: SLIDE 01:).`;
 
   return `${globalInstruction}
 
-🎯 DIRETRIZ DE TOM ATUAL:
-Você deve OBRIGATORIAMENTE se portar sob este tom em todo o texto gerado:
+ðŸŽ¯ DIRETRIZ DE TOM ATUAL:
+VocÃª deve OBRIGATORIAMENTE se portar sob este tom em todo o texto gerado:
 [ ${selectedToneInstruction} ]
 
 CRIANDO COM BASE NO SEU TOM SELECIONADO ACIMA, metamorfoseie brutalmente o seguinte rascunho:
@@ -55,33 +55,33 @@ CRIANDO COM BASE NO SEU TOM SELECIONADO ACIMA, metamorfoseie brutalmente o segui
 
 const getImagePrompt = (nicheMode: string, dynamicImageInstructions: Record<string, string>, title: string, subtitle: string) => {
   const globalInstruction = dynamicImageInstructions['GLOBAL_IMAGE'] ||
-    `🎨 1. PADRÃO ESTÉTICO OBRIGATÓRIO:
-Você opera sempre no estilo "Theatrical Dark Cinematic" (Cinematográfico Escuro e Teatral) com foco em Chiaroscuro (contraste dramático) e efeito Bokeh (fundo elegantemente distorcido).
+    `ðŸŽ¨ 1. PADRÃƒO ESTÃ‰TICO OBRIGATÃ“RIO:
+VocÃª opera sempre no estilo "Theatrical Dark Cinematic" (CinematogrÃ¡fico Escuro e Teatral) com foco em Chiaroscuro (contraste dramÃ¡tico) e efeito Bokeh (fundo elegantemente distorcido).
 
-📸 2. REGRAS DE DIREÇÃO DE ARTE:
-- Ângulos: Evite sempre visões padrão (eye-level). Alterne entre Low Angle (de baixo pra cima, denota poder/imposição), High Angle (vulnerabilidade), Over-the-shoulder e Close-ups detalhados.
-- Iluminação: Luzes de recorte dramáticas, sombras marcadas. Iluminação lateral misteriosa.
-- Metáforas: NUNCA crie interpretações literais e óbvias do texto. Se o texto for sobre "ganhar dinheiro", NÃO crie de pessoas segurando dinheiro ou cifrões. Crie algo como: "A close-up of a sleek black mechanical watch with gold gears turning amidst dark smoke".
+ðŸ“¸ 2. REGRAS DE DIREÃ‡ÃƒO DE ARTE:
+- Ã‚ngulos: Evite sempre visÃµes padrÃ£o (eye-level). Alterne entre Low Angle (de baixo pra cima, denota poder/imposiÃ§Ã£o), High Angle (vulnerabilidade), Over-the-shoulder e Close-ups detalhados.
+- IluminaÃ§Ã£o: Luzes de recorte dramÃ¡ticas, sombras marcadas. IluminaÃ§Ã£o lateral misteriosa.
+- MetÃ¡foras: NUNCA crie interpretaÃ§Ãµes literais e Ã³bvias do texto. Se o texto for sobre "ganhar dinheiro", NÃƒO crie de pessoas segurando dinheiro ou cifrÃµes. Crie algo como: "A close-up of a sleek black mechanical watch with gold gears turning amidst dark smoke".
 
-🧠 3. COMPOSIÇÃO:
+ðŸ§  3. COMPOSIÃ‡ÃƒO:
 - Cores: Paleta Industrial e Terrosa (Preto, chumbo, ouro envelhecido, cobre escuro, verde musgo).
 - Sempre inclua: "High end, 8k resolution, raw photo, highly detailed, sharp focus" no final do seu prompt.`;
 
   const nicheInstruction = dynamicImageInstructions[nicheMode] ||
-    'Crie algo focado em cinematografia dark de altíssimo nível com as regras gerais acima.';
+    'Crie algo focado em cinematografia dark de altÃ­ssimo nÃ­vel com as regras gerais acima.';
 
-  return `Crie UMA ÚNICA IMAGEM de "Cinematografia Multimodal" de altíssimo nível, baseada na seguinte semente emocional do texto do slide:
-Título do Slide: "${title}"
-Subtítulo: "${subtitle}"
+  return `Crie UMA ÃšNICA IMAGEM de "Cinematografia Multimodal" de altÃ­ssimo nÃ­vel, baseada na seguinte semente emocional do texto do slide:
+TÃ­tulo do Slide: "${title}"
+SubtÃ­tulo: "${subtitle}"
 
-INSTRUÇÕES GERAIS DE ARTE (BASE):
+INSTRUÃ‡Ã•ES GERAIS DE ARTE (BASE):
 ${globalInstruction}
 
-DIRETRIZ ESPECÍFICA DO NICHO ESCOLHIDO (IMPRESCINDÍVEL):
+DIRETRIZ ESPECÃFICA DO NICHO ESCOLHIDO (IMPRESCINDÃVEL):
 ${nicheInstruction}
 
-5. Restrição Absoluta de Textos Nativos: É VERBEMENTE PROIBIDO criar qualquer frase, palavra ou explicação legível ilustrada dentro da arte! A imagem PRECISA ser muda. O texto longo será redigido por nós por cima. 
-6. Composição Vertical (Top-Heavy) - LEI INQUEBRÁVEL: O texto descritivo ocupará quase toda a METADE INFERIOR (Bottom Half) do slide. Portanto, posicione os objetos centrais, personagens e elementos dramáticos EXCLUSIVAMENTE NA METADE SUPERIOR (Top Half). A metade inferior DEVE SER um imenso e pesado VAZIO ESCURO (Negative Space), garantindo contraste absoluto para leitura.`;
+5. RestriÃ§Ã£o Absoluta de Textos Nativos: Ã‰ VERBEMENTE PROIBIDO criar qualquer frase, palavra ou explicaÃ§Ã£o legÃ­vel ilustrada dentro da arte! A imagem PRECISA ser muda. O texto longo serÃ¡ redigido por nÃ³s por cima. 
+6. ComposiÃ§Ã£o Vertical (Top-Heavy) - LEI INQUEBRÃVEL: O texto descritivo ocuparÃ¡ quase toda a METADE INFERIOR (Bottom Half) do slide. Portanto, posicione os objetos centrais, personagens e elementos dramÃ¡ticos EXCLUSIVAMENTE NA METADE SUPERIOR (Top Half). A metade inferior DEVE SER um imenso e pesado VAZIO ESCURO (Negative Space), garantindo contraste absoluto para leitura.`;
 };
 
 export default function CarouselGenerator({ onLogout }: { onLogout: () => void }) {
@@ -150,7 +150,7 @@ export default function CarouselGenerator({ onLogout }: { onLogout: () => void }
           setSaveDefaults(prefs.saveDefaults);
         }
 
-        // Se na última sessão o toggle estava ligado, os dados existem:
+        // Se na Ãºltima sessÃ£o o toggle estava ligado, os dados existem:
         if (prefs.brandHandle) setBrandHandle(prefs.brandHandle);
         if (prefs.brandLogo) setBrandLogo(prefs.brandLogo);
         if (prefs.styleModel) setStyleModel(prefs.styleModel);
@@ -408,16 +408,16 @@ export default function CarouselGenerator({ onLogout }: { onLogout: () => void }
   };
 
   const processTextIntoSlides = (textToParse: string) => {
-    // Quebra o texto garantidamente pela separação de slide (ex: SLIDE 01:, Slide 1 -)
+    // Quebra o texto garantidamente pela separaÃ§Ã£o de slide (ex: SLIDE 01:, Slide 1 -)
     // Usamos um lookahead para manter o bloco do slide inteiro ou dar um fallback seguro.
     let blocks = textToParse.split(/(?=SLIDE\s*\d+[:\-]?)/i).filter(b => b.trim());
 
-    // Fallback: se a IA não gerou a palavra SLIDE, tentamos quebrar por linha dupla.
+    // Fallback: se a IA nÃ£o gerou a palavra SLIDE, tentamos quebrar por linha dupla.
     if (blocks.length === 0 || (blocks.length === 1 && !/SLIDE\s*\d+/i.test(blocks[0]))) {
       blocks = textToParse.split(/\n\s*\n/).filter(b => b.trim());
-      // Se não houver linha dupla, quebramos pelas tags de título atiradas juntas
+      // Se nÃ£o houver linha dupla, quebramos pelas tags de tÃ­tulo atiradas juntas
       if (blocks.length === 1) {
-        blocks = textToParse.split(/(?=\[T[ÍI]TULO\]:)/i).filter(b => b.trim());
+        blocks = textToParse.split(/(?=\[T[ÃI]TULO\]:)/i).filter(b => b.trim());
       }
     }
 
@@ -426,22 +426,22 @@ export default function CarouselGenerator({ onLogout }: { onLogout: () => void }
       let subtitle = '';
 
       // Tenta capturar as tags independentemente da quebra de linha.
-      // O [TÍTULO]: pega tudo até encontrar a quebra de [SUBTÍTULO]: ou final da string
-      const titleMatch = block.match(/\[?T[ÍI]TULO\]?:\s*([\s\S]*?)(?=\[SUBT[ÍI]TULO\]:|$)/i);
-      // O [SUBTÍTULO]: pega tudo após ele (dentro desse bloco em específico)
-      const subtitleMatch = block.match(/\[?SUBT[ÍI]TULO\]?:\s*([\s\S]*?)$/i);
+      // O [TÃTULO]: pega tudo atÃ© encontrar a quebra de [SUBTÃTULO]: ou final da string
+      const titleMatch = block.match(/\[?T[ÃI]TULO\]?:\s*([\s\S]*?)(?=\[SUBT[ÃI]TULO\]:|$)/i);
+      // O [SUBTÃTULO]: pega tudo apÃ³s ele (dentro desse bloco em especÃ­fico)
+      const subtitleMatch = block.match(/\[?SUBT[ÃI]TULO\]?:\s*([\s\S]*?)$/i);
 
       if (titleMatch || subtitleMatch) {
         title = titleMatch ? titleMatch[1].replace(/^(?:SLIDE\s*\d+\s*[:\-]?\s*)/i, '').trim() : '';
         subtitle = subtitleMatch ? subtitleMatch[1].trim() : '';
 
-        // Anti-Repetição: Se o subtítulo for misteriosamente igual ao título, limpamos ele.
+        // Anti-RepetiÃ§Ã£o: Se o subtÃ­tulo for misteriosamente igual ao tÃ­tulo, limpamos ele.
         if (title.toLowerCase() === subtitle.toLowerCase()) {
           subtitle = '';
         }
       } else {
-        // Fallback genérico para texto cru (sem as tags exigidas)
-        // Pega a primeira linha como título e o resto como subtítulo
+        // Fallback genÃ©rico para texto cru (sem as tags exigidas)
+        // Pega a primeira linha como tÃ­tulo e o resto como subtÃ­tulo
         const lines = block.split('\n').filter(l => l.trim());
         if (lines.length > 0) {
           title = lines[0].replace(/^(?:SLIDE\s*\d+\s*[:\-]?\s*|^\d+\.\s*|^-\s*|^:\s*)/i, '').trim();
@@ -467,7 +467,7 @@ export default function CarouselGenerator({ onLogout }: { onLogout: () => void }
 
     const apiKey = customApiKey || process.env.NEXT_PUBLIC_GEMINI_API_KEY;
     if (!apiKey) {
-      alert("Chave da API Gemini não encontrada. Por favor, insira sua chave nas configurações para usar o Modo Iury.");
+      alert("Chave da API Gemini nÃ£o encontrada. Por favor, insira sua chave nas configuraÃ§Ãµes para usar o Modo Iury.");
       return;
     }
 
@@ -476,7 +476,7 @@ export default function CarouselGenerator({ onLogout }: { onLogout: () => void }
       const ai = new GoogleGenAI({ apiKey });
       const response = await ai.models.generateContent({
         model: 'gemini-2.5-flash',
-        contents: `${getIuryPrompt(toneMode, dbPrompts)}\n\nRASCUNHO DO USUÁRIO:\n${content}`,
+        contents: `${getIuryPrompt(toneMode, dbPrompts)}\n\nRASCUNHO DO USUÃRIO:\n${content}`,
       });
 
       const generatedText = response.text || '';
@@ -497,7 +497,7 @@ export default function CarouselGenerator({ onLogout }: { onLogout: () => void }
 
     const apiKey = customApiKey || process.env.NEXT_PUBLIC_GEMINI_API_KEY;
     if (!apiKey) {
-      alert("Chave da API Gemini não encontrada. Insira sua chave nas configurações para regerar imagens com IA.");
+      alert("Chave da API Gemini nÃ£o encontrada. Insira sua chave nas configuraÃ§Ãµes para regerar imagens com IA.");
       return;
     }
 
@@ -563,7 +563,7 @@ export default function CarouselGenerator({ onLogout }: { onLogout: () => void }
     if (generateWithAI) {
       const apiKey = customApiKey || process.env.NEXT_PUBLIC_GEMINI_API_KEY;
       if (!apiKey) {
-        alert("Chave da API Gemini não encontrada. Por favor, insira sua chave nas configurações.");
+        alert("Chave da API Gemini nÃ£o encontrada. Por favor, insira sua chave nas configuraÃ§Ãµes.");
         console.error("Gemini API key is missing");
         return;
       }
@@ -776,13 +776,13 @@ export default function CarouselGenerator({ onLogout }: { onLogout: () => void }
           onClick={() => setActiveMobileTab('config')}
           className={`flex-1 py-3 text-sm font-bold transition-colors ${activeMobileTab === 'config' ? 'text-primary border-b-2 border-primary' : 'text-slate-500'}`}
         >
-          Configurações
+          ConfiguraÃ§Ãµes
         </button>
         <button
           onClick={() => setActiveMobileTab('preview')}
           className={`flex-1 py-3 text-sm font-bold transition-colors ${activeMobileTab === 'preview' ? 'text-primary border-b-2 border-primary' : 'text-slate-500'}`}
         >
-          Visualização ({slideCount})
+          VisualizaÃ§Ã£o ({slideCount})
         </button>
       </div>
 
@@ -798,7 +798,7 @@ export default function CarouselGenerator({ onLogout }: { onLogout: () => void }
           <div className="p-6 space-y-8 flex-1">
             <div className="space-y-4">
               <div className="flex justify-between items-center">
-                <h3 className="text-slate-900 dark:text-white font-bold text-lg">Conteúdo</h3>
+                <h3 className="text-slate-900 dark:text-white font-bold text-lg">ConteÃºdo</h3>
               </div>
 
               <div className="flex bg-slate-100 dark:bg-surface-darker rounded-lg p-1.5 shrink-0 gap-1 border border-slate-200 dark:border-border-dark">
@@ -819,7 +819,7 @@ export default function CarouselGenerator({ onLogout }: { onLogout: () => void }
               {isIuryMode && (
                 <div className="space-y-2 pt-1 pb-1">
                   <label className="text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider flex items-center gap-1">
-                    <span className="material-symbols-outlined text-[14px]">tune</span> Estratégia Narrativa
+                    <span className="material-symbols-outlined text-[14px]">tune</span> EstratÃ©gia Narrativa
                   </label>
                   <select
                     value={toneMode}
@@ -832,10 +832,10 @@ export default function CarouselGenerator({ onLogout }: { onLogout: () => void }
                       ))
                     ) : (
                       <>
-                        <option value="PROVOCATIVO">🥊 Provocativo (Quebra de Padrão e Ego)</option>
-                        <option value="ANALITICO">🧊 Analítico (Autoridade Fria e Dados)</option>
-                        <option value="STORYTELLING">📖 Storytelling (Jornada Histórica)</option>
-                        <option value="PRATICO">✅ Prático (Manual e Ação Imediata)</option>
+                        <option value="PROVOCATIVO">ðŸ¥Š Provocativo (Quebra de PadrÃ£o e Ego)</option>
+                        <option value="ANALITICO">ðŸ§Š AnalÃ­tico (Autoridade Fria e Dados)</option>
+                        <option value="STORYTELLING">ðŸ“– Storytelling (Jornada HistÃ³rica)</option>
+                        <option value="PRATICO">âœ… PrÃ¡tico (Manual e AÃ§Ã£o Imediata)</option>
                       </>
                     )}
                   </select>
@@ -846,7 +846,7 @@ export default function CarouselGenerator({ onLogout }: { onLogout: () => void }
                 <textarea
                   className={`w-full h-48 border rounded-xl p-4 text-sm focus:ring-2 focus:ring-primary focus:border-transparent resize-none leading-relaxed font-sans transition-colors ${isIuryMode ? 'bg-primary/5 dark:bg-primary/10 border-primary/20 text-indigo-900 dark:text-indigo-100 placeholder:text-indigo-400 dark:placeholder:text-indigo-300' : 'bg-slate-50 dark:bg-surface-darker border-slate-200 dark:border-border-dark text-slate-700 dark:text-slate-300 placeholder:text-slate-400 dark:placeholder:text-slate-600'}`}
                   style={{ fontFamily: 'var(--font-poppins), sans-serif' }}
-                  placeholder={isIuryMode ? 'Deixe o Iury fazer o trabalho. Escreva um tema, cole um rascunho completo, reclame de um nicho... e veja a mágica visceral acontecer.' : 'Cole o texto dos seus carrosséis aqui, clique em gerar e veja a mágica acontecer...'}
+                  placeholder={isIuryMode ? 'Deixe o Iury fazer o trabalho. Escreva um tema, cole um rascunho completo, reclame de um nicho... e veja a mÃ¡gica visceral acontecer.' : 'Cole o texto dos seus carrossÃ©is aqui, clique em gerar e veja a mÃ¡gica acontecer...'}
                   value={content}
                   onChange={(e) => setContent(e.target.value)}
                 ></textarea>
@@ -854,9 +854,9 @@ export default function CarouselGenerator({ onLogout }: { onLogout: () => void }
               </div>
             </div>
             <div className="space-y-4">
-              <h3 className="text-slate-900 dark:text-white font-bold text-lg">Configuração</h3>
+              <h3 className="text-slate-900 dark:text-white font-bold text-lg">ConfiguraÃ§Ã£o</h3>
               <div className="space-y-2">
-                <label className="text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Proporção</label>
+                <label className="text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider">ProporÃ§Ã£o</label>
                 <div className="grid grid-cols-2 gap-2">
                   <button
                     onClick={() => setAspectRatio('4:5')}
@@ -973,11 +973,11 @@ export default function CarouselGenerator({ onLogout }: { onLogout: () => void }
                       onChange={(e) => setFontFamily(e.target.value)}
                       className="w-full bg-slate-50 dark:bg-surface-darker text-slate-900 dark:text-white border border-slate-200 dark:border-border-dark rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-primary outline-none cursor-pointer"
                     >
-                      <option value="var(--font-poppins), sans-serif">Padrão (Poppins)</option>
-                      <option value="'Playfair Display', serif">Clássica (Playfair)</option>
+                      <option value="var(--font-poppins), sans-serif">PadrÃ£o (Poppins)</option>
+                      <option value="'Playfair Display', serif">ClÃ¡ssica (Playfair)</option>
                       <option value="'Inter', sans-serif">Clean (Inter)</option>
                       <option value="'Montserrat', sans-serif">Impacto (Montserrat)</option>
-                      <option value="'Courier New', monospace">Código (Monospace)</option>
+                      <option value="'Courier New', monospace">CÃ³digo (Monospace)</option>
                     </select>
                   </div>
                   <div className="space-y-2">
@@ -1021,7 +1021,7 @@ export default function CarouselGenerator({ onLogout }: { onLogout: () => void }
                       </div>
                       <div className="flex-1">
                         <p className="text-sm font-medium text-slate-900 dark:text-white">Logo Enviado</p>
-                        <p className="text-xs text-slate-500">Visível em todos os slides</p>
+                        <p className="text-xs text-slate-500">VisÃ­vel em todos os slides</p>
                       </div>
                       <button
                         onClick={() => setBrandLogo(null)}
@@ -1100,8 +1100,8 @@ export default function CarouselGenerator({ onLogout }: { onLogout: () => void }
                         ))
                       ) : (
                         <>
-                          <option value="SAUDE">🍎 Saúde, Nutrição</option>
-                          <option value="MINDSET">🧠 Mindset, Psicologia</option>
+                          <option value="SAUDE">ðŸŽ SaÃºde, NutriÃ§Ã£o</option>
+                          <option value="MINDSET">ðŸ§  Mindset, Psicologia</option>
                         </>
                       )}
                     </select>
@@ -1112,7 +1112,7 @@ export default function CarouselGenerator({ onLogout }: { onLogout: () => void }
                       {customApiKey && <span className="text-[10px] text-emerald-600 font-bold flex items-center gap-1"><span className="material-symbols-outlined text-[12px]">lock</span> Salva</span>}
                     </div>
                     <p className="text-[10px] text-slate-500 dark:text-slate-400 leading-tight">
-                      Insira sua chave para uso ilimitado. Ela é <strong>criptografada e salva apenas no seu navegador</strong>. Você só precisa inserir uma vez.
+                      Insira sua chave para uso ilimitado. Ela Ã© <strong>criptografada e salva apenas no seu navegador</strong>. VocÃª sÃ³ precisa inserir uma vez.
                     </p>
                     <input
                       type="password"
@@ -1216,14 +1216,14 @@ export default function CarouselGenerator({ onLogout }: { onLogout: () => void }
               <button
                 onClick={() => setViewMode('grid')}
                 className={`p-1.5 rounded ${viewMode === 'grid' ? 'bg-slate-100 dark:bg-primary/20 text-primary' : 'hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-500 dark:text-slate-400'}`}
-                title="Visualização em Grade"
+                title="VisualizaÃ§Ã£o em Grade"
               >
                 <span className="material-symbols-outlined text-[18px]">grid_view</span>
               </button>
               <button
                 onClick={() => setViewMode('carousel')}
                 className={`p-1.5 rounded ${viewMode === 'carousel' ? 'bg-slate-100 dark:bg-primary/20 text-primary' : 'hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-500 dark:text-slate-400'}`}
-                title="Visualização em Carrossel"
+                title="VisualizaÃ§Ã£o em Carrossel"
               >
                 <span className="material-symbols-outlined text-[18px]">view_carousel</span>
               </button>
@@ -1361,7 +1361,7 @@ export default function CarouselGenerator({ onLogout }: { onLogout: () => void }
                       <div className="absolute inset-0 bg-black/80 opacity-0 active:opacity-100 sm:group-hover/slide:opacity-100 transition-opacity flex flex-col items-center justify-center p-6 backdrop-blur-[4px] z-[60] sm:pointer-events-none">
                         <div className="flex w-full h-full gap-2 sm:gap-4 items-center justify-center">
                           <div className="flex flex-col gap-2 w-1/2 max-w-[160px]">
-                            <span className="text-[10px] text-white/50 font-bold uppercase tracking-wider mb-1">Conteúdo</span>
+                            <span className="text-[10px] text-white/50 font-bold uppercase tracking-wider mb-1">ConteÃºdo</span>
                             <button
                               onClick={() => handleEditClick(index)}
                               className="pointer-events-auto flex items-center justify-start gap-3 bg-white/10 text-white hover:bg-white/20 px-4 py-2.5 rounded-xl text-xs font-bold transition-all border border-white/10">
@@ -1382,7 +1382,7 @@ export default function CarouselGenerator({ onLogout }: { onLogout: () => void }
                           <div className="w-px h-[80%] bg-white/10 shrink-0"></div>
 
                           <div className="flex flex-col gap-2 w-1/2 max-w-[160px]">
-                            <span className="text-[10px] text-white/50 font-bold uppercase tracking-wider mb-1">Mídia</span>
+                            <span className="text-[10px] text-white/50 font-bold uppercase tracking-wider mb-1">MÃ­dia</span>
                             <button
                               onClick={() => regenerateImageForSlide(index)}
                               disabled={generatingImages[index]}
@@ -1442,16 +1442,16 @@ export default function CarouselGenerator({ onLogout }: { onLogout: () => void }
               </div>
               <div className="p-6 space-y-4">
                 <div className="space-y-2">
-                  <label className="text-sm font-semibold text-slate-700 dark:text-slate-300">Título</label>
+                  <label className="text-sm font-semibold text-slate-700 dark:text-slate-300">TÃ­tulo</label>
                   <textarea
                     value={editTitle}
                     onChange={(e) => setEditTitle(e.target.value)}
                     className="w-full bg-slate-50 dark:bg-surface-darker border border-slate-200 dark:border-border-dark rounded-xl p-3 text-sm text-slate-900 dark:text-white focus:ring-2 focus:ring-primary focus:border-transparent resize-none h-24"
-                    placeholder="Digite o título do slide..."
+                    placeholder="Digite o tÃ­tulo do slide..."
                   />
                 </div>
                 <div className="space-y-2">
-                  <label className="text-sm font-semibold text-slate-700 dark:text-slate-300">Subtítulo / Texto de Apoio</label>
+                  <label className="text-sm font-semibold text-slate-700 dark:text-slate-300">SubtÃ­tulo / Texto de Apoio</label>
                   <textarea
                     value={editSubtitle}
                     onChange={(e) => setEditSubtitle(e.target.value)}
@@ -1469,7 +1469,7 @@ export default function CarouselGenerator({ onLogout }: { onLogout: () => void }
                 <button
                   onClick={handleSaveEdit}
                   className="px-6 py-2 text-sm font-bold text-white bg-primary hover:bg-primary/90 rounded-lg shadow-md shadow-primary/20 transition-all">
-                  Salvar Alterações
+                  Salvar AlteraÃ§Ãµes
                 </button>
               </div>
             </div>

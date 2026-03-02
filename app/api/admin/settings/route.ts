@@ -1,4 +1,4 @@
-import { NextResponse } from 'next/server';
+﻿import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { getSession } from '@/lib/auth/session';
 
@@ -8,13 +8,13 @@ export async function PUT(request: Request) {
     try {
         const session = await getSession();
         if (!session || session.role !== 'ADMIN') {
-            return NextResponse.json({ error: 'Não autorizado.' }, { status: 401 });
+            return NextResponse.json({ error: 'NÃ£o autorizado.' }, { status: 401 });
         }
 
         const { prompts } = await request.json();
 
         if (!Array.isArray(prompts)) {
-            return NextResponse.json({ error: 'Dados inválidos.' }, { status: 400 });
+            return NextResponse.json({ error: 'Dados invÃ¡lidos.' }, { status: 400 });
         }
 
         for (const p of prompts) {

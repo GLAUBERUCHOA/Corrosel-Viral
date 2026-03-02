@@ -1,4 +1,4 @@
-'use client';
+﻿'use client';
 
 import { useState } from 'react';
 
@@ -28,7 +28,7 @@ export function ImageSettingsForm({ initialSettings }: { initialSettings: ImageS
                 id: 'new_' + Date.now(),
                 nicheKey: 'NICHO_' + Math.floor(Math.random() * 1000),
                 label: 'Novo Nicho...',
-                instruction: 'Nova regra de criação de imagem...',
+                instruction: 'Nova regra de criaÃ§Ã£o de imagem...',
                 isDeletable: true
             }
         ]);
@@ -54,7 +54,7 @@ export function ImageSettingsForm({ initialSettings }: { initialSettings: ImageS
                 setMessage('Erro ao deletar o nicho.');
             }
         } catch (err) {
-            setMessage('Erro de conexão ao deletar.');
+            setMessage('Erro de conexÃ£o ao deletar.');
         }
     };
 
@@ -66,7 +66,7 @@ export function ImageSettingsForm({ initialSettings }: { initialSettings: ImageS
         const keys = settings.map(s => s.nicheKey);
         const uniqueKeys = new Set(keys);
         if (keys.length !== uniqueKeys.size) {
-            setMessage('Erro: Existem nichos com a mesma "Chave do Sitema" (ex: NICHO_XXX). Cada chave deve ser única.');
+            setMessage('Erro: Existem nichos com a mesma "Chave do Sitema" (ex: NICHO_XXX). Cada chave deve ser Ãºnica.');
             setIsSaving(false);
             return;
         }
@@ -85,7 +85,7 @@ export function ImageSettingsForm({ initialSettings }: { initialSettings: ImageS
                 setMessage('Erro ao salvar.');
             }
         } catch (err) {
-            setMessage('Erro de conexão. Tente novamente.');
+            setMessage('Erro de conexÃ£o. Tente novamente.');
         } finally {
             setIsSaving(false);
             if (!message.startsWith('Erro')) {
@@ -104,7 +104,7 @@ export function ImageSettingsForm({ initialSettings }: { initialSettings: ImageS
 
             <div className="flex justify-between items-center mb-4">
                 <p className="text-slate-500">
-                    Defina estilos e comportamentos específicos de geração de imagem para cada nicho.
+                    Defina estilos e comportamentos especÃ­ficos de geraÃ§Ã£o de imagem para cada nicho.
                 </p>
                 <button
                     type="button"
@@ -142,7 +142,7 @@ export function ImageSettingsForm({ initialSettings }: { initialSettings: ImageS
                         </div>
                     </div>
 
-                    <label className="block text-xs font-semibold text-slate-500 uppercase tracking-wider mb-2">Instruções para o Criador de Imagens (Claude/Gemini API)</label>
+                    <label className="block text-xs font-semibold text-slate-500 uppercase tracking-wider mb-2">InstruÃ§Ãµes para o Criador de Imagens (Claude/Gemini API)</label>
                     <textarea
                         value={s.instruction}
                         onChange={(e) => handleChange(index, 'instruction', e.target.value)}

@@ -1,4 +1,4 @@
-import { NextResponse } from 'next/server';
+﻿import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { getSession } from '@/lib/auth/session';
 import bcrypt from 'bcryptjs';
@@ -7,7 +7,7 @@ export async function GET() {
     try {
         const session = await getSession();
         if (!session || session.role !== 'ADMIN') {
-            return NextResponse.json({ error: 'Não autorizado.' }, { status: 401 });
+            return NextResponse.json({ error: 'NÃ£o autorizado.' }, { status: 401 });
         }
 
         const users = await prisma.user.findMany({
@@ -24,7 +24,7 @@ export async function POST(request: Request) {
     try {
         const session = await getSession();
         if (!session || session.role !== 'ADMIN') {
-            return NextResponse.json({ error: 'Não autorizado.' }, { status: 401 });
+            return NextResponse.json({ error: 'NÃ£o autorizado.' }, { status: 401 });
         }
 
         const { name, email, password, role } = await request.json();
@@ -35,7 +35,7 @@ export async function POST(request: Request) {
 
         const existingUser = await prisma.user.findUnique({ where: { email } });
         if (existingUser) {
-            return NextResponse.json({ error: 'E-mail já está em uso.' }, { status: 400 });
+            return NextResponse.json({ error: 'E-mail jÃ¡ estÃ¡ em uso.' }, { status: 400 });
         }
 
         const hashedPassword = await bcrypt.hash(password, 10);
@@ -52,7 +52,7 @@ export async function POST(request: Request) {
 
         return NextResponse.json({ success: true, user });
     } catch (error) {
-        return NextResponse.json({ error: 'Erro ao criar usuário.' }, { status: 500 });
+        return NextResponse.json({ error: 'Erro ao criar usuÃ¡rio.' }, { status: 500 });
     }
 }
 
@@ -60,7 +60,7 @@ export async function PUT(request: Request) {
     try {
         const session = await getSession();
         if (!session || session.role !== 'ADMIN') {
-            return NextResponse.json({ error: 'Não autorizado.' }, { status: 401 });
+            return NextResponse.json({ error: 'NÃ£o autorizado.' }, { status: 401 });
         }
 
         const { id, name, email, password, role } = await request.json();
@@ -83,7 +83,7 @@ export async function PUT(request: Request) {
 
         return NextResponse.json({ success: true, user });
     } catch (error) {
-        return NextResponse.json({ error: 'Erro ao atualizar usuário.' }, { status: 500 });
+        return NextResponse.json({ error: 'Erro ao atualizar usuÃ¡rio.' }, { status: 500 });
     }
 }
 
@@ -91,18 +91,18 @@ export async function DELETE(request: Request) {
     try {
         const session = await getSession();
         if (!session || session.role !== 'ADMIN') {
-            return NextResponse.json({ error: 'Não autorizado.' }, { status: 401 });
+            return NextResponse.json({ error: 'NÃ£o autorizado.' }, { status: 401 });
         }
 
         const { searchParams } = new URL(request.url);
         const id = searchParams.get('id');
 
         if (!id) {
-            return NextResponse.json({ error: 'ID não fornecido.' }, { status: 400 });
+            return NextResponse.json({ error: 'ID nÃ£o fornecido.' }, { status: 400 });
         }
 
         if (id === session.id) {
-            return NextResponse.json({ error: 'Você não pode excluir sua própria conta enquanto estiver logado.' }, { status: 400 });
+            return NextResponse.json({ error: 'VocÃª nÃ£o pode excluir sua prÃ³pria conta enquanto estiver logado.' }, { status: 400 });
         }
 
         await prisma.user.delete({
@@ -111,6 +111,6 @@ export async function DELETE(request: Request) {
 
         return NextResponse.json({ success: true });
     } catch (error) {
-        return NextResponse.json({ error: 'Erro ao deletar usuário.' }, { status: 500 });
+        return NextResponse.json({ error: 'Erro ao deletar usuÃ¡rio.' }, { status: 500 });
     }
 }

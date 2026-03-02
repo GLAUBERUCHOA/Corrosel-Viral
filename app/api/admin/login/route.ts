@@ -1,4 +1,4 @@
-import { NextResponse } from 'next/server';
+﻿import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import bcrypt from 'bcryptjs';
 import { encrypt } from '@/lib/auth/session';
@@ -13,16 +13,16 @@ export async function POST(request: Request) {
         });
 
         if (!user) {
-            return NextResponse.json({ error: 'Credenciais inválidas.' }, { status: 401 });
+            return NextResponse.json({ error: 'Credenciais invÃ¡lidas.' }, { status: 401 });
         }
 
         const isPasswordValid = await bcrypt.compare(password, user.password);
 
         if (!isPasswordValid) {
-            return NextResponse.json({ error: 'Credenciais inválidas.' }, { status: 401 });
+            return NextResponse.json({ error: 'Credenciais invÃ¡lidas.' }, { status: 401 });
         }
 
-        // Criar sessão JWT
+        // Criar sessÃ£o JWT
         const session = await encrypt({ id: user.id, email: user.email, role: user.role });
 
         (await cookies()).set('session', session, {

@@ -1,4 +1,4 @@
-'use client';
+﻿'use client';
 import React, { useState } from 'react';
 
 export default function LoginScreen({ onLogin }: { onLogin: (email: string) => void }) {
@@ -33,7 +33,7 @@ export default function LoginScreen({ onLogin }: { onLogin: (email: string) => v
       if (response.ok && data.success) {
         onLogin(cleanEmail);
       } else {
-        setError(data.error || 'E-mail não autorizado. Verifique e tente novamente.');
+        setError(data.error || 'E-mail nÃ£o autorizado. Verifique e tente novamente.');
       }
     } catch (err) {
       setError('Erro ao conectar com o servidor. Tente novamente mais tarde.');
@@ -60,7 +60,7 @@ export default function LoginScreen({ onLogin }: { onLogin: (email: string) => v
             Bem-vindo de volta
           </h2>
           <p className="text-center text-slate-500 dark:text-slate-400 mb-10 text-sm font-medium">
-            Faça login para acessar o Carrossel Viral Lab
+            FaÃ§a login para acessar o Carrossel Viral Lab
           </p>
           
           <form onSubmit={handleSubmit} className="space-y-6">
@@ -109,7 +109,7 @@ export default function LoginScreen({ onLogin }: { onLogin: (email: string) => v
           
           <div className="mt-8 text-center">
             <p className="text-xs text-slate-400 dark:text-slate-500">
-              Acesso restrito a usuários autorizados.
+              Acesso restrito a usuÃ¡rios autorizados.
             </p>
           </div>
         </div>

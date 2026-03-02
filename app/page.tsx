@@ -69,11 +69,19 @@ export default function HomePage() {
 
             <a
               href="/login"
-              className={`inline-flex items-center justify-center gap-3 bg-gradient-to-r from-purple-600 to-indigo-600 text-white font-bold text-lg sm:text-xl px-10 py-5 rounded-2xl hover:scale-105 transition-all duration-300 animate-pulse ${primaryGlowingShadow} border border-purple-500/30 w-full sm:w-auto`}
+              className="inline-flex items-center justify-center gap-3 bg-gradient-to-r from-orange-500 to-amber-500 text-white font-black uppercase tracking-wide text-lg sm:text-xl px-10 py-5 rounded-full hover:scale-105 transition-all duration-300 shadow-[0_0_40px_rgba(245,158,11,0.4)] border-2 border-orange-400/50 w-full sm:w-auto mt-4"
             >
-              Tenha acesso imediato a tudo
+              SIM, EU QUERO VIRALIZAR HOJE!
               <ChevronDown className="w-6 h-6 animate-bounce" />
             </a>
+
+            {/* ESPAÇO PARA A IMAGEM PRINCIPAL DO HERO (Produto/Mockups ou Autor) */}
+            <div className="mt-16 w-full max-w-4xl mx-auto h-[400px] border border-slate-800 border-dashed rounded-[2rem] bg-slate-900/40 backdrop-blur-sm flex flex-col items-center justify-center text-slate-500 gap-4 group hover:border-slate-600 transition-colors relative overflow-hidden">
+              <div className="absolute inset-0 bg-gradient-to-t from-slate-950 to-transparent z-10"></div>
+              <ImageIcon size={48} className="text-slate-700 group-hover:text-slate-500 transition-colors z-20" />
+              <p className="font-medium z-20">[ESPAÇO 1] Insira aqui a foto da capa ou mockups do Sistema</p>
+              <span className="text-xs text-slate-600 z-20">(Sugestão: 1200x800px)</span>
+            </div>
           </FadeInSection>
         </section>
 
@@ -104,11 +112,17 @@ export default function HomePage() {
                 </div>
               </div>
 
-              <div className="max-w-4xl mx-auto bg-slate-900/50 backdrop-blur-sm border border-slate-800 rounded-3xl p-8 sm:p-10 relative">
+              <div className="max-w-4xl mx-auto bg-slate-900/50 backdrop-blur-sm border border-slate-800 rounded-3xl p-8 sm:p-10 relative mb-16">
                 <div className="absolute -top-4 -left-4 text-purple-500 opacity-20"><svg width="60" height="60" viewBox="0 0 24 24" fill="currentColor"><path d="M14.017 21v-7.391c0-5.704 3.731-9.57 8.983-10.609l.995 2.151c-2.432.917-3.995 3.638-3.995 5.849h4v10h-9.983zm-14.017 0v-7.391c0-5.704 3.748-9.57 9-10.609l.996 2.151c-2.433.917-3.996 3.638-3.996 5.849h3.983v10h-9.983z" /></svg></div>
                 <p className="text-lg sm:text-xl text-slate-300 italic text-center relative z-10 leading-relaxed">
                   "Gente que não sabia nem por onde começar... perfis pequenos, nichos saturados... Hoje? Conteúdos viralizando. Vendas pingando direto no direct toda semana."
                 </p>
+              </div>
+
+              {/* ESPAÇO PARA PRINTS E PROVAS SOCIAIS (Carrossel ou Grid) */}
+              <div className="w-full max-w-5xl mx-auto h-[350px] border border-slate-800 border-dashed rounded-[2rem] bg-slate-900/40 backdrop-blur-sm flex flex-col items-center justify-center text-slate-500 gap-4 group hover:border-slate-600 transition-colors">
+                <ImageIcon size={48} className="text-slate-700 group-hover:text-slate-500 transition-colors" />
+                <p className="font-medium">[ESPAÇO 2] Insira aqui os prints de métricas absurdas ou depoimentos do WhatsApp</p>
               </div>
             </FadeInSection>
           </div>
@@ -270,9 +284,9 @@ export default function HomePage() {
 
                   <a
                     href="/login"
-                    className={`inline-block w-full sm:w-auto bg-gradient-to-r from-purple-600 to-indigo-600 text-white font-bold text-xl px-12 py-6 rounded-2xl hover:scale-[1.02] transition-transform ${primaryGlowingShadow} border border-purple-500/30 mb-6`}
+                    className="inline-block w-full sm:w-auto bg-gradient-to-r from-orange-500 to-amber-500 text-white font-black uppercase tracking-widest text-lg sm:text-xl px-12 py-5 rounded-full hover:scale-105 transition-transform shadow-[0_0_30px_rgba(245,158,11,0.4)] border border-orange-400/50 mb-6"
                   >
-                    Tenha acesso imediato a tudo
+                    SIM, QUERO ACESSO IMEDIATO
                   </a>
                   <p className="text-sm text-slate-500 flex items-center justify-center gap-2">
                     <ShieldCheck className="w-4 h-4 text-green-400" /> Acesso liberado no seu e-mail imediatamente logo após a compra.
@@ -325,19 +339,28 @@ export default function HomePage() {
         </section>
 
         {/* AUTHOR SUMMARY */}
-        <section className="py-24 bg-black/40 border-t border-white/5 px-6">
-          <div className="max-w-4xl mx-auto flex flex-col md:flex-row items-center gap-12">
-            <div className="w-48 h-48 md:w-64 md:h-64 rounded-[2rem] bg-gradient-to-tr from-slate-800 to-slate-700 shrink-0 shadow-2xl overflow-hidden relative border border-slate-700">
-              <div className="absolute inset-0 flex items-center justify-center text-slate-500 font-medium">Foto Autor</div>
-              {/* <img src="..." alt="Leonardo Baltazar" className="w-full h-full object-cover" /> */}
+        <section className="py-24 bg-slate-900 border-t border-white/5 px-6">
+          <div className="max-w-5xl mx-auto flex flex-col md:flex-row items-center gap-16">
+            <div className="w-64 h-64 md:w-80 md:h-80 rounded-[2rem] bg-gradient-to-tr from-slate-800 to-slate-700 shrink-0 shadow-[0_0_50px_rgba(0,0,0,0.5)] overflow-hidden relative border border-slate-700 flex items-center justify-center group flex-col text-slate-500 border-dashed hover:border-slate-500 transition-colors">
+              <ImageIcon size={40} className="text-slate-600 group-hover:text-slate-400 transition-colors mb-2" />
+              <div className="text-sm font-medium text-center px-4">
+                [ESPAÇO 3]<br />Foto do Glauber <br /><span className="text-[10px] text-slate-600">(Com o drone ou em palestra)</span>
+              </div>
             </div>
             <div className="text-center md:text-left">
               <FadeInSection>
-                <h3 className="text-sm font-bold text-purple-400 uppercase tracking-widest mb-2">Quem criou este sistema?</h3>
-                <h2 className="text-3xl font-bold text-white mb-6">Leonardo Baltazar</h2>
-                <p className="text-slate-400 text-lg leading-relaxed">
-                  Especialista de bastidores que já escalou infoprodutos a múltiplos 6 dígitos mensais em tempo recorde utilizando "funcionários perfeitos" — codificando Agentes de Inteligência Artificial para substituir equipes de design e copywriting caras, lentas e ineficientes. Hoje, ele abre essa mesma tecnologia de guerra para o público.
-                </p>
+                <div className="inline-flex items-center gap-2 px-3 py-1 bg-slate-800 rounded-full text-slate-300 text-xs font-semibold tracking-wide mb-6">
+                  SOBRE O AUTOR
+                </div>
+                <h2 className="text-3xl md:text-5xl font-bold text-white mb-6">Quem é Glauber Uchoa?</h2>
+                <div className="text-slate-400 text-lg leading-relaxed space-y-4">
+                  <p>
+                    Estrategista digital e criador de ecossistemas que somam mais de 1,5 milhão de seguidores. Glauber transformou sua paixão por tecnologia e marketing em ferramentas práticas que eliminam o trabalho braçal de quem quer crescer na internet.
+                  </p>
+                  <p>
+                    Com o <strong className="text-white">Carrossel Viral Lab</strong>, ele traz a mesma tecnologia secreta que usa em seus grandes projetos para o seu negócio, simplificando o que parece complexo em 3 cliques para que você foque no que importa: <strong>vender e crescer.</strong>
+                  </p>
+                </div>
               </FadeInSection>
             </div>
           </div>
@@ -361,7 +384,7 @@ export default function HomePage() {
 
             <a
               href="/login"
-              className={`inline-block w-full sm:w-auto bg-gradient-to-r from-purple-600 to-indigo-600 text-white font-bold text-xl px-12 py-6 rounded-2xl hover:scale-105 transition-transform ${primaryGlowingShadow} border border-purple-500/30 mb-16`}
+              className="inline-block w-full sm:w-auto bg-gradient-to-r from-orange-500 to-amber-500 text-white font-black uppercase text-lg sm:text-xl px-12 py-6 rounded-full hover:scale-105 transition-transform shadow-[0_0_40px_rgba(245,158,11,0.4)] border border-orange-400/50 mb-16"
             >
               Começar a Viralizar Agora
             </a>

@@ -109,8 +109,8 @@ export default function HomePage() {
               <h2 className="text-3xl sm:text-4xl md:text-5xl font-extrabold text-white mb-4">
                 Veja o poder dos <span className="text-transparent bg-clip-text bg-gradient-to-r from-purple-400 to-indigo-400">Carrosséis Virais</span>
               </h2>
-              <p className="text-slate-400 text-base sm:text-lg max-w-2xl mx-auto">
-                No celular, passe o dedo para o lado e veja como transformamos assuntos comuns em postagens impossíveis de ignorar.
+              <p className="text-slate-400 text-base sm:text-lg max-w-2xl mx-auto font-medium">
+                Milhões de visualizações = audiência = seguidores = muitas vendas em qualquer nicho!
               </p>
             </FadeInSection>
           </div>

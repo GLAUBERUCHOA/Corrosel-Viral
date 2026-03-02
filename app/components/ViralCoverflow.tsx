@@ -1,7 +1,6 @@
 'use client';
 
 import React, { useRef, useEffect, useState } from 'react';
-import { ChevronLeft, ChevronRight } from 'lucide-react';
 
 const viralImages = [
     { id: 1, src: '/images/viral-1.jpg', alt: 'Carrossel Viral 1' },
@@ -79,7 +78,7 @@ export default function ViralCoverflow() {
                         <div
                             key={img.id}
                             onClick={() => scrollToIndex(idx)}
-                            className={`shrink-0 snap-center transition-all duration-500 ease-out cursor-pointer mx-3 sm:mx-4 relative
+                            className={`shrink-0 snap-center transition-all duration-500 ease-out cursor-pointer -mx-6 sm:-mx-8 relative
                 ${isActive
                                     ? 'z-30 scale-100 opacity-100 shadow-[0_20px_50px_rgba(168,85,247,0.4)] blur-none'
                                     : isAdjacent
@@ -110,12 +109,6 @@ export default function ViralCoverflow() {
             </div>
 
             <div className="flex items-center justify-center gap-4 sm:gap-6 mt-0 relative z-40">
-                <button
-                    onClick={() => scrollToIndex(Math.max(0, activeIndex - 1))}
-                    className="p-2 sm:p-2.5 rounded-full bg-slate-800/60 text-white hover:bg-slate-700 hover:text-purple-400 transition-colors shadow-sm border border-slate-700/50 backdrop-blur-md"
-                >
-                    <ChevronLeft size={24} />
-                </button>
                 <div className="flex gap-2.5">
                     {viralImages.map((_, idx) => (
                         <button
@@ -125,12 +118,6 @@ export default function ViralCoverflow() {
                         />
                     ))}
                 </div>
-                <button
-                    onClick={() => scrollToIndex(Math.min(viralImages.length - 1, activeIndex + 1))}
-                    className="p-2 sm:p-2.5 rounded-full bg-slate-800/60 text-white hover:bg-slate-700 hover:text-purple-400 transition-colors shadow-sm border border-slate-700/50 backdrop-blur-md"
-                >
-                    <ChevronRight size={24} />
-                </button>
             </div>
 
             <style dangerouslySetInnerHTML={{

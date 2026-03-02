@@ -112,20 +112,26 @@ const SimpleRichTextEditor = ({ value, onChange, placeholder }: { value: string,
         <div className="w-px h-5 bg-slate-300 dark:bg-slate-600 mx-1"></div>
 
         <span className="text-[10px] text-slate-500 font-bold uppercase ml-1">Letra:</span>
-        <div className="flex bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded p-0.5 gap-0.5 items-center">
-          {fgColors.map(c =>
-            <button key={`fg-${c}`} tabIndex={-1} onMouseDown={(e) => { e.preventDefault(); exec('foreColor', c); }} className="size-[14px] rounded-full border border-slate-300 dark:border-slate-600 shadow-sm" style={{ backgroundColor: c }} title={`Letra: ${c}`} />
-          )}
-        </div>
+        <input
+          type="color"
+          onChange={(e) => { exec('foreColor', e.target.value); }}
+          className="size-6 cursor-pointer border-0 p-0 bg-transparent rounded-full shadow-sm"
+          title="Cor da Letra"
+          defaultValue="#ffffff"
+        />
 
         <span className="text-[10px] text-slate-500 font-bold uppercase ml-2">Fundo:</span>
         <div className="flex bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded p-0.5 gap-0.5 items-center">
           <button tabIndex={-1} onMouseDown={(e) => { e.preventDefault(); exec('hiliteColor', 'transparent'); }} className="size-[14px] rounded-full border border-slate-300 flex items-center justify-center bg-slate-100 hover:bg-slate-200" title="Sem Fundo">
             <span className="material-symbols-outlined text-[10px] text-red-500 font-bold">close</span>
           </button>
-          {bgColors.map(c =>
-            <button key={`bg-${c}`} tabIndex={-1} onMouseDown={(e) => { e.preventDefault(); exec('hiliteColor', c); }} className="size-[14px] rounded-full border border-slate-300 dark:border-slate-600 shadow-sm" style={{ backgroundColor: c }} title={`Fundo: ${c}`} />
-          )}
+          <input
+            type="color"
+            onChange={(e) => { exec('hiliteColor', e.target.value); }}
+            className="size-4 cursor-pointer border-0 p-0 bg-transparent"
+            title="Cor de Fundo"
+            defaultValue="#000000"
+          />
         </div>
 
         <div className="w-px h-5 bg-slate-300 dark:bg-slate-600 mx-1"></div>
@@ -1010,6 +1016,41 @@ export default function CarouselGenerator({ onLogout }: { onLogout: () => void }
                 <div className="absolute bottom-3 right-3 text-xs text-slate-400 font-medium bg-slate-100 dark:bg-border-dark px-2 py-1 rounded">{content.length} caracteres</div>
               </div>
 
+              <div className="space-y-4 pt-4 border-t border-slate-100 dark:border-border-dark">
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="space-y-2">
+                    <label className="text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Tipografia</label>
+                    <select
+                      value={fontFamily}
+                      onChange={(e) => setFontFamily(e.target.value)}
+                      className="w-full bg-slate-50 dark:bg-surface-darker text-slate-900 dark:text-white border border-slate-200 dark:border-border-dark rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-primary outline-none cursor-pointer"
+                    >
+                      <option value="var(--font-poppins), sans-serif">Padrão (Poppins)</option>
+                      <option value="'Playfair Display', serif">Clássica (Playfair)</option>
+                      <option value="'Inter', sans-serif">Clean (Inter)</option>
+                      <option value="'Montserrat', sans-serif">Impacto (Montserrat)</option>
+                      <option value="'Courier New', monospace">Código (Monospace)</option>
+                    </select>
+                  </div>
+                  <div className="space-y-2">
+                    <label className="text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Alinhamento</label>
+                    <div className="flex bg-slate-50 dark:bg-surface-darker border border-slate-200 dark:border-border-dark rounded-lg h-[38px] overflow-hidden">
+                      <button onClick={(e) => { e.preventDefault(); setTextAlign('text-left'); }} className={`flex-1 flex items-center justify-center transition-colors ${textAlign === 'text-left' ? 'bg-primary text-white' : 'text-slate-500 hover:bg-slate-200 dark:hover:bg-slate-800'}`}>
+                        <span className="material-symbols-outlined text-[18px]">format_align_left</span>
+                      </button>
+                      <div className="w-px bg-slate-200 dark:bg-border-dark"></div>
+                      <button onClick={(e) => { e.preventDefault(); setTextAlign('text-center'); }} className={`flex-1 flex items-center justify-center transition-colors ${textAlign === 'text-center' ? 'bg-primary text-white' : 'text-slate-500 hover:bg-slate-200 dark:hover:bg-slate-800'}`}>
+                        <span className="material-symbols-outlined text-[18px]">format_align_center</span>
+                      </button>
+                      <div className="w-px bg-slate-200 dark:bg-border-dark"></div>
+                      <button onClick={(e) => { e.preventDefault(); setTextAlign('text-right'); }} className={`flex-1 flex items-center justify-center transition-colors ${textAlign === 'text-right' ? 'bg-primary text-white' : 'text-slate-500 hover:bg-slate-200 dark:hover:bg-slate-800'}`}>
+                        <span className="material-symbols-outlined text-[18px]">format_align_right</span>
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
               <div className="flex flex-col gap-3 pt-3 border-t border-slate-100 dark:border-border-dark">
                 <div className="flex items-center justify-between">
                   <div className="flex flex-col">
@@ -1174,40 +1215,7 @@ export default function CarouselGenerator({ onLogout }: { onLogout: () => void }
                   </div>
                 </div>
               </div>
-              <div className="space-y-4 pt-4 border-t border-slate-100 dark:border-border-dark">
-                <div className="grid grid-cols-2 gap-4">
-                  <div className="space-y-2">
-                    <label className="text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Tipografia</label>
-                    <select
-                      value={fontFamily}
-                      onChange={(e) => setFontFamily(e.target.value)}
-                      className="w-full bg-slate-50 dark:bg-surface-darker text-slate-900 dark:text-white border border-slate-200 dark:border-border-dark rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-primary outline-none cursor-pointer"
-                    >
-                      <option value="var(--font-poppins), sans-serif">Padrão (Poppins)</option>
-                      <option value="'Playfair Display', serif">Clássica (Playfair)</option>
-                      <option value="'Inter', sans-serif">Clean (Inter)</option>
-                      <option value="'Montserrat', sans-serif">Impacto (Montserrat)</option>
-                      <option value="'Courier New', monospace">Código (Monospace)</option>
-                    </select>
-                  </div>
-                  <div className="space-y-2">
-                    <label className="text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Alinhamento</label>
-                    <div className="flex bg-slate-50 dark:bg-surface-darker border border-slate-200 dark:border-border-dark rounded-lg h-[38px] overflow-hidden">
-                      <button onClick={(e) => { e.preventDefault(); setTextAlign('text-left'); }} className={`flex-1 flex items-center justify-center transition-colors ${textAlign === 'text-left' ? 'bg-primary text-white' : 'text-slate-500 hover:bg-slate-200 dark:hover:bg-slate-800'}`}>
-                        <span className="material-symbols-outlined text-[18px]">format_align_left</span>
-                      </button>
-                      <div className="w-px bg-slate-200 dark:bg-border-dark"></div>
-                      <button onClick={(e) => { e.preventDefault(); setTextAlign('text-center'); }} className={`flex-1 flex items-center justify-center transition-colors ${textAlign === 'text-center' ? 'bg-primary text-white' : 'text-slate-500 hover:bg-slate-200 dark:hover:bg-slate-800'}`}>
-                        <span className="material-symbols-outlined text-[18px]">format_align_center</span>
-                      </button>
-                      <div className="w-px bg-slate-200 dark:bg-border-dark"></div>
-                      <button onClick={(e) => { e.preventDefault(); setTextAlign('text-right'); }} className={`flex-1 flex items-center justify-center transition-colors ${textAlign === 'text-right' ? 'bg-primary text-white' : 'text-slate-500 hover:bg-slate-200 dark:hover:bg-slate-800'}`}>
-                        <span className="material-symbols-outlined text-[18px]">format_align_right</span>
-                      </button>
-                    </div>
-                  </div>
-                </div>
-              </div>
+
               <div className="space-y-3 pt-4 border-t border-slate-100 dark:border-border-dark">
                 <label className="text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Marca</label>
 
@@ -1548,16 +1556,16 @@ export default function CarouselGenerator({ onLogout }: { onLogout: () => void }
 
                             {(brandHandle || brandLogo) && (
                               <div className={`w-full h-0 shrink-0 relative z-[60] flex items-center justify-center ${!ctaImage ? 'mb-10 mt-2' : ''}`}>
-                                <div className="flex items-center gap-0.5 px-2 py-0.5 rounded-full bg-black/40 backdrop-blur-lg border border-white/20 shadow-lg absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 mt-0.5" style={{ minWidth: 'fit-content' }}>
+                                <div className="flex items-center gap-[2px] pr-1.5 pl-0.5 py-0.5 rounded-full bg-black/40 backdrop-blur-lg shadow-lg absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 mt-0.5 border border-white/10" style={{ minWidth: 'fit-content' }}>
                                   {brandLogo && (
-                                    <div className={`size-3 sm:size-[14px] rounded-full overflow-hidden shrink-0 shadow-sm ring-1 ring-white/50 bg-white`}>
+                                    <div className={`size-3.5 sm:size-4 rounded-full overflow-hidden shrink-0 shadow-sm bg-white`}>
                                       <img src={brandLogo} alt="Logo" className="w-full h-full object-cover" />
                                     </div>
                                   )}
                                   {brandHandle && (
-                                    <div className={`flex items-center gap-[2px] text-[6px] sm:text-[7px] font-bold tracking-wider text-white drop-shadow-md pr-1`}>
-                                      <span className="ml-0.5">{brandHandle}</span>
-                                      <span className="material-symbols-outlined text-[6px] sm:text-[7px] text-blue-500 fill" style={{ fontVariationSettings: "'FILL' 1" }}>verified</span>
+                                    <div className={`flex items-center gap-0.5 text-[6px] sm:text-[7px] font-bold tracking-wider text-white drop-shadow-md`}>
+                                      <span className="ml-[1px]">{brandHandle}</span>
+                                      <span className="material-symbols-outlined text-[5px] sm:text-[6px] text-blue-500 fill translate-y-[0.5px]" style={{ fontVariationSettings: "'FILL' 1" }}>verified</span>
                                     </div>
                                   )}
                                 </div>
@@ -1618,16 +1626,16 @@ export default function CarouselGenerator({ onLogout }: { onLogout: () => void }
 
                           <div className="w-full h-0 shrink-0 relative z-[60] flex items-center justify-center">
                             {(brandHandle || brandLogo) && (
-                              <div className="flex items-center gap-0.5 px-2 py-0.5 rounded-full bg-black/40 backdrop-blur-lg border border-white/20 shadow-lg absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 mt-0.5" style={{ minWidth: 'fit-content' }}>
+                              <div className="flex items-center gap-[2px] pr-1.5 pl-0.5 py-0.5 rounded-full bg-black/40 backdrop-blur-lg shadow-lg absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 mt-0.5 border border-white/10" style={{ minWidth: 'fit-content' }}>
                                 {brandLogo && (
-                                  <div className={`size-3 sm:size-[14px] rounded-full overflow-hidden shrink-0 shadow-sm ring-1 ring-white/50 bg-white`}>
+                                  <div className={`size-3.5 sm:size-4 rounded-full overflow-hidden shrink-0 shadow-sm bg-white`}>
                                     <img src={brandLogo} alt="Logo" className="w-full h-full object-cover" />
                                   </div>
                                 )}
                                 {brandHandle && (
-                                  <div className={`flex items-center gap-[2px] text-[6px] sm:text-[7px] font-bold tracking-wider text-white drop-shadow-md pr-1`}>
-                                    <span className="ml-0.5">{brandHandle}</span>
-                                    <span className="material-symbols-outlined text-[6px] sm:text-[7px] text-blue-500 fill" style={{ fontVariationSettings: "'FILL' 1" }}>verified</span>
+                                  <div className={`flex items-center gap-0.5 text-[6px] sm:text-[7px] font-bold tracking-wider text-white drop-shadow-md`}>
+                                    <span className="ml-[1px]">{brandHandle}</span>
+                                    <span className="material-symbols-outlined text-[5px] sm:text-[6px] text-blue-500 fill translate-y-[0.5px]" style={{ fontVariationSettings: "'FILL' 1" }}>verified</span>
                                   </div>
                                 )}
                               </div>

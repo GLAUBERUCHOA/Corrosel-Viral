@@ -130,6 +130,38 @@ export default function CarouselGenerator({ onLogout }: { onLogout: () => void }
   const [customColor, setCustomColor] = useState('#6366f1');
   const [isMobile, setIsMobile] = useState(false);
   const [viewMode, setViewMode] = useState<'grid' | 'carousel'>('grid');
+
+  const [imagePosMap, setImagePosMap] = useState<Record<number, number>>({});
+  const isDraggingImg = useRef<{ index: number, startY: number, startPos: number } | null>(null);
+
+  useEffect(() => {
+    const handleMouseMove = (e: MouseEvent) => {
+      if (isDraggingImg.current) {
+        const { index, startY, startPos } = isDraggingImg.current;
+        const deltaY = e.clientY - startY;
+        const deltaPercent = (deltaY / window.innerHeight) * 150;
+        let newPos = startPos + deltaPercent;
+        newPos = Math.max(0, Math.min(100, newPos));
+        setImagePosMap(prev => ({ ...prev, [index]: newPos }));
+      }
+    };
+    const handleMouseUp = () => {
+      isDraggingImg.current = null;
+    };
+    window.addEventListener('mousemove', handleMouseMove);
+    window.addEventListener('mouseup', handleMouseUp);
+    return () => {
+      window.removeEventListener('mousemove', handleMouseMove);
+      window.removeEventListener('mouseup', handleMouseUp);
+    };
+  }, []);
+
+  const handleImgMouseDown = (e: React.MouseEvent, index: number) => {
+    e.preventDefault();
+    const currentPos = imagePosMap[index] ?? 50;
+    isDraggingImg.current = { index, startY: e.clientY, startPos: currentPos };
+  };
+
   const fileInputRef = useRef<HTMLInputElement>(null);
   const individualFileInputRef = useRef<HTMLInputElement>(null);
   const brandLogoInputRef = useRef<HTMLInputElement>(null);
@@ -846,7 +878,7 @@ export default function CarouselGenerator({ onLogout }: { onLogout: () => void }
                 <textarea
                   className={`w-full h-48 border rounded-xl p-4 text-sm focus:ring-2 focus:ring-primary focus:border-transparent resize-none leading-relaxed font-sans transition-colors ${isIuryMode ? 'bg-primary/5 dark:bg-primary/10 border-primary/20 text-indigo-900 dark:text-indigo-100 placeholder:text-indigo-400 dark:placeholder:text-indigo-300' : 'bg-slate-50 dark:bg-surface-darker border-slate-200 dark:border-border-dark text-slate-700 dark:text-slate-300 placeholder:text-slate-400 dark:placeholder:text-slate-600'}`}
                   style={{ fontFamily: 'var(--font-poppins), sans-serif' }}
-                  placeholder={isIuryMode ? 'Deixe o Iury fazer o trabalho. Escreva um tema, cole um rascunho completo, reclame de um nicho... e veja a mágica visceral acontecer.' : 'Cole o texto dos seus carrosséis aqui, clique em gerar e veja a mágica acontecer...'}
+                  placeholder={isIuryMode ? 'Deixe o Iury fazer o trabalho. Escreva um tema, cole um rascunho completo, reclame de um nicho... e veja a mágica visceral acontecer.' : 'Modo manual ativado. Cole SEU TEXTO FORMATADO aqui e clique em gerar.\n\n⚠️ REGRA DE OURO:\nSeu slide não pode ter mais que 250 caracteres (linhas de texto demais vão sobrescrever sua foto principal!).\n\nUse este formato nativo para cada slide:\n\nSLIDE 01:\n[TÍTULO]: Título explosivo aqui\n[SUBTÍTULO]: Texto da narrativa curto aqui...\n\nSLIDE 02:\n[TÍTULO]: Segundo título...'}
                   value={content}
                   onChange={(e) => setContent(e.target.value)}
                 ></textarea>
@@ -1321,6 +1353,13 @@ export default function CarouselGenerator({ onLogout }: { onLogout: () => void }
 
                   return (
                     <div key={index} className={`relative group/slide ${getSlideDimensions()} shrink-0 rounded-2xl overflow-hidden shadow-2xl transition-transform hover:-translate-y-2 duration-300 snap-center`}>
+                      {totalLength > 250 && !isIuryMode && (
+                        <div className="absolute top-4 left-0 right-0 z-[100] flex justify-center pointer-events-none">
+                          <div className="bg-red-600/95 backdrop-blur-sm border border-red-400 text-white text-[10px] sm:text-xs font-bold px-3 py-1.5 rounded-full shadow-2xl shadow-red-500/50 flex items-center gap-1.5 animate-pulse">
+                            <span className="material-symbols-outlined text-[14px]">warning</span> Texto muito longo ({totalLength} carac.)
+                          </div>
+                        </div>
+                      )}
                       <div
                         ref={(el) => { slideRefs.current[index] = el; }}
                         className={`absolute inset-0 flex flex-col ${theme.bgClass}`}
@@ -1341,9 +1380,15 @@ export default function CarouselGenerator({ onLogout }: { onLogout: () => void }
                               )}
                             </div>
                           )}
-                          <a href={imageSrc} target="_blank" rel="noopener noreferrer" className="block h-full w-full relative z-30">
-                            <div className="absolute inset-0 bg-cover bg-center transition-transform duration-500 group-hover/image:scale-105" style={{ backgroundImage: `url('${imageSrc}')` }}></div>
-                          </a>
+                          <div
+                            className="block h-full w-full relative z-30 cursor-ns-resize group/imgdrag"
+                            onMouseDown={(e) => handleImgMouseDown(e, index)}
+                          >
+                            <div className="absolute inset-0 bg-cover transition-transform duration-500 pointer-events-none" style={{ backgroundImage: `url('${imageSrc}')`, backgroundPosition: `center ${imagePosMap[index] ?? 50}%` }}></div>
+                            <div className="absolute top-4 right-4 bg-black/60 text-white text-[10px] px-2 py-1 rounded-lg backdrop-blur-sm opacity-0 group-hover/imgdrag:opacity-100 transition-opacity flex items-center gap-1.5 pointer-events-none shadow-lg border border-white/10">
+                              <span className="material-symbols-outlined text-[14px] animate-bounce">swap_vert</span> Arraste p/ mover
+                            </div>
+                          </div>
                         </div>
                         <div className={`w-full px-8 pt-1 flex flex-col justify-end shrink-0 z-20 relative ${index === 0 ? 'pb-14' : 'pb-8'} ${textAlign}`} style={{ fontFamily }}>
                           <div className={`flex flex-col gap-2 ${textAlign === 'text-center' ? 'items-center text-center' : textAlign === 'text-right' ? 'items-end text-right' : 'items-start text-left'}`}>

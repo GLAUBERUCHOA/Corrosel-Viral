@@ -78,7 +78,7 @@ export default function ViralCoverflow() {
                         <div
                             key={img.id}
                             onClick={() => scrollToIndex(idx)}
-                            className={`shrink-0 snap-center transition-all duration-500 ease-out cursor-pointer -mx-6 sm:-mx-8 relative
+                            className={`shrink-0 snap-center transition-all duration-500 ease-out cursor-pointer mx-0 sm:mx-1 relative
                 ${isActive
                                     ? 'z-30 scale-100 opacity-100 shadow-[0_20px_50px_rgba(168,85,247,0.4)] blur-none'
                                     : isAdjacent

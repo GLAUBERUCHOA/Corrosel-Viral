@@ -73,11 +73,12 @@ export default function HomePage() {
             </div>
 
             <div className="flex flex-col items-center justify-center relative">
-              <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-full h-[120%] bg-orange-500/20 blur-[60px] rounded-full pointer-events-none z-0 animate-pulse"></div>
+              <div className="absolute top-0 left-0 w-full h-full border border-orange-500/50 rounded-full animate-[ping_2s_cubic-bezier(0,0,0.2,1)_infinite] z-0"></div>
+              <div className="absolute top-0 left-0 w-full h-full border border-amber-500/30 rounded-full animate-[ping_2.5s_cubic-bezier(0,0,0.2,1)_infinite] delay-150 z-0"></div>
 
               <a
                 href="/login"
-                className="relative z-10 inline-flex flex-col sm:flex-row items-center justify-center gap-1 sm:gap-3 bg-gradient-to-r from-orange-500 to-amber-500 text-white font-black uppercase tracking-wide text-base sm:text-lg px-8 py-4 sm:px-10 sm:py-5 rounded-full hover:scale-105 transition-all duration-300 shadow-[0_0_50px_rgba(245,158,11,0.6)] border border-orange-400/80 w-[95%] sm:w-auto text-center leading-snug"
+                className="relative z-10 inline-flex flex-col sm:flex-row items-center justify-center gap-1 sm:gap-3 bg-gradient-to-r from-orange-500 to-amber-500 text-white font-black uppercase tracking-wide text-base sm:text-lg px-8 py-4 sm:px-10 sm:py-5 rounded-full hover:scale-105 transition-all duration-300 shadow-[0_0_20px_rgba(245,158,11,0.5)] border border-orange-400/80 w-[95%] sm:w-auto text-center leading-snug"
               >
                 <span>SIM, EU QUERO VIRALIZAR HOJE!</span>
               </a>
@@ -293,23 +294,27 @@ export default function HomePage() {
                 <div className="absolute bottom-0 left-0 w-64 h-64 bg-blue-500/20 blur-[80px] rounded-full"></div>
 
                 <div className="relative z-10">
-                  <div className="inline-block bg-red-500 text-white font-black uppercase text-sm tracking-widest px-4 py-1.5 rounded-full mb-8 animate-pulse shadow-[0_0_15px_rgba(239,68,68,0.5)]">
-                    ÚLTIMAS HORAS DA OFERTA ESPECIAL
+                  <div className="inline-flex items-center gap-2 bg-gradient-to-r from-slate-800 to-slate-900 border border-amber-500/30 text-amber-400 font-bold uppercase text-xs tracking-widest px-5 py-2 rounded-full mb-8 shadow-[0_0_15px_rgba(245,158,11,0.15)]">
+                    <span className="w-2 h-2 rounded-full bg-amber-400 animate-pulse"></span>
+                    Acesso vitalício terminando
                   </div>
 
                   <div className="text-slate-400 font-medium mb-4 text-base sm:text-lg max-w-xs mx-auto">Saia do amadorismo pelo preço de uma pizza por mês 🍕<br /> De <span className="line-through">R$ 397,00</span> por apenas:</div>
 
-                  <div className="flex flex-col sm:flex-row items-center justify-center gap-2 mb-10 mt-6">
-                    <span className="text-2xl sm:text-3xl font-bold text-purple-400">12x de</span>
-                    <span className="text-6xl sm:text-7xl font-black text-transparent bg-clip-text bg-gradient-to-r from-orange-400 to-amber-400 leading-none">R$ 9,74</span>
+                  <div className="flex flex-col items-center justify-center mt-6 mb-8">
+                    <div className="flex flex-col sm:flex-row items-center justify-center gap-2 mb-2">
+                      <span className="text-2xl sm:text-3xl font-bold text-purple-400">12x de</span>
+                      <span className="text-6xl sm:text-7xl font-black text-transparent bg-clip-text bg-gradient-to-r from-orange-400 to-amber-400 leading-none">R$ 9,74</span>
+                    </div>
+                    <div className="text-white/90 font-semibold text-lg bg-white/5 px-4 py-1 rounded-full border border-white/10">ou R$ 97,00 à vista no PIX</div>
                   </div>
-                  <div className="text-slate-500 font-medium mb-8">ou R$ 97,00 à vista no PIX</div>
 
-                  <div className="flex flex-col items-center justify-center relative">
-                    <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-full h-[120%] bg-orange-500/20 blur-[50px] rounded-full pointer-events-none z-0 animate-pulse"></div>
+                  <div className="flex flex-col items-center justify-center relative w-[95%] sm:w-auto mx-auto mb-6">
+                    <div className="absolute top-0 left-0 w-full h-full border border-orange-500/50 rounded-full animate-[ping_2s_cubic-bezier(0,0,0.2,1)_infinite] z-0"></div>
+                    <div className="absolute top-0 left-0 w-full h-full border border-amber-500/30 rounded-full animate-[ping_2.5s_cubic-bezier(0,0,0.2,1)_infinite] delay-150 z-0"></div>
                     <a
                       href="/login"
-                      className="relative z-10 inline-block w-[95%] sm:w-auto bg-gradient-to-r from-orange-500 to-amber-500 text-white font-black uppercase tracking-widest text-base sm:text-lg px-8 py-5 rounded-full hover:scale-105 transition-transform shadow-[0_0_40px_rgba(245,158,11,0.5)] border border-orange-400/50 mb-6 leading-snug"
+                      className="relative z-10 block w-full bg-gradient-to-r from-orange-500 to-amber-500 text-white font-black uppercase tracking-widest text-base sm:text-lg px-8 py-5 rounded-full hover:scale-105 transition-transform shadow-[0_0_20px_rgba(245,158,11,0.5)] border border-orange-400/50 leading-snug"
                     >
                       QUERO MEU ACESSO VITALÍCIO AGORA
                     </a>
@@ -412,11 +417,12 @@ export default function HomePage() {
               </div>
             </div>
 
-            <div className="flex flex-col items-center justify-center relative mb-16">
-              <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[80%] h-[150%] bg-orange-500/20 blur-[50px] rounded-full pointer-events-none z-0 animate-pulse"></div>
+            <div className="flex flex-col items-center justify-center relative mb-16 w-[95%] sm:w-auto mx-auto">
+              <div className="absolute top-0 left-0 w-full h-full border border-orange-500/50 rounded-full animate-[ping_2s_cubic-bezier(0,0,0.2,1)_infinite] z-0"></div>
+              <div className="absolute top-0 left-0 w-full h-full border border-amber-500/30 rounded-full animate-[ping_2.5s_cubic-bezier(0,0,0.2,1)_infinite] delay-150 z-0"></div>
               <a
                 href="/login"
-                className="relative z-10 inline-block w-[95%] sm:w-auto bg-gradient-to-r from-orange-500 to-amber-500 text-white font-black uppercase text-base sm:text-lg px-8 py-5 rounded-full hover:scale-105 transition-transform shadow-[0_0_40px_rgba(245,158,11,0.5)] border border-orange-400/50 leading-snug"
+                className="relative z-10 block w-full bg-gradient-to-r from-orange-500 to-amber-500 text-white font-black uppercase tracking-widest text-base sm:text-lg px-8 py-5 rounded-full hover:scale-105 transition-transform shadow-[0_0_20px_rgba(245,158,11,0.5)] border border-orange-400/50 leading-snug"
               >
                 APROVEITE O DESCONTO E GARANTA SUA VAGA
               </a>

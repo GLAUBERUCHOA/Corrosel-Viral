@@ -1367,8 +1367,8 @@ export default function CarouselGenerator({ onLogout }: { onLogout: () => void }
                   }
 
                   return (
-                    <div key={index} className="relative shrink-0 snap-center flex items-center group/slide-wrapper">
-                      <div className={`relative group/slide ${getSlideDimensions()} w-full h-full rounded-2xl overflow-hidden shadow-2xl transition-transform hover:-translate-y-2 duration-300`}>
+                    <div key={index} className={`relative shrink-0 snap-center flex items-center group/slide-wrapper ${getSlideDimensions()}`}>
+                      <div className="relative group/slide w-full h-full rounded-2xl overflow-hidden shadow-2xl transition-transform hover:-translate-y-2 duration-300">
                         {totalLength > 250 && !isIuryMode && (
                           <div className="absolute top-4 left-0 right-0 z-[100] flex justify-center pointer-events-none">
                             <div className="bg-red-600/95 backdrop-blur-sm border border-red-400 text-white text-[10px] sm:text-xs font-bold px-3 py-1.5 rounded-full shadow-2xl shadow-red-500/50 flex items-center gap-1.5 animate-pulse">

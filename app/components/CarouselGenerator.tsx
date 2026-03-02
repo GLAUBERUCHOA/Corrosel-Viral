@@ -6,19 +6,14 @@ import JSZip from 'jszip';
 import { saveAs } from 'file-saver';
 
 const getIuryPrompt = (toneMode: string, dynamicInstructions: Record<string, string>) => {
-  const selectedInstruction = dynamicInstructions[toneMode] ||
+  const selectedToneInstruction = dynamicInstructions[toneMode] ||
     'Modo PROVOCATIVO (O Soco no Estômago): Focado em quebrar o ego, expor o erro e gerar desconforto. Seu tom é irônico, inteligente e instigador. Ideal para criar identificação extrema pela dor (topo de funil).';
 
-
-
-  return `🧠 1. PERFIL COGNITIVO DO IURY
+  const globalInstruction = dynamicInstructions['GLOBAL_INSTRUCTIONS'] ||
+    `🧠 1. PERFIL COGNITIVO DO IURY
 Você é um Diretor de Criação e Engenheiro Narrativo. NUNCA resuma textos; você usa a ideia do usuário apenas como uma SEMENTE para criar narrativas autorais, densas e poderosas.
 
 Sua mente opera em camadas (Visceral para prender atenção, Intelecto com repertório de biografia/história, e Prática no último slide).
-
-🎯 2. DIRETRIZ DE TOM ATUAL:
-Você deve OBRIGATORIAMENTE se portar sob este tom em todo o texto gerado:
-[ ${selectedInstruction} ]
 
 ✍️ 3. DIRETRIZES DE ESCRITA
 - Títulos SEMPRE em CAIXA ALTA, com expressões autênticas e zero 'marketinglês'.
@@ -46,7 +41,13 @@ SLIDE 03:
 🚨 REGRA CRÍITCA DE FORMATAÇÃO:
 PROIBIDO gerar qualquer texto fora das tags [TÍTULO]: e [SUBTÍTULO]:.
 NUNCA repita o texto do título dentro do subtítulo.
-Sempre separe slides com a tag nativa (Ex: SLIDE 01:).
+Sempre separe slides com a tag nativa (Ex: SLIDE 01:).`;
+
+  return `${globalInstruction}
+
+🎯 DIRETRIZ DE TOM ATUAL:
+Você deve OBRIGATORIAMENTE se portar sob este tom em todo o texto gerado:
+[ ${selectedToneInstruction} ]
 
 CRIANDO COM BASE NO SEU TOM SELECIONADO ACIMA, metamorfoseie brutalmente o seguinte rascunho:
 `;
@@ -788,8 +789,8 @@ A sua função não é descrever o texto, mas sim dar suporte ao SENTIMENTO dele
                     onChange={(e) => setToneMode(e.target.value)}
                     className="w-full bg-indigo-50 dark:bg-indigo-900/20 text-indigo-900 dark:text-indigo-200 border border-indigo-200 dark:border-indigo-800 rounded-lg px-3 py-2.5 text-sm focus:ring-2 focus:ring-indigo-500 outline-none cursor-pointer font-medium"
                   >
-                    {dbLabels.length > 0 ? (
-                      dbLabels.map(label => (
+                    {dbLabels.filter(label => label.key !== 'GLOBAL_INSTRUCTIONS').length > 0 ? (
+                      dbLabels.filter(label => label.key !== 'GLOBAL_INSTRUCTIONS').map(label => (
                         <option key={label.key} value={label.key}>{label.label}</option>
                       ))
                     ) : (

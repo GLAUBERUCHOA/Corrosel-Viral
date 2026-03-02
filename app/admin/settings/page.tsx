@@ -6,9 +6,15 @@ import Sidebar from '../components/Sidebar';
 export const dynamic = 'force-dynamic';
 
 export default async function SettingsPage() {
-    const prompts = await prisma.promptSetting.findMany({
+    const rawPrompts = await prisma.promptSetting.findMany({
         orderBy: { toneKey: 'asc' }
     });
+
+    const globalInstruction = rawPrompts.find((p: { toneKey: string }) => p.toneKey === 'GLOBAL_INSTRUCTIONS');
+    const specificTones = rawPrompts.filter((p: { toneKey: string }) => p.toneKey !== 'GLOBAL_INSTRUCTIONS');
+
+    // Assegura que a instrução global está sempre no topo
+    const prompts = globalInstruction ? [globalInstruction, ...specificTones] : specificTones;
 
     return (
         <div className="flex h-screen overflow-hidden">

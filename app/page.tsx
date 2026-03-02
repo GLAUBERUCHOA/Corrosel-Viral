@@ -58,20 +58,22 @@ export default function HomePage() {
 
             <h1 className="text-4xl sm:text-6xl md:text-7xl font-extrabold text-white tracking-tight leading-tight mb-8">
               Transforme seu Instagram em uma <br className="hidden md:block" />
-              <span className="text-transparent bg-clip-text bg-gradient-to-r from-purple-400 to-cyan-400">
+              <span className="text-transparent bg-clip-text bg-gradient-to-r from-orange-400 to-amber-400">
                 MÁQUINA de vendas automática
-              </span>
+              </span><br className="hidden md:block" />
+              com carrosséis virais criados com APENAS 1 CLIQUE
             </h1>
 
             <p className="text-lg sm:text-xl text-slate-400 max-w-3xl mx-auto leading-relaxed mb-12">
-              com carrosséis virais criados em 5 minutos — usando IA, plugin e templates validados que já geraram milhões de views. Funciona com ChatGPT gratuito. Só copiar, colar e viralizar!
+              Domine a criação de conteúdo com o sistema que já gerou mais de 20 milhões de alcance mensal e ajudou mais de 2.540 pessoas a saírem do invisível para o topo do algoritmo — usando IA para criar posts completos em segundos.
             </p>
 
             <a
               href="/login"
               className="inline-flex items-center justify-center gap-3 bg-gradient-to-r from-orange-500 to-amber-500 text-white font-black uppercase tracking-wide text-lg sm:text-xl px-10 py-5 rounded-full hover:scale-105 transition-all duration-300 shadow-[0_0_40px_rgba(245,158,11,0.4)] border-2 border-orange-400/50 w-full sm:w-auto mt-4"
             >
-              SIM, EU QUERO VIRALIZAR HOJE!
+              SIM, EU QUERO VIRALIZAR HOJE! <br />
+              <span className="text-sm font-semibold tracking-normal text-amber-200 block mt-1">(Acesso Vitalício + Bônus Exclusivos)</span>
               <ChevronDown className="w-6 h-6 animate-bounce" />
             </a>
 
@@ -99,24 +101,23 @@ export default function HomePage() {
 
               <div className="grid grid-cols-1 md:grid-cols-3 gap-8 text-center mb-12">
                 <div className="flex flex-col gap-2">
-                  <span className="text-4xl sm:text-5xl font-black text-white">+3.425</span>
-                  <span className="text-slate-400 font-medium">pessoas pararam de ser invisíveis no Instagram usando esse sistema.</span>
+                  <span className="text-4xl sm:text-5xl font-black text-white">+2.540</span>
+                  <span className="text-slate-400 font-medium">Alunos Lucrando.</span>
                 </div>
                 <div className="flex flex-col gap-2">
-                  <span className="text-4xl sm:text-5xl font-black text-white">+68 Mi</span>
-                  <span className="text-slate-400 font-medium">de visualizações orgânicas geradas em apenas 30 dias.</span>
+                  <span className="text-4xl sm:text-5xl font-black text-white">+20 Milhões</span>
+                  <span className="text-slate-400 font-medium">de Alcance Mensal gerado.</span>
                 </div>
                 <div className="flex flex-col gap-2">
-                  <span className="text-4xl sm:text-5xl font-black text-white">+200k</span>
-                  <span className="text-slate-400 font-medium">seguidores ganhos sem tráfego pago ou equipe cara.</span>
+                  <span className="text-4xl sm:text-5xl font-black text-white">+1 Milhão</span>
+                  <span className="text-slate-400 font-medium">de Seguidores nos Perfis da Comunidade.</span>
                 </div>
               </div>
 
-              <div className="max-w-4xl mx-auto bg-slate-900/50 backdrop-blur-sm border border-slate-800 rounded-3xl p-8 sm:p-10 relative mb-16">
-                <div className="absolute -top-4 -left-4 text-purple-500 opacity-20"><svg width="60" height="60" viewBox="0 0 24 24" fill="currentColor"><path d="M14.017 21v-7.391c0-5.704 3.731-9.57 8.983-10.609l.995 2.151c-2.432.917-3.995 3.638-3.995 5.849h4v10h-9.983zm-14.017 0v-7.391c0-5.704 3.748-9.57 9-10.609l.996 2.151c-2.433.917-3.996 3.638-3.996 5.849h3.983v10h-9.983z" /></svg></div>
-                <p className="text-lg sm:text-xl text-slate-300 italic text-center relative z-10 leading-relaxed">
-                  "Gente que não sabia nem por onde começar... perfis pequenos, nichos saturados... Hoje? Conteúdos viralizando. Vendas pingando direto no direct toda semana."
-                </p>
+              {/* ESPAÇO PARA A IMAGEM DE DASHBOARD / GRÁFICO DE ALCANCE */}
+              <div className="w-full max-w-5xl mx-auto h-[350px] border border-slate-800 border-dashed rounded-[2rem] bg-slate-900/40 backdrop-blur-sm flex flex-col items-center justify-center text-slate-500 gap-4 group hover:border-slate-600 transition-colors mb-16">
+                <ImageIcon size={48} className="text-slate-700 group-hover:text-slate-500 transition-colors" />
+                <p className="font-medium">[ESPAÇO 2] Imagem: Um dashboard ou gráfico mostrando a curva de crescimento de alcance de 20 milhões e um contador de 1.000.000+ seguidores</p>
               </div>
 
               {/* ESPAÇO PARA PRINTS E PROVAS SOCIAIS (Carrossel ou Grid) */}
@@ -133,27 +134,32 @@ export default function HomePage() {
           <div className="max-w-4xl mx-auto text-center">
             <FadeInSection>
               <h2 className="text-3xl sm:text-4xl font-bold text-white mb-16">
-                O que está <span className="text-red-400 relative">impedindo você<svg className="absolute w-full h-3 -bottom-1 left-0 text-red-500 opacity-50" viewBox="0 0 100 10" preserveAspectRatio="none"><path d="M0 5 Q 50 10 100 5" stroke="currentColor" strokeWidth="4" fill="transparent" /></svg></span> de ter sucesso no Instagram?
+                Você se sente um <span className="text-red-400 relative">"escravo"<svg className="absolute w-full h-3 -bottom-1 left-0 text-red-500 opacity-50" viewBox="0 0 100 10" preserveAspectRatio="none"><path d="M0 5 Q 50 10 100 5" stroke="currentColor" strokeWidth="4" fill="transparent" /></svg></span> do Instagram?
               </h2>
 
               <div className="grid grid-cols-1 sm:grid-cols-3 gap-6 mb-16">
                 <div className="bg-slate-900/40 border border-slate-800/80 p-8 rounded-2xl flex flex-col items-center gap-4">
                   <div className="w-12 h-12 rounded-full bg-red-500/10 text-red-400 flex items-center justify-center"><Zap /></div>
-                  <p className="text-slate-300 font-medium">Você perde horas criando conteúdo que ninguém vê (20 curtidas e desaparece).</p>
+                  <p className="text-slate-300 font-medium">Você passa horas tentando ter uma ideia, sofre olhando para a tela em branco do Canva...</p>
                 </div>
                 <div className="bg-slate-900/40 border border-slate-800/80 p-8 rounded-2xl flex flex-col items-center gap-4">
                   <div className="w-12 h-12 rounded-full bg-red-500/10 text-red-400 flex items-center justify-center"><Infinity /></div>
-                  <p className="text-slate-300 font-medium">Seus concorrentes passam na sua frente enquanto você fica patinando no mesmo lugar.</p>
+                  <p className="text-slate-300 font-medium">E quando finalmente posta o seu Carrossel, recebe apenas 15 curtidas e zero vendas.</p>
                 </div>
                 <div className="bg-slate-900/40 border border-slate-800/80 p-8 rounded-2xl flex flex-col items-center gap-4">
                   <div className="w-12 h-12 rounded-full bg-red-500/10 text-red-400 flex items-center justify-center"><ShieldCheck /></div>
-                  <p className="text-slate-300 font-medium">Você já chegou a duvidar se o Instagram realmente funciona para o seu modelo de negócio.</p>
+                  <p className="text-slate-300 font-medium">Enquanto você patina no amadorismo, seus concorrentes estão usando Sistemas Inteligentes.</p>
                 </div>
               </div>
 
               <div className="bg-gradient-to-br from-indigo-900/30 to-purple-900/30 border border-indigo-500/20 p-8 rounded-3xl text-left">
-                <h4 className="text-xl font-bold text-white mb-2">A Verdade Desconfortável:</h4>
-                <p className="text-slate-300">95% das pessoas fazem carrosséis completamente errados, focando apenas em "templates bonitinhos" do Canva e esquecendo a engenharia de retenção que prende a atenção nos primeiros 3 segundos.</p>
+                <h4 className="text-xl font-bold text-white mb-2">Com Inteligência Artificial você pode:</h4>
+                <ul className="text-slate-300 list-disc list-inside space-y-2 mb-4">
+                  <li>Criar posts profissionais em 5 minutos.</li>
+                  <li>Atrair público qualificado que realmente compra.</li>
+                  <li>Viralizar sem precisar de dancinhas ou exposição ridícula.</li>
+                </ul>
+                <p className="text-purple-300 font-semibold italic">Seja você nutricionista, psicólogo, advogado ou empreendedor digital: se você não tem velocidade, você está perdendo dinheiro.</p>
               </div>
             </FadeInSection>
           </div>
@@ -164,24 +170,27 @@ export default function HomePage() {
           <div className="max-w-5xl mx-auto px-6">
             <FadeInSection>
               <div className="text-center mb-16">
-                <h2 className="text-3xl sm:text-5xl font-bold text-white mb-6">A Solução em <span className="text-purple-400">3 Passos Simples</span></h2>
-                <p className="text-slate-400 text-lg">Esqueça a complexidade. Seu único trabalho agora é executar o método.</p>
+                <h2 className="text-3xl sm:text-5xl font-bold text-white mb-6">Conheça o seu novo <span className="text-purple-400">"Time de Elite" de IA</span> 🤖</h2>
+                <p className="text-slate-400 text-lg">Dentro do Carrossel Viral Lab, você não ganha apenas um curso, você ganha agentes treinados para trabalhar por você:</p>
               </div>
 
-              <div className="flex flex-col md:flex-row justify-center gap-8 relative">
-                {/* Linha conectora (Desktop) */}
-                <div className="hidden md:block absolute top-[45px] left-[10%] right-[10%] h-0.5 bg-gradient-to-r from-purple-500/0 via-purple-500/30 to-purple-500/0 -z-10"></div>
+              {/* MOCKUP DO LABORATÓRIO */}
+              <div className="w-full max-w-4xl mx-auto h-[350px] border border-slate-800 border-dashed rounded-[2rem] bg-slate-900/40 backdrop-blur-sm flex flex-col items-center justify-center text-slate-500 gap-4 group hover:border-slate-600 transition-colors mb-16">
+                <ImageIcon size={48} className="text-slate-700 group-hover:text-slate-500 transition-colors" />
+                <p className="font-medium text-center px-4">[ESPAÇO 3] Imagem: Mockup de um laboratório digital ou os ícones estilizados dos<br />agentes Iury e DaVinci saindo de dentro de um smartphone</p>
+              </div>
 
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-8 relative max-w-5xl mx-auto">
                 {[
-                  { step: "01", time: "1 min", title: "Gere Sua Ideia Viral", desc: "Use nosso Agente de Ideias calibrado para sugar os assuntos em alta exatos para o seu nicho." },
-                  { step: "02", time: "2 min", title: "Crie o Conteúdo Completo", desc: "O Agente de Copy estrutura todo o texto persuasivo, com ganchos retentivos e chamada pra ação matemática." },
-                  { step: "03", time: "2 min", title: "Aplique no Template", desc: "Use nosso Sistema para formatar texto, cores e imagens automaticamente, gerando o PDF final." }
+                  { icon: BookOpen, title: "🎙️ Agente Iury (Roteiros)", desc: "Esqueça o bloqueio criativo. O Iury cria roteiros magnéticos, automáticos e persuasivos. Ele entende o que faz o dedo do usuário parar o scroll e clicar no 'saiba mais'." },
+                  { icon: ImageIcon, title: "🎨 Agente DaVinci (Imagens)", desc: "Chega de fotos de banco de imagem genéricas. O DaVinci gera imagens com IA de altíssimo nível, de forma automática, para deixar seu perfil com cara de agência de luxo." },
+                  { icon: Video, title: "🎬 Aulas Passo a Passo", desc: "Você vai aprender a apertar os botões certos. Sem enrolação, direto ao ponto." },
+                  { icon: Sparkles, title: "🧠 Segredos da Viralização", desc: "A ciência por trás dos posts que explodem. O que postar, quando postar e como forçar o algoritmo a te entregar para milhares de pessoas." }
                 ].map((item, i) => (
                   <div key={i} className="flex-1 bg-slate-900/80 backdrop-blur-sm border border-slate-800 p-8 rounded-3xl relative z-10 hover:-translate-y-2 transition-transform duration-300">
                     <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-purple-500 to-indigo-600 flex items-center justify-center text-white font-black text-xl mb-6 shadow-lg shadow-purple-500/20">
-                      {item.step}
+                      <item.icon />
                     </div>
-                    <div className="text-xs font-bold text-purple-400 mb-2 tracking-widest uppercase">⏱️ Tempo médio: {item.time}</div>
                     <h3 className="text-xl font-bold text-white mb-3">{item.title}</h3>
                     <p className="text-slate-400 leading-relaxed">{item.desc}</p>
                   </div>
@@ -197,26 +206,34 @@ export default function HomePage() {
             <FadeInSection>
               <div className="text-center mb-16">
                 <div className="inline-flex items-center gap-2 px-3 py-1 bg-slate-800 rounded-full text-slate-300 text-xs font-semibold tracking-wide mb-6">
-                  O ECOSSISTEMA COMPLETO
+                  TUDO O QUE ESTÁ INCLUSO NO SEU ACESSO HOJE
                 </div>
-                <h2 className="text-3xl sm:text-5xl font-bold text-white mb-6">Adquirindo HOJE <br className="hidden sm:block" />você recebe o acesso a:</h2>
+                <h2 className="text-3xl sm:text-5xl font-bold text-white mb-6">O que você vai receber</h2>
+              </div>
+
+              {/* MOCKUP DO BUNDLE */}
+              <div className="w-full max-w-4xl mx-auto h-[350px] border border-slate-800 border-dashed rounded-[2rem] bg-slate-900/40 backdrop-blur-sm flex flex-col items-center justify-center text-slate-500 gap-4 group hover:border-slate-600 transition-colors mb-16">
+                <ImageIcon size={48} className="text-slate-700 group-hover:text-slate-500 transition-colors" />
+                <p className="font-medium text-center px-4">[ESPAÇO 4] Imagem: Uma caixa de produto digital "Bundle" mostrando o acesso ao Lab, aos Agentes e aos Bônus</p>
               </div>
 
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                 {[
-                  { icon: Zap, title: "🤖 Tempestade IA", desc: "Sua máquina de ideias infinitas. Descubra mais de 50 tópicos magnéticos instantaneamente." },
-                  { icon: BookOpen, title: "✍️ Deadpool IA", desc: "Agente de Copy viral. Cria Títulos impossíveis de ignorar, slides retentivos e CTA pronta em segundos." },
-                  { icon: ImageIcon, title: "📷 Dr. Estranho IA", desc: "Gerador integrado de imagens cinematográficas e metáforas visuais lendárias em segundos." },
-                  { icon: LayoutTemplate, title: "⚡ Plugin M.I.O.S", desc: "Laboratório de Carrosséis automáticos. Ajusta texto, cores e recortes de imagens com apenas 1 clique." },
-                  { icon: ImageIcon, title: "📱 Viral Templates Arsenal", desc: "Nossos pilares de designs que já geraram milhões de curtidas, prontos para plugar a sua marca." },
-                  { icon: Calendar, title: "📅 Viral365™", desc: "Uma nova ideia de carrossel viral por dia caindo direto na palma da sua mão (no seu WhatsApp)." }
+                  { icon: LayoutTemplate, title: "Plataforma Carrossel Viral Lab", val: "R$ 197" },
+                  { icon: BookOpen, title: "Agente Iury - Roteiros Automáticos", val: "R$ 97" },
+                  { icon: ImageIcon, title: "Agente DaVinci - Imagens com IA", val: "R$ 97" },
+                  { icon: Sparkles, title: "Workshop Segredos da Viralização", val: "R$ 147" },
+                  { icon: Video, title: "Aulas Passo a Passo de Implementação", val: "R$ 97" }
                 ].map((feature, i) => (
-                  <div key={i} className={`bg-slate-900/50 border border-slate-800 p-8 rounded-3xl transition-all duration-300 ${cardGlowingShadow} group`}>
-                    <div className="w-12 h-12 rounded-xl bg-slate-800/50 border border-slate-700 flex items-center justify-center text-indigo-400 mb-6 group-hover:bg-indigo-500/20 group-hover:text-indigo-300 transition-colors">
+                  <div key={i} className={`bg-slate-900/50 border border-slate-800 p-8 rounded-3xl transition-all duration-300 flex flex-col items-center text-center ${cardGlowingShadow} group`}>
+                    <div className="w-12 h-12 rounded-xl bg-slate-800/50 border border-slate-700 flex items-center justify-center text-amber-500 mb-6 group-hover:bg-amber-500/20 transition-colors">
                       <feature.icon strokeWidth={1.5} />
                     </div>
-                    <h3 className="text-xl font-bold text-white mb-3">{feature.title}</h3>
-                    <p className="text-slate-400 leading-relaxed font-medium">{feature.desc}</p>
+                    <h3 className="text-xl font-bold text-white mb-2">{feature.title}</h3>
+                    <p className="text-slate-400 font-medium mb-4">Valor avulso: <span className="line-through">{feature.val}</span></p>
+                    <div className="mt-auto inline-flex items-center text-green-400 text-sm font-bold gap-1 bg-green-500/10 px-3 py-1 rounded-lg">
+                      <CheckCircle2 size={14} /> INCLUSO
+                    </div>
                   </div>
                 ))}
               </div>
@@ -228,13 +245,13 @@ export default function HomePage() {
         <section className="py-20 bg-gradient-to-b from-transparent to-purple-900/10 border-t border-white/5">
           <div className="max-w-4xl mx-auto px-6">
             <FadeInSection>
-              <h2 className="text-3xl sm:text-4xl font-bold text-center text-white mb-12">Bônus <span className="text-transparent bg-clip-text bg-gradient-to-r from-amber-200 to-yellow-500">Exclusivos</span></h2>
+              <h2 className="text-3xl sm:text-4xl font-bold text-center text-white mb-12">ENTRE HOJE E LEVE TAMBÉM: 🎁 <span className="text-transparent bg-clip-text bg-gradient-to-r from-amber-200 to-yellow-500">Bônus Exclusivos</span></h2>
 
               <div className="space-y-4">
                 {[
-                  { title: "BÔNUS #01: Reels Virais Express", val: "R$ 197", desc: "Agente treinado especificamente para escrever roteiros de vídeos curtos dramáticos.", icon: Video },
-                  { title: "BÔNUS #02: Masterclass 'InstaVendas'", val: "R$ 197", desc: "O Workshop secreto de conversão mostrando como transformar visualizações do topo de funil em PIX na conta.", icon: Sparkles },
-                  { title: "BÔNUS #03: Acesso Vitalício + Updates", val: "Inestimável", desc: "Você recebe todas as futuras melhorias, novos templates e refinos de agentes do sistema SEM CUSTO ADICIONAL.", icon: ShieldCheck }
+                  { title: "BÔNUS 1: Acesso Vitalício (Tempo Limitado)", desc: "Pague uma vez e use para sempre. Sem mensalidades enquanto esta oferta estiver no ar.", icon: Infinity },
+                  { title: "BÔNUS 2: Workshop 'Viva do Instagram'", desc: "O plano de ação para transformar seguidores em clientes e viver exclusivamente da sua presença digital.", icon: Sparkles },
+                  { title: "BÔNUS 3: Updates e Melhorias Futuras", desc: "O mundo da IA muda todo dia. Você terá acesso a todas as novas ferramentas e atualizações que lançarmos sem pagar um centavo a mais.", icon: Zap }
                 ].map((bonus, i) => (
                   <div key={i} className="flex flex-col sm:flex-row items-start sm:items-center gap-6 p-6 sm:p-8 rounded-2xl bg-gradient-to-r from-slate-900/80 to-slate-900/40 border border-slate-800">
                     <div className="w-16 h-16 shrink-0 rounded-2xl bg-gradient-to-br from-amber-500/20 to-orange-500/20 border border-amber-500/30 flex items-center justify-center text-amber-500">
@@ -243,7 +260,6 @@ export default function HomePage() {
                     <div className="flex-1">
                       <div className="flex items-center gap-3 mb-2">
                         <h3 className="text-lg sm:text-xl font-bold text-white">{bonus.title}</h3>
-                        <span className="text-xs font-bold px-2 py-1 bg-red-500/20 text-red-300 rounded line-through">Valor: {bonus.val}</span>
                       </div>
                       <p className="text-slate-400">{bonus.desc}</p>
                     </div>
@@ -271,22 +287,21 @@ export default function HomePage() {
                     ÚLTIMAS HORAS DA OFERTA ESPECIAL
                   </div>
 
-                  <div className="text-slate-400 font-medium mb-4 text-lg">O valor normal de tudo isso é <span className="line-through">R$ 697</span></div>
-                  <div className="text-white text-2xl font-medium mb-2">Hoje, destrave tudo por apenas:</div>
+                  <div className="text-slate-400 font-medium mb-4 text-lg">Saia do amadorismo pelo preço de uma pizza por mês 🍕<br /> De <span className="line-through">R$ 397,00</span> por apenas:</div>
 
                   <div className="flex flex-col items-center justify-center gap-2 mb-10">
                     <div className="flex items-baseline gap-2">
                       <span className="text-3xl font-bold text-purple-400">12x de</span>
-                      <span className="text-7xl font-black text-transparent bg-clip-text bg-gradient-to-r from-purple-400 to-cyan-400">R$ 10,03</span>
+                      <span className="text-7xl font-black text-transparent bg-clip-text bg-gradient-to-r from-orange-400 to-amber-400">R$ 9,74</span>
                     </div>
-                    <div className="text-slate-500 font-medium">ou R$ 97 à vista</div>
+                    <div className="text-slate-500 font-medium">ou R$ 97,00 à vista no PIX</div>
                   </div>
 
                   <a
                     href="/login"
-                    className="inline-block w-full sm:w-auto bg-gradient-to-r from-orange-500 to-amber-500 text-white font-black uppercase tracking-widest text-lg sm:text-xl px-12 py-5 rounded-full hover:scale-105 transition-transform shadow-[0_0_30px_rgba(245,158,11,0.4)] border border-orange-400/50 mb-6"
+                    className="inline-block w-full sm:w-auto bg-gradient-to-r from-orange-500 to-amber-500 text-white font-black uppercase tracking-widest text-lg sm:text-xl px-12 py-5 rounded-full hover:scale-105 transition-transform shadow-[0_0_40px_rgba(245,158,11,0.4)] border border-orange-400/50 mb-6"
                   >
-                    SIM, QUERO ACESSO IMEDIATO
+                    QUERO MEU ACESSO VITALÍCIO AGORA
                   </a>
                   <p className="text-sm text-slate-500 flex items-center justify-center gap-2">
                     <ShieldCheck className="w-4 h-4 text-green-400" /> Acesso liberado no seu e-mail imediatamente logo após a compra.
@@ -304,9 +319,9 @@ export default function HomePage() {
               <div className="w-20 h-20 mx-auto bg-green-500/10 border border-green-500/20 flex items-center justify-center rounded-3xl text-green-400 mb-8">
                 <ShieldCheck size={40} />
               </div>
-              <h2 className="text-3xl font-bold text-white mb-6">Garantia Blindada de 30 Dias</h2>
+              <h2 className="text-3xl font-bold text-white mb-6">Risco Zero: 15 Dias de Garantia Blindada</h2>
               <p className="text-slate-400 text-lg leading-relaxed max-w-2xl mx-auto">
-                Seu risco é absolutamente zero. Teste todo o Ecossistema de Carrosséis Virais, gere seus conteúdos, baixe os PDFs. Se você não gostar do modelo ou achar que não serviu pra você, te devolvemos 100% do dinheiro sem perguntas, e você ainda pode ficar com o que já gerou como nosso agradecimento.
+                Teste o sistema, use o Iury e o DaVinci. Se em 15 dias você não achar que esse é o sistema mais rápido de criação de conteúdo que já viu, eu devolvo seu dinheiro integralmente.
               </p>
             </FadeInSection>
           </div>
@@ -320,10 +335,9 @@ export default function HomePage() {
 
               <div className="space-y-4">
                 {[
-                  { q: "Funciona para qualquer nicho?", a: "Sim. Nossas IAs foram treinadas com as métricas do algoritmo do Instagram, abrangendo desde emagrecimento, finanças, até contabilidade corporativa e advocacia." },
-                  { q: "Preciso saber design ou usar Photoshop?", a: "Não. A ferramenta M.I.O.S (O gerador visual) constrói as sombras, recortes, margens e topografia automaticamente e te dá o slide pronto pra baixar." },
-                  { q: "Funciona com o ChatGPT gratuito?", a: "Perfeitamente. O sistema lida com arquiteturas de prompt que entregam resultados brilhantes até mesmo na versão 3.5 gratuita." },
-                  { q: "E se eu tiver poucos seguidores?", a: "Carrosséis de alto impacto são a ÚNICA ferramenta capaz de furar a bolha orgânica hoje no Instagram porque retém a pessoa na tela. Nosso método foi validado em contas que começaram do zero Absoluto." }
+                  { q: "Serve para o meu nicho?", a: "Sim, se você precisa de atenção e vendas no Instagram, o sistema se adapta a qualquer área." },
+                  { q: "Preciso ser designer?", a: "Não. O DaVinci e os templates fazem tudo com um clique." },
+                  { q: "O acesso é vitalício mesmo?", a: "Sim, para quem comprar nesta oferta atual." }
                 ].map((faq, i) => (
                   <div key={i} className="bg-slate-900/30 border border-slate-800 p-6 rounded-2xl">
                     <h4 className="text-white font-bold text-lg mb-2 flex items-start gap-3">
@@ -384,9 +398,9 @@ export default function HomePage() {
 
             <a
               href="/login"
-              className="inline-block w-full sm:w-auto bg-gradient-to-r from-orange-500 to-amber-500 text-white font-black uppercase text-lg sm:text-xl px-12 py-6 rounded-full hover:scale-105 transition-transform shadow-[0_0_40px_rgba(245,158,11,0.4)] border border-orange-400/50 mb-16"
+              className="inline-block w-full sm:w-auto bg-gradient-to-r from-orange-500 to-amber-500 text-white font-black uppercase tracking-widest text-lg sm:text-xl px-12 py-6 rounded-full hover:scale-105 transition-transform shadow-[0_0_40px_rgba(245,158,11,0.4)] border border-orange-400/50 mb-16"
             >
-              Começar a Viralizar Agora
+              APROVEITE O DESCONTO E GARANTA SUA VAGA
             </a>
 
             <div className="text-slate-600 text-sm flex flex-col items-center gap-2">

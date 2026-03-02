@@ -1399,7 +1399,7 @@ export default function CarouselGenerator({ onLogout }: { onLogout: () => void }
                             </div>
                           </div>
                         </div>
-                        <div className={`w-full px-8 pt-1 flex flex-col justify-end shrink-0 z-20 relative ${index === 0 ? 'pb-14' : 'pb-8'} ${textAlign}`} style={{ fontFamily }}>
+                        <div className={`w-full px-8 pt-6 flex flex-col justify-end shrink-0 z-20 relative ${index === 0 ? 'pb-14' : 'pb-8'} ${textAlign}`} style={{ fontFamily }}>
                           <div className={`flex flex-col gap-2 ${textAlign === 'text-center' ? 'items-center text-center' : textAlign === 'text-right' ? 'items-end text-right' : 'items-start text-left'}`}>
                             {slide.title && <h2 className={titleClass}>{slide.title}</h2>}
                             {slide.subtitle && <p className={subtitleClass}>{slide.subtitle}</p>}
@@ -1412,7 +1412,7 @@ export default function CarouselGenerator({ onLogout }: { onLogout: () => void }
                           )}
                         </div>
                       </div>
-                      <div className="absolute inset-0 bg-black/80 opacity-0 active:opacity-100 sm:group-hover/slide:opacity-100 transition-opacity flex flex-col items-center justify-center p-6 backdrop-blur-[4px] z-[60] sm:pointer-events-none">
+                      <div className="absolute inset-0 bg-black/80 opacity-0 group-active/slide:opacity-100 sm:group-hover/slide:opacity-100 transition-opacity flex flex-col items-center justify-center p-6 backdrop-blur-[4px] z-[60] pointer-events-none">
                         <div className="flex w-full h-full gap-2 sm:gap-4 items-center justify-center">
                           <div className="flex flex-col gap-2 w-1/2 max-w-[160px]">
                             <span className="text-[10px] text-white/50 font-bold uppercase tracking-wider mb-1">Conteúdo</span>
@@ -1449,6 +1449,11 @@ export default function CarouselGenerator({ onLogout }: { onLogout: () => void }
                               onClick={() => handleIndividualUploadAction(index)}
                               className="pointer-events-auto flex items-center justify-start gap-3 bg-white/10 text-white hover:bg-white/20 px-4 py-2.5 rounded-xl text-xs font-bold transition-all border border-white/10">
                               <span className="material-symbols-outlined text-[16px]">cloud_upload</span> Upload
+                            </button>
+                            <button
+                              onMouseDown={(e) => handleImgMouseDown(e, index)}
+                              className="pointer-events-auto flex items-center justify-start gap-3 bg-white/10 text-white hover:bg-white/20 px-4 py-2.5 rounded-xl text-xs font-bold transition-all border border-white/10 cursor-ns-resize shadow-lg shadow-black/20 ring-1 ring-white/20">
+                              <span className="material-symbols-outlined text-[16px] animate-pulse">height</span> Ajustar Foto
                             </button>
                             <button
                               onClick={(e) => handleRemoveImage(index, e)}

@@ -84,6 +84,71 @@ ${nicheInstruction}
 6. Composição Vertical (Top-Heavy) - LEI INQUEBRÁVEL: O texto descritivo ocupará quase toda a METADE INFERIOR (Bottom Half) do slide. Portanto, posicione os objetos centrais, personagens e elementos dramáticos EXCLUSIVAMENTE NA METADE SUPERIOR (Top Half). A metade inferior DEVE SER um imenso e pesado VAZIO ESCURO (Negative Space), garantindo contraste absoluto para leitura.`;
 };
 
+const SimpleRichTextEditor = ({ value, onChange, placeholder }: { value: string, onChange: (val: string) => void, placeholder: string }) => {
+  const editorRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (editorRef.current && editorRef.current.innerHTML !== value && document.activeElement !== editorRef.current) {
+      editorRef.current.innerHTML = value;
+    }
+  }, [value]);
+
+  const exec = (command: string, val?: string) => {
+    document.execCommand(command, false, val);
+    if (editorRef.current) onChange(editorRef.current.innerHTML);
+    editorRef.current?.focus();
+  };
+
+  const colors = ['#ffffff', '#000000', '#64748b', '#ef4444', '#f97316', '#f59e0b', '#84cc16', '#22c55e', '#14b8a6', '#0ea5e9', '#6366f1', '#a855f7', '#ec4899'];
+
+  return (
+    <div className="w-full bg-slate-50 dark:bg-surface-darker border border-slate-200 dark:border-border-dark rounded-xl overflow-hidden shadow-inner flex flex-col">
+      <div className="bg-slate-100 dark:bg-slate-800 border-b border-slate-200 dark:border-slate-700 p-2 flex flex-wrap gap-1 items-center z-10">
+        <button tabIndex={-1} onMouseDown={(e) => { e.preventDefault(); exec('bold'); }} className="p-1 px-2 hover:bg-slate-200 dark:hover:bg-slate-700 rounded text-slate-700 dark:text-slate-300 font-bold" title="Negrito">B</button>
+        <button tabIndex={-1} onMouseDown={(e) => { e.preventDefault(); exec('italic'); }} className="p-1 px-2 hover:bg-slate-200 dark:hover:bg-slate-700 rounded text-slate-700 dark:text-slate-300 italic font-serif" title="Itálico">I</button>
+        <button tabIndex={-1} onMouseDown={(e) => { e.preventDefault(); exec('underline'); }} className="p-1 px-2 hover:bg-slate-200 dark:hover:bg-slate-700 rounded text-slate-700 dark:text-slate-300 underline" title="Sublinhado">U</button>
+
+        <div className="w-px h-5 bg-slate-300 dark:bg-slate-600 mx-1"></div>
+
+        <select tabIndex={-1} onChange={(e) => { exec('foreColor', e.target.value); e.target.value = ''; }} className="bg-transparent border border-slate-300 dark:border-slate-600 rounded px-1 text-xs text-slate-700 dark:text-slate-300 outline-none cursor-pointer h-7">
+          <option value="" disabled selected>Cor</option>
+          {colors.map(c => <option key={`fg-${c}`} value={c} style={{ color: c, fontWeight: c === '#ffffff' ? 'normal' : 'bold', background: c === '#ffffff' ? '#000' : 'transparent' }}>{c}</option>)}
+        </select>
+
+        <select tabIndex={-1} onChange={(e) => { exec('hiliteColor', e.target.value); e.target.value = ''; }} className="bg-transparent border border-slate-300 dark:border-slate-600 rounded px-1 text-xs text-slate-700 dark:text-slate-300 outline-none cursor-pointer h-7">
+          <option value="" disabled selected>Fundo</option>
+          <option value="transparent">Sem fundo</option>
+          {colors.map(c => <option key={`bg-${c}`} value={c} style={{ backgroundColor: c, color: c === '#ffffff' ? '#000' : '#fff' }}>{c}</option>)}
+        </select>
+
+        <div className="w-px h-5 bg-slate-300 dark:bg-slate-600 mx-1"></div>
+
+        <button tabIndex={-1} onMouseDown={(e) => { e.preventDefault(); exec('justifyLeft'); }} className="p-1 hover:bg-slate-200 dark:hover:bg-slate-700 rounded text-slate-700 dark:text-slate-300" title="Alinhar Esquerda">
+          <span className="material-symbols-outlined text-[16px] leading-none block">format_align_left</span>
+        </button>
+        <button tabIndex={-1} onMouseDown={(e) => { e.preventDefault(); exec('justifyCenter'); }} className="p-1 hover:bg-slate-200 dark:hover:bg-slate-700 rounded text-slate-700 dark:text-slate-300" title="Centralizar">
+          <span className="material-symbols-outlined text-[16px] leading-none block">format_align_center</span>
+        </button>
+        <button tabIndex={-1} onMouseDown={(e) => { e.preventDefault(); exec('justifyRight'); }} className="p-1 hover:bg-slate-200 dark:hover:bg-slate-700 rounded text-slate-700 dark:text-slate-300" title="Alinhar Direita">
+          <span className="material-symbols-outlined text-[16px] leading-none block">format_align_right</span>
+        </button>
+      </div>
+      <div
+        ref={editorRef}
+        className="p-3 min-h-[100px] max-h-[150px] overflow-y-auto text-sm text-slate-700 dark:text-slate-300 outline-none focus:ring-0 [&_span]:!bg-transparent"
+        style={{
+          // Hack para exibir placeholder quando vazio e desativado
+          emptyCells: 'show'
+        }}
+        contentEditable
+        onInput={(e) => onChange(e.currentTarget.innerHTML)}
+        onBlur={(e) => onChange(e.currentTarget.innerHTML)}
+        dangerouslySetInnerHTML={{ __html: value }}
+      />
+    </div>
+  );
+};
+
 export default function CarouselGenerator({ onLogout }: { onLogout: () => void }) {
   const [dbPrompts, setDbPrompts] = useState<Record<string, string>>({});
   const [dbLabels, setDbLabels] = useState<{ key: string, label: string }[]>([]);
@@ -106,7 +171,10 @@ export default function CarouselGenerator({ onLogout }: { onLogout: () => void }
   const [saveDefaults, setSaveDefaults] = useState(true);
 
   const [addCtaSlide, setAddCtaSlide] = useState(false);
-  const [ctaContent, setCtaContent] = useState('Gostou do conteúdo?\nSalve para não esquecer e me siga para mais!');
+  const [ctaContent, setCtaContent] = useState('Gostou do conteúdo? Salve para não esquecer e me siga para mais!');
+  const [ctaImage, setCtaImage] = useState<string | null>(null);
+  const ctaImageInputRef = useRef<HTMLInputElement>(null);
+
   const [parsedSlides, setParsedSlides] = useState<{ title: string, subtitle: string, isCta?: boolean }[]>([
     { title: '', subtitle: '', isCta: false }
   ]);
@@ -203,6 +271,7 @@ export default function CarouselGenerator({ onLogout }: { onLogout: () => void }
         if (prefs.toneMode) setToneMode(prefs.toneMode);
         if (prefs.addCtaSlide !== undefined) setAddCtaSlide(prefs.addCtaSlide);
         if (prefs.ctaContent !== undefined) setCtaContent(prefs.ctaContent);
+        if (prefs.ctaImage !== undefined) setCtaImage(prefs.ctaImage);
         if (prefs.parsedSlides && Array.isArray(prefs.parsedSlides) && prefs.parsedSlides.length > 0) {
           setParsedSlides(prefs.parsedSlides);
         }
@@ -264,6 +333,7 @@ export default function CarouselGenerator({ onLogout }: { onLogout: () => void }
         saveDefaults,
         addCtaSlide,
         ctaContent,
+        ctaImage,
         toneMode
       };
 
@@ -292,7 +362,7 @@ export default function CarouselGenerator({ onLogout }: { onLogout: () => void }
         localStorage.setItem('carousel_preferences', JSON.stringify(prefs));
       }
     }
-  }, [brandHandle, brandLogo, styleModel, customColor, aspectRatio, content, parsedSlides, saveDefaults, toneMode, fontFamily, textAlign, addCtaSlide, ctaContent]);
+  }, [brandHandle, brandLogo, styleModel, customColor, aspectRatio, content, parsedSlides, saveDefaults, toneMode, fontFamily, textAlign, addCtaSlide, ctaContent, ctaImage]);
 
   const handleApiKeyChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const val = e.target.value;
@@ -449,6 +519,23 @@ export default function CarouselGenerator({ onLogout }: { onLogout: () => void }
       updated[index] = null;
       return updated;
     });
+  };
+
+  const handleCtaImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      if (file.size > 5 * 1024 * 1024) {
+        alert("A imagem é muito grande. O limite é 5MB.");
+        return;
+      }
+      const reader = new FileReader();
+      reader.onload = (event) => {
+        if (event.target?.result && typeof event.target.result === 'string') {
+          setCtaImage(event.target.result);
+        }
+      };
+      reader.readAsDataURL(file);
+    }
   };
 
   const processTextIntoSlides = (textToParse: string, useCta = addCtaSlide, ctaText = ctaContent) => {
@@ -930,15 +1017,36 @@ export default function CarouselGenerator({ onLogout }: { onLogout: () => void }
                   </label>
                 </div>
                 {addCtaSlide && (
-                  <textarea
-                    value={ctaContent}
-                    onChange={(e) => {
-                      setCtaContent(e.target.value);
-                      if (!isIuryMode) processTextIntoSlides(content, addCtaSlide, e.target.value);
-                    }}
-                    placeholder="Gostou do conteúdo? Salve e siga para mais!"
-                    className="w-full bg-slate-50 dark:bg-surface-darker border border-slate-200 dark:border-border-dark rounded-xl px-4 py-3 text-sm text-slate-700 dark:text-slate-300 focus:ring-2 focus:ring-primary focus:border-transparent resize-none h-20 shadow-inner"
-                  />
+                  <div className="flex flex-col gap-3">
+                    <SimpleRichTextEditor
+                      value={ctaContent}
+                      onChange={(val) => {
+                        setCtaContent(val);
+                        if (!isIuryMode) processTextIntoSlides(content, addCtaSlide, val);
+                      }}
+                      placeholder="Gostou do conteúdo? Salve e siga para mais!"
+                    />
+
+                    <div className="flex items-center justify-between border-t border-slate-100 dark:border-border-dark pt-3">
+                      <div className="flex flex-col">
+                        <span className="text-sm font-semibold text-slate-900 dark:text-white">Imagem de Fundo CTA</span>
+                        <span className="text-[10px] text-slate-500">Opcional: preenche o fundo do CTA</span>
+                      </div>
+                      <button onClick={() => ctaImageInputRef.current?.click()} className="text-[11px] font-bold bg-primary/10 text-primary px-3 py-1.5 rounded-lg hover:bg-primary/20 transition-colors">
+                        {ctaImage ? 'Trocar Imagem' : 'Upload Imagem +'}
+                      </button>
+                      <input type="file" ref={ctaImageInputRef} onChange={handleCtaImageUpload} accept="image/*" className="hidden" />
+                    </div>
+
+                    {ctaImage && (
+                      <div className="relative w-full h-24 rounded-xl overflow-hidden border border-slate-200 dark:border-border-dark group shadow-sm bg-slate-100 dark:bg-slate-800">
+                        <img src={ctaImage} alt="CTA Background" className="w-full h-full object-cover" />
+                        <button onClick={() => setCtaImage(null)} className="absolute top-2 right-2 size-6 bg-black/60 hover:bg-red-500 rounded-full flex items-center justify-center text-white opacity-0 group-hover:opacity-100 transition-all z-10 shadow-lg" title="Remover Imagem">
+                          <span className="material-symbols-outlined text-[14px]">close</span>
+                        </button>
+                      </div>
+                    )}
+                  </div>
                 )}
               </div>
             </div>
@@ -1357,7 +1465,7 @@ export default function CarouselGenerator({ onLogout }: { onLogout: () => void }
 
                   const defaultImages = [
                     "https://lh3.googleusercontent.com/aida-public/AB6AXuBEDUi4qtUqrH8-KI69ZbnhQZq-Snc28JyH-ubsgnikhUANHvd-Xzq_3tg9gUpXgSoRx7EXYn6phYh54OADr8Nrn4HgeYKQXuhPIGBhGGy01d9j_isuAcbMkqXfpsXGtVb93CwkoA2WfjLbnuCcsr7TWIy6yjB145itn0mCY7d_aXtyA8r-LPlAqVeC08vNiWPEoEgnK_-UUzehpswrcOMG-LTNMw5WUHn2eDQfsufJyJM9_AcXije1XBQd7-MH75eHSL8NJy5x-_0",
-                    "https://lh3.googleusercontent.com/aida-public/AB6AXuAe0_vHIt2A3hxagDcxuywE2lsRTajBr4HnEBFFQ3WjkgVYCAFC7RU1esxK_dyfQXf5xv4hCzwJtU5tuAfDBspIPjNJrpmZmu5M1I468-WspjfQn8OKGwCkUW_tOqliplDMNx--mI2aDq0JzFtqvxFNLnbS-Zon3xqFCsV5eoYduNiHAqUbvMQiMlgbLkQD3n4d4A5kEZW4s4zkQ6FSgmJF5WAA_6zxXUlGB_2VEjPDMKnnY53RRXdcrZTEALC-0KIekgS5zv3fC-Y",
+                    "https://lh3.googleusercontent.com/aida-public/AB6AXuAe0_vHIt2A3hxagDcxuywE2lsRTajBr4HnEBFFQ3WjkgVYCAFC7RU1esxK_dyjQXf5xv4hCzwJtU5tuAfDBspIPjNJrpmZmu5M1I468-WspjfQn8OKGwCkUW_tOqliplDMNx--mI2aDq0JzFtqvxFNLnbS-Zon3xqFCsV5eoYduNiHAqUbvMQiMlgbLkQD3n4d4A5kEZW4s4zkQ6FSgmJF5WAA_6zxXUlGB_2VEjPDMKnnY53RRXdcrZTEALC-0KIekgS5zv3fC-Y",
                     "https://lh3.googleusercontent.com/aida-public/AB6AXuCCwW5LVWmQqUjL-DQzhrfxbNkADj5HCxpCntC6G0iBYkFzapKcF_UD_E7fmmiVyCYoZU5d9HsDTrROsHJcfIP6aE9UfXzDxfXA_CI639Qyt8Nve2yQhPbhO3L3wmc_4ODjd4WqA33umoJEKsneslNVRG_374l_HlEugXIeokASwj8LrQ0W5-0-vDCWZ_U4rXPHxrCXv6kPMiHqDi7XNgToQV8hhdrmQLB_UfwFNXangbzIOYmgyw26UN0sbXgE0RRa5VEXcW18m0A"
                   ];
 
@@ -1418,6 +1526,13 @@ export default function CarouselGenerator({ onLogout }: { onLogout: () => void }
                             className={`absolute inset-0 flex flex-col items-center justify-center p-8 text-center ${theme.bgClass}`}
                             style={theme.bgStyle}
                           >
+                            {ctaImage && (
+                              <div className="absolute inset-0 z-0">
+                                <div className="absolute inset-0 bg-cover bg-center opacity-40 pointer-events-none" style={{ backgroundImage: `url('${ctaImage}')` }}></div>
+                                <div className={`absolute inset-0 ${theme.bgClass === '' ? 'bg-gradient-to-t from-black/80 via-black/40 to-black/80' : 'bg-black/30'}`}></div>
+                              </div>
+                            )}
+
                             {(brandHandle || brandLogo) && (
                               <div className="flex flex-col items-center gap-4 mb-8 z-[60]">
                                 {brandLogo ? (
@@ -1437,15 +1552,8 @@ export default function CarouselGenerator({ onLogout }: { onLogout: () => void }
                               </div>
                             )}
                             <div className="w-full flex-1 flex flex-col items-center justify-center gap-4 shrink-0 z-20 relative" style={{ fontFamily }}>
-                              <h2 className={`font-extrabold text-2xl sm:text-3xl ${theme.textClass} leading-tight uppercase`}>{slide.title}</h2>
-                              <p className={`text-base sm:text-lg ${theme.subtextClass} font-medium leading-relaxed whitespace-pre-wrap max-w-xs`}>{slide.subtitle}</p>
-
-                              <div className="mt-8 flex gap-5">
-                                <span className={`material-symbols-outlined text-[32px] ${theme.textClass} opacity-80 mix-blend-overlay drop-shadow-lg`}>favorite</span>
-                                <span className={`material-symbols-outlined text-[32px] ${theme.textClass} opacity-80 mix-blend-overlay drop-shadow-lg`}>chat_bubble</span>
-                                <span className={`material-symbols-outlined text-[32px] ${theme.textClass} opacity-80 mix-blend-overlay drop-shadow-lg`}>send</span>
-                                <span className={`material-symbols-outlined text-[32px] ${theme.textClass} opacity-80 mix-blend-overlay drop-shadow-lg`}>bookmark</span>
-                              </div>
+                              <h2 className={`font-extrabold text-2xl sm:text-3xl ${ctaImage && !theme.textClass.includes('white') ? 'text-white drop-shadow-md' : theme.textClass} leading-tight uppercase`}>{slide.title}</h2>
+                              <div className={`text-base sm:text-lg ${ctaImage && !theme.subtextClass.includes('white') ? 'text-white drop-shadow-md' : theme.subtextClass} font-medium leading-relaxed whitespace-pre-wrap [&_span]:!bg-transparent focus:outline-none`} dangerouslySetInnerHTML={{ __html: slide.subtitle }}></div>
                             </div>
                           </div>
 

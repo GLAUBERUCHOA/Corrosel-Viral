@@ -1,5 +1,5 @@
 ﻿import { NextRequest, NextResponse } from 'next/server';
-import pool from '@/app/lib/db';
+import { prisma } from '@/lib/prisma';
 
 export async function POST(req: NextRequest) {
   try {
@@ -16,12 +16,7 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ success: true });
     }
 
-    const [rows] = await pool.query(
-      'SELECT status FROM usuarios WHERE email = ?',
-      [cleanEmail]
-    );
-
-    const users = rows as any[];
+    const users = await prisma.$queryRaw`SELECT status FROM usuarios WHERE email = ${cleanEmail}` as any[];
 
     if (users.length > 0 && users[0].status === 'ativo') {
       return NextResponse.json({ success: true });

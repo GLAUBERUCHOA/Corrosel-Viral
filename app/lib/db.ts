@@ -29,6 +29,6 @@ export async function initDb() {
 }
 
 // Initialize the database on module load
-initDb();
+// initDb(); // commented out to prevent Vercel build failure
 
 export default pool;

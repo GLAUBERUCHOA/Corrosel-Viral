@@ -1,6 +1,6 @@
 ﻿import { NextRequest, NextResponse } from 'next/server';
 import crypto from 'crypto';
-import pool from '@/app/lib/db';
+import { prisma } from '@/lib/prisma';
 
 const KIWIFY_TOKEN = '2v3wadrhc4p';
 
@@ -28,7 +28,7 @@ export async function POST(req: NextRequest) {
     }
 
     const payload = JSON.parse(rawBody);
-    
+
     // Kiwify payload structure
     const email = payload.Customer?.email || payload.customer?.email || payload.email;
     const status = payload.order_status || payload.subscription_status || payload.status;
@@ -45,16 +45,10 @@ export async function POST(req: NextRequest) {
     const inactiveStatuses = ['refunded', 'chargeback', 'canceled', 'expired', 'waiting_payment', 'refused'];
 
     if (activeStatuses.includes(status)) {
-      await pool.query(
-        `INSERT INTO usuarios (email, status) VALUES (?, 'ativo') ON DUPLICATE KEY UPDATE status = 'ativo'`,
-        [email]
-      );
+      await prisma.$executeRaw`INSERT INTO usuarios (email, status) VALUES (${email}, 'ativo') ON DUPLICATE KEY UPDATE status = 'ativo'`;
       console.log(`Granted access to ${email}`);
     } else if (inactiveStatuses.includes(status)) {
-      await pool.query(
-        `UPDATE usuarios SET status = 'inativo' WHERE email = ?`,
-        [email]
-      );
+      await prisma.$executeRaw`UPDATE usuarios SET status = 'inativo' WHERE email = ${email}`;
       console.log(`Revoked access from ${email}`);
     } else {
       console.log(`Ignored status ${status} for ${email}`);

@@ -105,8 +105,10 @@ export default function CarouselGenerator({ onLogout }: { onLogout: () => void }
   const [activeMobileTab, setActiveMobileTab] = useState<'config' | 'preview'>('config');
   const [saveDefaults, setSaveDefaults] = useState(true);
 
-  const [parsedSlides, setParsedSlides] = useState<{ title: string, subtitle: string }[]>([
-    { title: '', subtitle: '' }
+  const [addCtaSlide, setAddCtaSlide] = useState(false);
+  const [ctaContent, setCtaContent] = useState('Gostou do conteúdo?\nSalve para não esquecer e me siga para mais!');
+  const [parsedSlides, setParsedSlides] = useState<{ title: string, subtitle: string, isCta?: boolean }[]>([
+    { title: '', subtitle: '', isCta: false }
   ]);
 
   const slideCount = React.useMemo(() => {
@@ -199,6 +201,8 @@ export default function CarouselGenerator({ onLogout }: { onLogout: () => void }
         if (prefs.aspectRatio) setAspectRatio(prefs.aspectRatio);
         if (prefs.content) setContent(prefs.content);
         if (prefs.toneMode) setToneMode(prefs.toneMode);
+        if (prefs.addCtaSlide !== undefined) setAddCtaSlide(prefs.addCtaSlide);
+        if (prefs.ctaContent !== undefined) setCtaContent(prefs.ctaContent);
         if (prefs.parsedSlides && Array.isArray(prefs.parsedSlides) && prefs.parsedSlides.length > 0) {
           setParsedSlides(prefs.parsedSlides);
         }
@@ -258,6 +262,8 @@ export default function CarouselGenerator({ onLogout }: { onLogout: () => void }
         content,
         parsedSlides,
         saveDefaults,
+        addCtaSlide,
+        ctaContent,
         toneMode
       };
 
@@ -286,7 +292,7 @@ export default function CarouselGenerator({ onLogout }: { onLogout: () => void }
         localStorage.setItem('carousel_preferences', JSON.stringify(prefs));
       }
     }
-  }, [brandHandle, brandLogo, styleModel, customColor, aspectRatio, content, parsedSlides, saveDefaults, toneMode, fontFamily, textAlign]);
+  }, [brandHandle, brandLogo, styleModel, customColor, aspectRatio, content, parsedSlides, saveDefaults, toneMode, fontFamily, textAlign, addCtaSlide, ctaContent]);
 
   const handleApiKeyChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const val = e.target.value;
@@ -445,7 +451,7 @@ export default function CarouselGenerator({ onLogout }: { onLogout: () => void }
     });
   };
 
-  const processTextIntoSlides = (textToParse: string) => {
+  const processTextIntoSlides = (textToParse: string, useCta = addCtaSlide, ctaText = ctaContent) => {
     // Quebra o texto garantidamente pela separação de slide (ex: SLIDE 01:, Slide 1 -)
     // Usamos um lookahead para manter o bloco do slide inteiro ou dar um fallback seguro.
     let blocks = textToParse.split(/(?=SLIDE\s*\d+[:\-]?)/i).filter(b => b.trim());
@@ -459,7 +465,7 @@ export default function CarouselGenerator({ onLogout }: { onLogout: () => void }
       }
     }
 
-    const newSlides = blocks.map((block) => {
+    const newSlides: { title: string, subtitle: string, isCta?: boolean }[] = blocks.map((block) => {
       let title = '';
       let subtitle = '';
 
@@ -491,6 +497,10 @@ export default function CarouselGenerator({ onLogout }: { onLogout: () => void }
 
     if (newSlides.length === 0) {
       newSlides.push({ title: '', subtitle: '' });
+    }
+
+    if (useCta && ctaText.trim()) {
+      newSlides.push({ title: 'GOSTOU DO CONTEÚDO?', subtitle: ctaText, isCta: true });
     }
 
     setParsedSlides(newSlides);
@@ -592,14 +602,14 @@ export default function CarouselGenerator({ onLogout }: { onLogout: () => void }
   const handleGenerateCarousel = async () => {
     if (!content.trim()) return;
 
-    let newSlides: { title: string, subtitle: string }[] = [];
+    let newSlides: { title: string, subtitle: string, isCta?: boolean }[] = [];
 
     if (isIuryMode) {
       const generated = await executarIury();
       if (!generated) return;
       newSlides = generated;
     } else {
-      newSlides = processTextIntoSlides(content);
+      newSlides = processTextIntoSlides(content, addCtaSlide, ctaContent);
     }
 
     if (generateWithAI) {
@@ -893,11 +903,43 @@ export default function CarouselGenerator({ onLogout }: { onLogout: () => void }
                   onChange={(e) => {
                     setContent(e.target.value);
                     if (!isIuryMode) {
-                      processTextIntoSlides(e.target.value);
+                      processTextIntoSlides(e.target.value, addCtaSlide, ctaContent);
                     }
                   }}
                 ></textarea>
                 <div className="absolute bottom-3 right-3 text-xs text-slate-400 font-medium bg-slate-100 dark:bg-border-dark px-2 py-1 rounded">{content.length} caracteres</div>
+              </div>
+
+              <div className="flex flex-col gap-3 pt-3 border-t border-slate-100 dark:border-border-dark">
+                <div className="flex items-center justify-between">
+                  <div className="flex flex-col">
+                    <span className="text-sm font-semibold text-slate-900 dark:text-white">Adicionar CTA Final</span>
+                    <span className="text-[10px] text-slate-500 dark:text-slate-400">Gera um slide extra para Call-to-Action</span>
+                  </div>
+                  <label className="relative inline-flex items-center cursor-pointer">
+                    <input
+                      type="checkbox"
+                      className="sr-only peer"
+                      checked={addCtaSlide}
+                      onChange={(e) => {
+                        setAddCtaSlide(e.target.checked);
+                        if (!isIuryMode) processTextIntoSlides(content, e.target.checked, ctaContent);
+                      }}
+                    />
+                    <div className="w-11 h-6 bg-slate-200 peer-focus:outline-none peer-focus:ring-2 peer-focus:ring-primary/20 dark:peer-focus:ring-primary/30 rounded-full peer dark:bg-slate-700 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all dark:border-gray-600 peer-checked:bg-primary"></div>
+                  </label>
+                </div>
+                {addCtaSlide && (
+                  <textarea
+                    value={ctaContent}
+                    onChange={(e) => {
+                      setCtaContent(e.target.value);
+                      if (!isIuryMode) processTextIntoSlides(content, addCtaSlide, e.target.value);
+                    }}
+                    placeholder="Gostou do conteúdo? Salve e siga para mais!"
+                    className="w-full bg-slate-50 dark:bg-surface-darker border border-slate-200 dark:border-border-dark rounded-xl px-4 py-3 text-sm text-slate-700 dark:text-slate-300 focus:ring-2 focus:ring-primary focus:border-transparent resize-none h-20 shadow-inner"
+                  />
+                )}
               </div>
             </div>
             <div className="space-y-4">
@@ -1322,6 +1364,7 @@ export default function CarouselGenerator({ onLogout }: { onLogout: () => void }
                   const slide = {
                     title: parsedSlide.title,
                     subtitle: parsedSlide.subtitle,
+                    isCta: parsedSlide.isCta,
                     defaultImage: index < defaultImages.length ? defaultImages[index] : `https://picsum.photos/seed/${index}/800/1000`
                   };
 
@@ -1366,6 +1409,67 @@ export default function CarouselGenerator({ onLogout }: { onLogout: () => void }
                     }
                   }
 
+                  if (slide.isCta) {
+                    return (
+                      <div key={index} className={`relative shrink-0 snap-center flex items-center group/slide-wrapper ${getSlideDimensions()}`}>
+                        <div className="relative group/slide w-full h-full rounded-2xl overflow-hidden shadow-2xl transition-transform hover:-translate-y-2 duration-300">
+                          <div
+                            ref={(el) => { slideRefs.current[index] = el; }}
+                            className={`absolute inset-0 flex flex-col items-center justify-center p-8 text-center ${theme.bgClass}`}
+                            style={theme.bgStyle}
+                          >
+                            {(brandHandle || brandLogo) && (
+                              <div className="flex flex-col items-center gap-4 mb-8 z-[60]">
+                                {brandLogo ? (
+                                  <div className="size-24 sm:size-28 rounded-full overflow-hidden bg-white shadow-2xl flex shrink-0 ring-4 ring-white/20">
+                                    <img src={brandLogo} alt="Logo" className="w-full h-full object-cover" />
+                                  </div>
+                                ) : (
+                                  <div className="size-24 sm:size-28 rounded-full bg-slate-200 dark:bg-slate-700 shadow-2xl flex shrink-0 ring-4 ring-white/20 items-center justify-center">
+                                    <span className="material-symbols-outlined text-[40px] text-slate-400">person</span>
+                                  </div>
+                                )}
+                                {brandHandle && (
+                                  <span className={`text-sm sm:text-base font-bold tracking-widest uppercase ${theme.textClass}`}>
+                                    {brandHandle}
+                                  </span>
+                                )}
+                              </div>
+                            )}
+                            <div className="w-full flex-1 flex flex-col items-center justify-center gap-4 shrink-0 z-20 relative" style={{ fontFamily }}>
+                              <h2 className={`font-extrabold text-2xl sm:text-3xl ${theme.textClass} leading-tight uppercase`}>{slide.title}</h2>
+                              <p className={`text-base sm:text-lg ${theme.subtextClass} font-medium leading-relaxed whitespace-pre-wrap max-w-xs`}>{slide.subtitle}</p>
+
+                              <div className="mt-8 flex gap-5">
+                                <span className={`material-symbols-outlined text-[32px] ${theme.textClass} opacity-80 mix-blend-overlay drop-shadow-lg`}>favorite</span>
+                                <span className={`material-symbols-outlined text-[32px] ${theme.textClass} opacity-80 mix-blend-overlay drop-shadow-lg`}>chat_bubble</span>
+                                <span className={`material-symbols-outlined text-[32px] ${theme.textClass} opacity-80 mix-blend-overlay drop-shadow-lg`}>send</span>
+                                <span className={`material-symbols-outlined text-[32px] ${theme.textClass} opacity-80 mix-blend-overlay drop-shadow-lg`}>bookmark</span>
+                              </div>
+                            </div>
+                          </div>
+
+                          <div className="absolute inset-0 bg-black/80 opacity-0 group-active/slide:opacity-100 sm:group-hover/slide:opacity-100 transition-opacity flex flex-col items-center justify-center p-6 backdrop-blur-[4px] z-[60] pointer-events-none">
+                            <div className="flex w-full h-full gap-2 sm:gap-4 items-center justify-center">
+                              <button
+                                onClick={() => handleDownloadSingle(index)}
+                                className="pointer-events-auto flex items-center justify-start gap-3 bg-white/10 text-white hover:bg-white/20 px-4 py-2.5 rounded-xl text-xs font-bold transition-all border border-white/10">
+                                <span className="material-symbols-outlined text-[16px]">download</span> Baixar
+                              </button>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    );
+                  }
+
+                  const randomPattern = [false, true, false, false, true, false, true, true, false, true];
+                  const isImageBottom = index === 0 ? false : randomPattern[index % randomPattern.length];
+                  const contentOrder = isImageBottom ? 'flex-col-reverse' : 'flex-col';
+                  const textAlignmentPadding = isImageBottom
+                    ? 'pt-24 pb-12 justify-center'
+                    : (index === 0 ? 'pt-6 pb-14 justify-end' : 'pt-6 pb-8 justify-end');
+
                   return (
                     <div key={index} className={`relative shrink-0 snap-center flex items-center group/slide-wrapper ${getSlideDimensions()}`}>
                       <div className="relative group/slide w-full h-full rounded-2xl overflow-hidden shadow-2xl transition-transform hover:-translate-y-2 duration-300">
@@ -1378,31 +1482,40 @@ export default function CarouselGenerator({ onLogout }: { onLogout: () => void }
                         )}
                         <div
                           ref={(el) => { slideRefs.current[index] = el; }}
-                          className={`absolute inset-0 flex flex-col ${theme.bgClass}`}
+                          className={`absolute inset-0 flex ${contentOrder} ${theme.bgClass}`}
                           style={theme.bgStyle}
                         >
+                          {(brandHandle || brandLogo) && (
+                            <div
+                              className={`absolute top-5 left-1/2 -translate-x-1/2 flex items-center gap-2.5 z-[60] px-4 py-2 rounded-full shadow-xl border ${theme.bgClass.includes('white') || theme.bgClass === '' ? 'border-slate-200' : 'border-white/10'} ${theme.bgClass}`}
+                              style={{
+                                ...theme.bgStyle,
+                                backdropFilter: 'blur(10px)',
+                                boxShadow: '0 10px 25px -5px rgba(0, 0, 0, 0.4), 0 8px 10px -6px rgba(0, 0, 0, 0.2)'
+                              }}
+                            >
+                              {brandLogo && (
+                                <div className="size-6 sm:size-7 rounded-full overflow-hidden bg-white shadow-inner flex shrink-0 ring-2 ring-white/20">
+                                  <img src={brandLogo} alt="Logo" className="w-full h-full object-cover" />
+                                </div>
+                              )}
+                              {brandHandle && (
+                                <span className={`text-[10px] sm:text-xs font-bold tracking-wider ${theme.textClass}`} style={{ textShadow: theme.textClass.includes('white') ? '0 1px 3px rgba(0,0,0,0.5)' : 'none' }}>
+                                  {brandHandle}
+                                </span>
+                              )}
+                            </div>
+                          )}
                           <div
                             className="w-full flex-1 min-h-0 overflow-hidden group/image z-10 relative"
                           >
-                            {(brandHandle || brandLogo) && (
-                              <div className="absolute top-4 left-4 flex items-center gap-1 z-50 bg-[rgba(0,0,0,0.15)] backdrop-blur-md px-2 py-0.5 rounded-full border border-[rgba(255,255,255,0.05)]">
-                                {brandLogo && (
-                                  <div className="size-3 rounded-full overflow-hidden bg-[#ffffff] opacity-90">
-                                    <img src={brandLogo} alt="Logo" className="w-full h-full object-cover" />
-                                  </div>
-                                )}
-                                {brandHandle && (
-                                  <span className="text-[6px] text-[rgba(255,255,255,0.7)] font-medium tracking-wide">{brandHandle}</span>
-                                )}
-                              </div>
-                            )}
                             <div
                               className="block h-full w-full relative z-30 pointer-events-none"
                             >
                               <div className="absolute inset-0 bg-cover transition-transform duration-500 pointer-events-none" style={{ backgroundImage: `url('${imageSrc}')`, backgroundPosition: `center ${imagePosMap[index] ?? 50}%` }}></div>
                             </div>
                           </div>
-                          <div className={`w-full px-8 pt-6 flex flex-col justify-end shrink-0 z-20 relative ${index === 0 ? 'pb-14' : 'pb-8'} ${textAlign}`} style={{ fontFamily }}>
+                          <div className={`w-full px-8 flex flex-col shrink-0 z-20 relative ${textAlignmentPadding} ${textAlign}`} style={{ fontFamily }}>
                             <div className={`flex flex-col gap-2 ${textAlign === 'text-center' ? 'items-center text-center' : textAlign === 'text-right' ? 'items-end text-right' : 'items-start text-left'}`}>
                               {slide.title && <h2 className={titleClass}>{slide.title}</h2>}
                               {slide.subtitle && <p className={subtitleClass}>{slide.subtitle}</p>}

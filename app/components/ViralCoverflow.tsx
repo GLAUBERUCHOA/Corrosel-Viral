@@ -4,10 +4,10 @@ import React, { useRef, useEffect, useState } from 'react';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
 
 const viralImages = [
-    { id: 1, src: '/viral-1.jpg', alt: 'Carrossel Viral 1' },
-    { id: 2, src: '/viral-2.png', alt: 'Carrossel Viral 2' },
-    { id: 3, src: '/viral-3.png', alt: 'Carrossel Viral 3' },
-    { id: 4, src: '/viral-4.png', alt: 'Carrossel Viral 4' }
+    { id: 1, src: '/images/viral-1.jpg', alt: 'Carrossel Viral 1' },
+    { id: 2, src: '/images/viral-2.png', alt: 'Carrossel Viral 2' },
+    { id: 3, src: '/images/viral-3.png', alt: 'Carrossel Viral 3' },
+    { id: 4, src: '/images/viral-4.png', alt: 'Carrossel Viral 4' }
 ];
 
 export default function ViralCoverflow() {
@@ -60,10 +60,10 @@ export default function ViralCoverflow() {
     };
 
     return (
-        <div className="w-full relative overflow-hidden py-10">
+        <div className="w-full relative overflow-hidden py-4 sm:py-6">
             <div
                 ref={scrollRef}
-                className="flex overflow-x-auto snap-x snap-mandatory no-scrollbar pb-16 pt-8"
+                className="flex overflow-x-auto snap-x snap-mandatory no-scrollbar pb-6 pt-2"
                 style={{
                     paddingLeft: 'calc(50vw - 140px)',
                     paddingRight: 'calc(50vw - 140px)'
@@ -109,10 +109,10 @@ export default function ViralCoverflow() {
                 })}
             </div>
 
-            <div className="flex items-center justify-center gap-6 mt-2 relative z-40">
+            <div className="flex items-center justify-center gap-4 sm:gap-6 mt-0 relative z-40">
                 <button
                     onClick={() => scrollToIndex(Math.max(0, activeIndex - 1))}
-                    className="p-3 rounded-full bg-slate-800/80 text-white hover:bg-slate-700 hover:text-purple-400 transition-colors shadow-lg border border-slate-700 backdrop-blur-md"
+                    className="p-2 sm:p-2.5 rounded-full bg-slate-800/60 text-white hover:bg-slate-700 hover:text-purple-400 transition-colors shadow-sm border border-slate-700/50 backdrop-blur-md"
                 >
                     <ChevronLeft size={24} />
                 </button>
@@ -127,7 +127,7 @@ export default function ViralCoverflow() {
                 </div>
                 <button
                     onClick={() => scrollToIndex(Math.min(viralImages.length - 1, activeIndex + 1))}
-                    className="p-3 rounded-full bg-slate-800/80 text-white hover:bg-slate-700 hover:text-purple-400 transition-colors shadow-lg border border-slate-700 backdrop-blur-md"
+                    className="p-2 sm:p-2.5 rounded-full bg-slate-800/60 text-white hover:bg-slate-700 hover:text-purple-400 transition-colors shadow-sm border border-slate-700/50 backdrop-blur-md"
                 >
                     <ChevronRight size={24} />
                 </button>

@@ -56,29 +56,43 @@ export default function HomePage() {
               <Sparkles className="w-4 h-4" /> NOVO SISTEMA DE CRIAÇÃO VIRAL
             </div>
 
-            <h1 className="text-4xl sm:text-6xl md:text-7xl font-extrabold text-white tracking-tight leading-tight mb-8">
-              Transforme seu Instagram em uma <br className="hidden md:block" />
+            <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-extrabold text-white tracking-tight leading-tight mb-8">
+              Transforme seu Instagram em uma <br className="hidden lg:block" />
               <span className="text-transparent bg-clip-text bg-gradient-to-r from-orange-400 to-amber-400">
                 MÁQUINA de vendas automática
               </span><br className="hidden md:block" />
-              com carrosséis virais criados com APENAS 1 CLIQUE
+              <span className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl mt-2 block">com carrosséis virais criados com APENAS 1 CLIQUE</span>
             </h1>
 
-            <p className="text-lg sm:text-xl text-slate-400 max-w-3xl mx-auto leading-relaxed mb-12">
+            <p className="text-base sm:text-lg md:text-xl text-slate-400 max-w-3xl mx-auto leading-relaxed mb-12">
               Domine a criação de conteúdo com o sistema que já gerou mais de 20 milhões de alcance mensal e ajudou mais de 2.540 pessoas a saírem do invisível para o topo do algoritmo — usando IA para criar posts completos em segundos.
             </p>
 
-            <a
-              href="/login"
-              className="inline-flex items-center justify-center gap-3 bg-gradient-to-r from-orange-500 to-amber-500 text-white font-black uppercase tracking-wide text-lg sm:text-xl px-10 py-5 rounded-full hover:scale-105 transition-all duration-300 shadow-[0_0_40px_rgba(245,158,11,0.4)] border-2 border-orange-400/50 w-full sm:w-auto mt-4"
-            >
-              SIM, EU QUERO VIRALIZAR HOJE! <br />
-              <span className="text-sm font-semibold tracking-normal text-amber-200 block mt-1">(Acesso Vitalício + Bônus Exclusivos)</span>
-              <ChevronDown className="w-6 h-6 animate-bounce" />
-            </a>
+            {/* ESPAÇO PARA O VÍDEO DE VENDAS */}
+            <div className="w-full max-w-4xl mx-auto h-[250px] sm:h-[350px] md:h-[450px] lg:h-[500px] border-2 border-slate-800 border-dashed rounded-[2rem] bg-slate-900/60 backdrop-blur-md flex flex-col items-center justify-center text-slate-500 gap-4 group hover:border-slate-600 transition-colors relative overflow-hidden mb-12 shadow-2xl">
+              <div className="absolute inset-0 bg-black/40 z-10"></div>
+              <Video size={56} className="text-slate-600 group-hover:text-slate-400 transition-colors z-20" />
+              <p className="font-medium z-20 text-center px-4">[ESPAÇO DO VÍDEO] <br className="sm:hidden" /> Inserir iFrame do YouTube ou Vimeo aqui.</p>
+            </div>
+
+            <div className="flex flex-col items-center justify-center relative">
+              <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-full h-[120%] bg-orange-500/20 blur-[60px] rounded-full pointer-events-none z-0 animate-pulse"></div>
+
+              <a
+                href="/login"
+                className="relative z-10 inline-flex items-center justify-center gap-3 bg-gradient-to-r from-orange-500 to-amber-500 text-white font-black uppercase tracking-wide text-lg sm:text-xl px-10 py-5 rounded-full hover:scale-105 transition-all duration-300 shadow-[0_0_50px_rgba(245,158,11,0.6)] border border-orange-400/80 w-full sm:w-auto"
+              >
+                SIM, EU QUERO VIRALIZAR HOJE!
+                <ChevronDown className="w-6 h-6 animate-bounce" />
+              </a>
+
+              <span className="text-sm sm:text-base font-medium text-amber-200/80 mt-4 relative z-10 flex items-center gap-2">
+                <ShieldCheck size={16} className="text-green-400" /> Acesso Vitalício + Bônus Exclusivos
+              </span>
+            </div>
 
             {/* ESPAÇO PARA A IMAGEM PRINCIPAL DO HERO (Produto/Mockups ou Autor) */}
-            <div className="mt-16 w-full max-w-4xl mx-auto h-[400px] border border-slate-800 border-dashed rounded-[2rem] bg-slate-900/40 backdrop-blur-sm flex flex-col items-center justify-center text-slate-500 gap-4 group hover:border-slate-600 transition-colors relative overflow-hidden">
+            <div className="mt-20 w-full max-w-4xl mx-auto h-[400px] border border-slate-800 border-dashed rounded-[2rem] bg-slate-900/40 backdrop-blur-sm flex flex-col items-center justify-center text-slate-500 gap-4 group hover:border-slate-600 transition-colors relative overflow-hidden hidden">
               <div className="absolute inset-0 bg-gradient-to-t from-slate-950 to-transparent z-10"></div>
               <ImageIcon size={48} className="text-slate-700 group-hover:text-slate-500 transition-colors z-20" />
               <p className="font-medium z-20">[ESPAÇO 1] Insira aqui a foto da capa ou mockups do Sistema</p>

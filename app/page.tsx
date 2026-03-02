@@ -376,11 +376,9 @@ export default function HomePage() {
         {/* AUTHOR SUMMARY */}
         <section className="py-24 bg-slate-900 border-t border-white/5 px-6">
           <div className="max-w-5xl mx-auto flex flex-col md:flex-row items-center gap-16">
-            <div className="w-64 h-64 md:w-80 md:h-80 rounded-[2rem] bg-gradient-to-tr from-slate-800 to-slate-700 shrink-0 shadow-[0_0_50px_rgba(0,0,0,0.5)] overflow-hidden relative border border-slate-700 flex items-center justify-center group flex-col text-slate-500 border-dashed hover:border-slate-500 transition-colors">
-              <ImageIcon size={40} className="text-slate-600 group-hover:text-slate-400 transition-colors mb-2" />
-              <div className="text-sm font-medium text-center px-4">
-                [ESPAÇO 3]<br />Foto do Glauber <br /><span className="text-[10px] text-slate-600">(Com o drone ou em palestra)</span>
-              </div>
+            <div className="w-64 h-64 md:w-80 md:h-80 rounded-[2rem] bg-gradient-to-tr from-slate-900 to-slate-800 shrink-0 shadow-[0_0_50px_rgba(0,0,0,0.5)] overflow-hidden relative border border-slate-700 flex items-center justify-center group flex-col text-slate-500">
+              <div className="absolute inset-0 bg-cyan-500/10 mix-blend-overlay z-0"></div>
+              <img src="/images/author.webp" alt="Glauber Uchoa" className="w-[120%] h-[120%] object-cover object-center relative z-10 transition-transform duration-700 group-hover:scale-105 opacity-90 hover:opacity-100" />
             </div>
             <div className="text-center md:text-left">
               <FadeInSection>

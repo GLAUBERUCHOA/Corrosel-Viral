@@ -50,22 +50,19 @@ export default function HomePage() {
       <div className="relative z-10">
 
         {/* HEADER / HERO SECTION */}
-        <section className="pt-24 pb-20 sm:pt-32 sm:pb-24 px-6 max-w-5xl mx-auto text-center flex flex-col items-center">
+        <section className="pt-10 pb-12 sm:pt-20 sm:pb-24 px-6 max-w-5xl mx-auto text-center flex flex-col items-center">
           <FadeInSection>
-            <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-purple-500/10 border border-purple-500/20 text-purple-300 text-xs sm:text-sm font-semibold tracking-wide mb-8">
-              <Sparkles className="w-4 h-4" /> NOVO SISTEMA DE CRIAÇÃO VIRAL
-            </div>
 
-            <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-extrabold text-white tracking-tight leading-tight mb-6">
+            <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-extrabold text-white tracking-tight leading-tight mb-4">
               Transforme seu Instagram em uma <br className="hidden lg:block" />
               <span className="text-transparent bg-clip-text bg-gradient-to-r from-orange-400 to-amber-400">
                 MÁQUINA de vendas automática
               </span><br className="hidden md:block" />
-              <span className="text-xl sm:text-2xl md:text-3xl lg:text-4xl mt-3 block">com carrosséis virais criados com APENAS 1 CLIQUE</span>
+              <span className="text-xl sm:text-2xl md:text-3xl lg:text-4xl mt-2 block">com carrosséis virais criados com APENAS 1 CLIQUE</span>
             </h1>
 
-            <p className="text-sm sm:text-base md:text-lg text-slate-400 max-w-3xl mx-auto leading-relaxed mb-10 px-2">
-              Domine a criação de conteúdo com o sistema que já gerou mais de 20 milhões de alcance mensal e ajudou mais de 2.540 pessoas a saírem do invisível para o topo do algoritmo — usando IA para criar posts completos em segundos.
+            <p className="text-sm sm:text-base md:text-lg text-slate-400 max-w-2xl mx-auto leading-relaxed mb-8 px-2">
+              A ferramenta de IA essencial para produtos, serviços e vendas. Gere carrosséis para todos os nichos e fure a bolha do algoritmo em instantes.
             </p>
 
             {/* ESPAÇO PARA O VÍDEO DE VENDAS */}

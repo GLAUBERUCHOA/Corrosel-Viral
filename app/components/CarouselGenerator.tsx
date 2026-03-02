@@ -5,43 +5,56 @@ import * as htmlToImage from 'html-to-image';
 import JSZip from 'jszip';
 import { saveAs } from 'file-saver';
 
-const PROMPT_IURY = `🧠 1. PERFIL COGNITIVO (O DNA DO IURY)
-Você é um Diretor de Criação e Engenheiro Narrativo. Você não resume textos; você os metamorfoseia. Sua mente opera em 3 camadas simultâneas:
-- Camada Visceral: O impacto emocional, o soco no estômago, a lição de moral quando o ego do leitor precisa ser quebrado.
-- Camada Intelectual: O uso de repertório (História, Filosofia, Antropologia, Biografias, Falhas Corporativas).
-- Camada Prática: A entrega de valor real. Dicas, checklists ou métodos que transformam o conceito em ação.
+const getIuryPrompt = (toneMode: string, dynamicInstructions: Record<string, string>) => {
+  const selectedInstruction = dynamicInstructions[toneMode] ||
+    'Modo PROVOCATIVO (O Soco no Estômago): Focado em quebrar o ego, expor o erro e gerar desconforto. Seu tom é irônico, inteligente e instigador. Ideal para criar identificação extrema pela dor (topo de funil).';
 
-✍️ 2. DIRETRIZES DE NARRATIVA (LIBERDADE TOTAL)
-Sinta-se livre para escolher o melhor caminho para o conteúdo, alternando entre:
-- O Caminho do Profeta: Lições de moral duras sobre sociedade, caráter e negligência.
-- O Caminho do Historiador: Conectar o tema a eventos (Ex: O naufrágio do Titanic, a queda da Kodak, a estratégia de Alexandre o Grande).
-- O Caminho do Cientista: Dissecar a biologia ou a psicologia por trás do erro humano.
 
-Estilo de Escrita: Títulos em CAIXA ALTA. Linguagem sem 'marketinglês'. Use expressões como 'sangue no olho', 'cair do cavalo', 'boca do povo'. Se a história precisar de 4 linhas por slide para ser épica, use-as.
 
-📏 3. REGRAS DE ESTRUTURA E LAYOUT
-Slide 01 (CAPA): Manchete de impacto visceral + Contexto de Nicho. PROIBIDO SUBTÍTULO. Somente o Título em CAIXA ALTA.
-Slides Seguintes: Título (Impacto) + Subtítulo (Narrativa livre e profunda). Máximo de 300 caracteres (Título + Subtítulo combinados) para não quebrar o layout, mas com fôlego considerável para storytelling.
-O Último Slide deve invariavelmente trazer a "Camada Prática" ensinando a pessoa o que fazer.
+  return `🧠 1. PERFIL COGNITIVO DO IURY
+Você é um Diretor de Criação e Engenheiro Narrativo. NUNCA resuma textos; você usa a ideia do usuário apenas como uma SEMENTE para criar narrativas autorais, densas e poderosas.
 
-EXEMPLO DE OUTPUT ESPERADO:
+Sua mente opera em camadas (Visceral para prender atenção, Intelecto com repertório de biografia/história, e Prática no último slide).
+
+🎯 2. DIRETRIZ DE TOM ATUAL:
+Você deve OBRIGATORIAMENTE se portar sob este tom em todo o texto gerado:
+[ ${selectedInstruction} ]
+
+✍️ 3. DIRETRIZES DE ESCRITA
+- Títulos SEMPRE em CAIXA ALTA, com expressões autênticas e zero 'marketinglês'.
+- Formatação de Tópicos: Quando houver listas ou dicas (bullets), você DEVE quebrar a linha sistematicamente (um item abaixo do outro).
+
+📏 4. REGRAS DE LAYOUT E ESTRUTURA (RESTRIÇÃO MORTAL)
+Slide 01 (CAPA): Manchete visceral em CAIXA ALTA + Contexto. PROIBIDO SUBTÍTULO. Somente Título.
+Slides Seguintes: [TÍTULO] curto + [SUBTÍTULO] narrativo longo.
+LIMITE ABSOLUTO: MÁXIMO DE 250 CARACTERES POR SLIDE (Título + Subtítulo). Escreva com poder, mas conciso. Em hipótese alguma passe desse limite.
+
+EXEMPLO DE OUTPUT ESPERADO COM LISTAS:
 SLIDE 01:
-[TÍTULO]: O COMPLEXO DE DEUS QUE ESTÁ MATANDO O SEU LUCRO NA MEDICINA.
+[TÍTULO]: O COMPLEXO DE DEUS QUE MATA O SEU LUCRO.
 [SUBTÍTULO]: 
 SLIDE 02:
 [TÍTULO]: A SÍNDROME DA BLOCKBUSTER.
-[SUBTÍTULO]: Em 2000, a Blockbuster riu da Netflix. Você ri do seu concorrente que publica vídeos enquanto apenas debruça numa mesa de consultório esperando 'indicação'. O mercado não liga para sua soberba, liga para acesso.
+[SUBTÍTULO]: Em 2000, eles riram da Netflix. A arrogância cega. O mercado não liga para sua soberba acadêmica.
 SLIDE 03:
-[TÍTULO]: A VERDADE QUE INCOMODA.
-[SUBTÍTULO]: Enquanto você foca em pendurar diplomas na parede, o concorrente 'amador' foca no trauma do paciente. Autoridade não se compra; se conquista com convicção ao bater na mesa com a verdade.
-SLIDE 04:
-[TÍTULO]: COMO MUDAR O JOGO HOJE.
-[SUBTÍTULO]: 1. Implante captação ativa. 2. Conte histórias de erros na profissão, humanize o jaleco. 3. Desligue a tela e aplique agora.
+[TÍTULO]: COMO MUDAR O JOGO AGORA.
+[SUBTÍTULO]: 
+- Desça do pedestal;
+- Exponha a falha calculada;
+- Aprenda a vender ou morra esquecido.
 
-Aja conforme a persona descrita e transforme brutalmente o texto abaixo:
+🚨 REGRA CRÍITCA DE FORMATAÇÃO:
+PROIBIDO gerar qualquer texto fora das tags [TÍTULO]: e [SUBTÍTULO]:.
+NUNCA repita o texto do título dentro do subtítulo.
+Sempre separe slides com a tag nativa (Ex: SLIDE 01:).
+
+CRIANDO COM BASE NO SEU TOM SELECIONADO ACIMA, metamorfoseie brutalmente o seguinte rascunho:
 `;
+};
 
 export default function CarouselGenerator({ onLogout }: { onLogout: () => void }) {
+  const [dbPrompts, setDbPrompts] = useState<Record<string, string>>({});
+  const [dbLabels, setDbLabels] = useState<{ key: string, label: string }[]>([]);
   const [aspectRatio, setAspectRatio] = useState('4:5');
   const [styleModel, setStyleModel] = useState('Escuro');
   const [generateWithAI, setGenerateWithAI] = useState(false);
@@ -49,6 +62,7 @@ export default function CarouselGenerator({ onLogout }: { onLogout: () => void }
   const [generatingImages, setGeneratingImages] = useState<boolean[]>([]);
   const [isIuryMode, setIsIuryMode] = useState(false);
   const [isGeneratingText, setIsGeneratingText] = useState(false);
+  const [toneMode, setToneMode] = useState('PROVOCATIVO');
   const [content, setContent] = useState('');
   const [zoom, setZoom] = useState(100);
   const [activeMobileTab, setActiveMobileTab] = useState<'config' | 'preview'>('config');
@@ -107,6 +121,7 @@ export default function CarouselGenerator({ onLogout }: { onLogout: () => void }
 
         if (prefs.aspectRatio) setAspectRatio(prefs.aspectRatio);
         if (prefs.content) setContent(prefs.content);
+        if (prefs.toneMode) setToneMode(prefs.toneMode);
         if (prefs.parsedSlides && Array.isArray(prefs.parsedSlides) && prefs.parsedSlides.length > 0) {
           setParsedSlides(prefs.parsedSlides);
         }
@@ -115,6 +130,26 @@ export default function CarouselGenerator({ onLogout }: { onLogout: () => void }
       }
     }
     isInitialized.current = true;
+
+    const fetchPrompts = async () => {
+      try {
+        const res = await fetch('/api/admin/settings');
+        const data = await res.json();
+        if (data.success && data.prompts) {
+          const instructionsMap: Record<string, string> = {};
+          const labelsArr: { key: string, label: string }[] = [];
+          data.prompts.forEach((p: any) => {
+            instructionsMap[p.toneKey] = p.instruction;
+            labelsArr.push({ key: p.toneKey, label: p.label });
+          });
+          setDbPrompts(instructionsMap);
+          setDbLabels(labelsArr);
+        }
+      } catch (err) {
+        console.error("Failed to fetch dynamic prompts:", err);
+      }
+    };
+    fetchPrompts();
 
     const checkMobile = () => setIsMobile(window.innerWidth < 768);
     checkMobile();
@@ -128,7 +163,8 @@ export default function CarouselGenerator({ onLogout }: { onLogout: () => void }
         aspectRatio,
         content,
         parsedSlides,
-        saveDefaults
+        saveDefaults,
+        toneMode
       };
 
       if (saveDefaults) {
@@ -152,7 +188,7 @@ export default function CarouselGenerator({ onLogout }: { onLogout: () => void }
         localStorage.setItem('carousel_preferences', JSON.stringify(prefs));
       }
     }
-  }, [brandHandle, brandLogo, styleModel, customColor, aspectRatio, content, parsedSlides, saveDefaults]);
+  }, [brandHandle, brandLogo, styleModel, customColor, aspectRatio, content, parsedSlides, saveDefaults, toneMode]);
 
   const handleApiKeyChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const val = e.target.value;
@@ -312,27 +348,40 @@ export default function CarouselGenerator({ onLogout }: { onLogout: () => void }
   };
 
   const processTextIntoSlides = (textToParse: string) => {
-    let blocks = textToParse.split(/\n\s*\n/).filter(b => b.trim());
-    if (blocks.length === 1) {
-      blocks = textToParse.split('\n').filter(b => b.trim());
+    // Quebra o texto garantidamente pela separação de slide (ex: SLIDE 01:, Slide 1 -)
+    // Usamos um lookahead para manter o bloco do slide inteiro ou dar um fallback seguro.
+    let blocks = textToParse.split(/(?=SLIDE\s*\d+[:\-]?)/i).filter(b => b.trim());
+
+    // Fallback: se a IA não gerou a palavra SLIDE, tentamos quebrar por linha dupla.
+    if (blocks.length === 0 || (blocks.length === 1 && !/SLIDE\s*\d+/i.test(blocks[0]))) {
+      blocks = textToParse.split(/\n\s*\n/).filter(b => b.trim());
+      // Se não houver linha dupla, quebramos pelas tags de título atiradas juntas
+      if (blocks.length === 1) {
+        blocks = textToParse.split(/(?=\[T[ÍI]TULO\]:)/i).filter(b => b.trim());
+      }
     }
 
     const newSlides = blocks.map((block) => {
       let title = '';
       let subtitle = '';
 
-      const singleLineBlock = block.replace(/\n/g, ' ').trim();
-
-      const titleRegex = /\[?T[ÍI]TULO\]?:\s*(.*?)(?=\[SUBT[ÍI]TULO\]:|$)/i;
-      const subtitleRegex = /\[?SUBT[ÍI]TULO\]?:\s*(.*)/i;
-
-      const titleMatch = singleLineBlock.match(titleRegex);
-      const subtitleMatch = singleLineBlock.match(subtitleRegex);
+      // Tenta capturar as tags independentemente da quebra de linha.
+      // O [TÍTULO]: pega tudo até encontrar a quebra de [SUBTÍTULO]: ou final da string
+      const titleMatch = block.match(/\[?T[ÍI]TULO\]?:\s*([\s\S]*?)(?=\[SUBT[ÍI]TULO\]:|$)/i);
+      // O [SUBTÍTULO]: pega tudo após ele (dentro desse bloco em específico)
+      const subtitleMatch = block.match(/\[?SUBT[ÍI]TULO\]?:\s*([\s\S]*?)$/i);
 
       if (titleMatch || subtitleMatch) {
         title = titleMatch ? titleMatch[1].replace(/^(?:SLIDE\s*\d+\s*[:\-]?\s*)/i, '').trim() : '';
         subtitle = subtitleMatch ? subtitleMatch[1].trim() : '';
+
+        // Anti-Repetição: Se o subtítulo for misteriosamente igual ao título, limpamos ele.
+        if (title.toLowerCase() === subtitle.toLowerCase()) {
+          subtitle = '';
+        }
       } else {
+        // Fallback genérico para texto cru (sem as tags exigidas)
+        // Pega a primeira linha como título e o resto como subtítulo
         const lines = block.split('\n').filter(l => l.trim());
         if (lines.length > 0) {
           title = lines[0].replace(/^(?:SLIDE\s*\d+\s*[:\-]?\s*|^\d+\.\s*|^-\s*|^:\s*)/i, '').trim();
@@ -367,7 +416,7 @@ export default function CarouselGenerator({ onLogout }: { onLogout: () => void }
       const ai = new GoogleGenAI({ apiKey });
       const response = await ai.models.generateContent({
         model: 'gemini-2.5-flash',
-        contents: `${PROMPT_IURY}\n\nRASCUNHO DO USUÁRIO:\n${content}`,
+        contents: `${getIuryPrompt(toneMode, dbPrompts)}\n\nRASCUNHO DO USUÁRIO:\n${content}`,
       });
 
       const generatedText = response.text || '';
@@ -405,24 +454,14 @@ export default function CarouselGenerator({ onLogout }: { onLogout: () => void }
 Título do Slide: "${slide.title}"
 Subtítulo: "${slide.subtitle}"
 
-🎨 DIRETRIZES VISUAIS (CINEMATOGRAFIA MULTIMODAL):
-A sua função não é descrever o texto, mas sim dar suporte ao SENTIMENTO dele. Baseie-se apenas na metáfora e sentimento, nunca no tema literal.
-1. Raciocínio Abstrato (Não Literal): PROIBIDO CLICHÊS DE NICHO. Se o slide fala de "Nutrição/Comida", NÃO mostre pratos e frutas. Se for "Psicologia", NÃO mostre cérebros e divãs. Gere metáforas puras. Ex: Se o sentimento for 'disciplina rígida', mostre "um escudo de bronze cravejado de flechas iluminado por um pôr do sol épico". Se for 'falsa perfecção', mostre "um deserto cheio de vidro trincado" ou "uma estátua renascentista sendo pichada com neon". Vá nas profundezas da abstração.
-2. Direção de Arte por Nicho (Leitura de Contexto): Identifique o nicho do texto e OBRIGATORIAMENTE aplique a escola visual correspondente:
-- Nutrição & Saúde: "Realismo Orgânico & Macro" (Foca em texturas vivas, frescor e vida, com nitidez cirúrgica).
-- Psicologia & Mentalidade: "Surrealismo Conceitual" (Usa metáforas de espelhos, sombras e labirintos para representar a mente).
-- Marketing & Vendas: "Minimalismo High-End" (Estética de revista de luxo ou "Apple". Espaços limpos, objetos de desejo, ordem).
-- Empreendedorismo & Business: "Cinematografia Industrial" (Ambientes modernos, arquitetura imponente, sensação de escala e movimento).
-- Tecnologia & IA: "Futurismo Brutalista" (Mistura digital abstrata com texturas físicas como concreto, vidro e metal).
-- Finanças & Investimentos: "Classicismo Moderno" (Símbolos de herança e segurança como mármore e couro, mais gráficos limpos).
-- Educação & Treinamento: "Documentarista Editorial" (Fotos espontâneas "no momento", foco e desfoque destacando a humanidade).
-- Direito & Advocacia: "Solidez Monolítica" (Foco em peso, simetria e autoridade; a força da lei e a sobriedade das instituições).
-- Esporte & Performance: "Hiper-Realismo Dinâmico" (Esforço, suor e anatomia. Imagens com alto contraste que exalam energia de superação).
-- Espiritualidade & Religião: "Eterealismo Atmosférico" (Luzes difusas, natureza épica, paz e vastidão).
-- Outros/Genérico: "Estilo Abstrato Cinematográfico" (Revele *como o tema se sente*. Texto pesado = imagem escura/densa; inspirador = clara/aberta).
-3. Iluminação e Cor Vibrante: Nunca seja 100% fotorealista cinza/monocromático de escritório. Incorpore contrastes violentos de cores complementares ou neon (Ex: Azul Profundo da Água contrastando com Reflexos de Fogo Laranja, ou Roxos contra Verdes Limas) ou aposte no peso do "Chiaroscuro Noir" de cinema (luz fortíssima rasgando a meia-noite).
-4. Restrição Absoluta de Textos Nativos: É VERBEMENTE PROIBIDO criar qualquer frase, palavra ou explicação legível ilustrada dentro da arte! A imagem PRECISA ser muda. O texto longo será redigido por nós por cima. 
-5. Composição Vertical (Top-Heavy) - LEI INQUEBRÁVEL: O texto descritivo ocupará quase toda a METADE INFERIOR (Bottom Half) do slide. Portanto, posicione os objetos centrais, personagens e elementos dramáticos EXCLUSIVAMENTE NA METADE SUPERIOR (Top Half). A metade inferior DEVE SER um imenso e pesado VAZIO ESCURO (Negative Space), garantindo contraste absoluto para leitura.`;
+🎨 DIRETRIZES VISUAIS (THEATRICAL DARK CINEMATIC):
+A sua função não é descrever o texto, mas sim dar suporte ao SENTIMENTO dele através de Metáforas Visuais Cruas.
+1. Estilo e Iluminação: Estritamente "Theatrical Dark Cinematic" com efeitos profundos de "Chiaroscuro" e "Bokeh". Brinque com alto contraste de luz e sombra, parecendo um filme de suspense ou documentário premiado.
+2. Coesão com o Nicho Visual (MUITO IMPORTANTE): Identifique o nicho e adeque a metáfora. Exemplo: Para textos de Nutrição/Biologia, NEVER crie robôs/ciborgues futuristas ou cabos brilhantes; use maçãs murchas, frascos de veneno em mesas de madeira escura, carne brilhante, natureza sinistra de raízes negras. Apenas crie algo hiper-futurista se o texto for estritamente sobre Inteligência Artificial, TI ou Robótica.
+3. Paleta de Cores: Utilize "Industrial e Terrosa" (cobre, mármore, ferrugem, chumbo, marrom profundo e muito preto absoluto).
+4. Raciocínio Abstrato (Não Literal): PROIBIDO CLICHÊS DE NICHO. Se o sentimento for 'falsa promessa' na saúde, mostre um cálice luxuoso jorrando piche escuro e denso. Empregue ângulos tensos como plongée e close-up extremo para gerar autoridade brutal.
+5. Restrição Absoluta de Textos Nativos: É VERBEMENTE PROIBIDO criar qualquer frase, palavra ou explicação legível ilustrada dentro da arte! A imagem PRECISA ser muda. O texto longo será redigido por nós por cima. 
+6. Composição Vertical (Top-Heavy) - LEI INQUEBRÁVEL: O texto descritivo ocupará quase toda a METADE INFERIOR (Bottom Half) do slide. Portanto, posicione os objetos centrais, personagens e elementos dramáticos EXCLUSIVAMENTE NA METADE SUPERIOR (Top Half). A metade inferior DEVE SER um imenso e pesado VAZIO ESCURO (Negative Space), garantindo contraste absoluto para leitura.`;
 
       const response = await ai.models.generateContent({
         model: 'gemini-2.5-flash-image',
@@ -493,24 +532,14 @@ A sua função não é descrever o texto, mas sim dar suporte ao SENTIMENTO dele
 Título do Slide: "${newSlides[i].title}"
 Subtítulo: "${newSlides[i].subtitle}"
 
-🎨 DIRETRIZES VISUAIS (CINEMATOGRAFIA MULTIMODAL):
-A sua função não é descrever o texto, mas sim dar suporte ao SENTIMENTO dele. Baseie-se apenas na metáfora e sentimento, nunca no tema literal.
-1. Raciocínio Abstrato (Não Literal): PROIBIDO CLICHÊS DE NICHO. Se o slide fala de "Nutrição/Comida", NÃO mostre pratos e frutas. Se for "Psicologia", NÃO mostre cérebros e divãs. Gere metáforas puras. Ex: Se o sentimento for 'disciplina rígida', mostre "um escudo de bronze cravejado de flechas iluminado por um pôr do sol épico". Se for 'falsa perfecção', mostre "um deserto cheio de vidro trincado" ou "uma estátua renascentista sendo pichada com neon". Vá nas profundezas da abstração.
-2. Direção de Arte por Nicho (Leitura de Contexto): Identifique o nicho do texto e OBRIGATORIAMENTE aplique a escola visual correspondente:
-- Nutrição & Saúde: "Realismo Orgânico & Macro" (Foca em texturas vivas, frescor e vida, com nitidez cirúrgica).
-- Psicologia & Mentalidade: "Surrealismo Conceitual" (Usa metáforas de espelhos, sombras e labirintos para representar a mente).
-- Marketing & Vendas: "Minimalismo High-End" (Estética de revista de luxo ou "Apple". Espaços limpos, objetos de desejo, ordem).
-- Empreendedorismo & Business: "Cinematografia Industrial" (Ambientes modernos, arquitetura imponente, sensação de escala e movimento).
-- Tecnologia & IA: "Futurismo Brutalista" (Mistura digital abstrata com texturas físicas como concreto, vidro e metal).
-- Finanças & Investimentos: "Classicismo Moderno" (Símbolos de herança e segurança como mármore e couro, mais gráficos limpos).
-- Educação & Treinamento: "Documentarista Editorial" (Fotos espontâneas "no momento", foco e desfoque destacando a humanidade).
-- Direito & Advocacia: "Solidez Monolítica" (Foco em peso, simetria e autoridade; a força da lei e a sobriedade das instituições).
-- Esporte & Performance: "Hiper-Realismo Dinâmico" (Esforço, suor e anatomia. Imagens com alto contraste que exalam energia de superação).
-- Espiritualidade & Religião: "Eterealismo Atmosférico" (Luzes difusas, natureza épica, paz e vastidão).
-- Outros/Genérico: "Estilo Abstrato Cinematográfico" (Revele *como o tema se sente*. Texto pesado = imagem escura/densa; inspirador = clara/aberta).
-3. Iluminação e Cor Vibrante: Nunca seja 100% fotorealista cinza/monocromático de escritório. Incorpore contrastes violentos de cores complementares ou neon (Ex: Azul Profundo da Água contrastando com Reflexos de Fogo Laranja, ou Roxos contra Verdes Limas) ou aposte no peso do "Chiaroscuro Noir" de cinema (luz fortíssima rasgando a meia-noite).
-4. Restrição Absoluta de Textos Nativos: É VERBEMENTE PROIBIDO criar qualquer frase, palavra ou explicação legível ilustrada dentro da arte! A imagem PRECISA ser muda. O texto longo será redigido por nós por cima. 
-5. Composição Vertical (Top-Heavy) - LEI INQUEBRÁVEL: O texto descritivo ocupará quase toda a METADE INFERIOR (Bottom Half) do slide. Portanto, posicione os objetos centrais, personagens e elementos dramáticos EXCLUSIVAMENTE NA METADE SUPERIOR (Top Half). A metade inferior DEVE SER um imenso e pesado VAZIO ESCURO (Negative Space), garantindo contraste absoluto para leitura.`;
+🎨 DIRETRIZES VISUAIS (THEATRICAL DARK CINEMATIC):
+A sua função não é descrever o texto, mas sim dar suporte ao SENTIMENTO dele através de Metáforas Visuais Cruas.
+1. Estilo e Iluminação: Estritamente "Theatrical Dark Cinematic" com efeitos profundos de "Chiaroscuro" e "Bokeh". Brinque com alto contraste de luz e sombra, parecendo um filme de suspense ou documentário premiado.
+2. Coesão com o Nicho Visual (MUITO IMPORTANTE): Identifique o nicho e adeque a metáfora. Exemplo: Para textos de Nutrição/Biologia, NEVER crie robôs/ciborgues futuristas ou cabos brilhantes; use maçãs murchas, frascos de veneno em mesas de madeira escura, carne brilhante, natureza sinistra de raízes negras. Apenas crie algo hiper-futurista se o texto for estritamente sobre Inteligência Artificial, TI ou Robótica.
+3. Paleta de Cores: Utilize "Industrial e Terrosa" (cobre, mármore, ferrugem, chumbo, marrom profundo e muito preto absoluto).
+4. Raciocínio Abstrato (Não Literal): PROIBIDO CLICHÊS DE NICHO. Se o sentimento for 'falsa promessa' na saúde, mostre um cálice luxuoso jorrando piche escuro e denso. Empregue ângulos tensos como plongée e close-up extremo para gerar autoridade brutal.
+5. Restrição Absoluta de Textos Nativos: É VERBEMENTE PROIBIDO criar qualquer frase, palavra ou explicação legível ilustrada dentro da arte! A imagem PRECISA ser muda. O texto longo será redigido por nós por cima. 
+6. Composição Vertical (Top-Heavy) - LEI INQUEBRÁVEL: O texto descritivo ocupará quase toda a METADE INFERIOR (Bottom Half) do slide. Portanto, posicione os objetos centrais, personagens e elementos dramáticos EXCLUSIVAMENTE NA METADE SUPERIOR (Top Half). A metade inferior DEVE SER um imenso e pesado VAZIO ESCURO (Negative Space), garantindo contraste absoluto para leitura.`;
 
           const response = await ai.models.generateContent({
             model: 'gemini-2.5-flash-image',
@@ -748,6 +777,32 @@ A sua função não é descrever o texto, mas sim dar suporte ao SENTIMENTO dele
                   Modo Iury
                 </button>
               </div>
+
+              {isIuryMode && (
+                <div className="space-y-2 pt-1 pb-1">
+                  <label className="text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider flex items-center gap-1">
+                    <span className="material-symbols-outlined text-[14px]">tune</span> Estratégia Narrativa
+                  </label>
+                  <select
+                    value={toneMode}
+                    onChange={(e) => setToneMode(e.target.value)}
+                    className="w-full bg-indigo-50 dark:bg-indigo-900/20 text-indigo-900 dark:text-indigo-200 border border-indigo-200 dark:border-indigo-800 rounded-lg px-3 py-2.5 text-sm focus:ring-2 focus:ring-indigo-500 outline-none cursor-pointer font-medium"
+                  >
+                    {dbLabels.length > 0 ? (
+                      dbLabels.map(label => (
+                        <option key={label.key} value={label.key}>{label.label}</option>
+                      ))
+                    ) : (
+                      <>
+                        <option value="PROVOCATIVO">🥊 Provocativo (Quebra de Padrão e Ego)</option>
+                        <option value="ANALITICO">🧊 Analítico (Autoridade Fria e Dados)</option>
+                        <option value="STORYTELLING">📖 Storytelling (Jornada Histórica)</option>
+                        <option value="PRATICO">✅ Prático (Manual e Ação Imediata)</option>
+                      </>
+                    )}
+                  </select>
+                </div>
+              )}
 
               <div className="relative">
                 <textarea
@@ -1065,19 +1120,19 @@ A sua função não é descrever o texto, mas sim dar suporte ao SENTIMENTO dele
             <div className="flex items-center gap-1 bg-white dark:bg-surface-dark p-1 rounded-lg border border-slate-200 dark:border-border-dark shadow-sm shrink-0">
               <button
                 onClick={() => setViewMode('grid')}
-                className={`p-1.5 rounded hidden sm:block ${viewMode === 'grid' ? 'bg-slate-100 dark:bg-primary/20 text-primary' : 'hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-500 dark:text-slate-400'}`}
+                className={`p-1.5 rounded ${viewMode === 'grid' ? 'bg-slate-100 dark:bg-primary/20 text-primary' : 'hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-500 dark:text-slate-400'}`}
                 title="Visualização em Grade"
               >
                 <span className="material-symbols-outlined text-[18px]">grid_view</span>
               </button>
               <button
                 onClick={() => setViewMode('carousel')}
-                className={`p-1.5 rounded hidden sm:block ${viewMode === 'carousel' ? 'bg-slate-100 dark:bg-primary/20 text-primary' : 'hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-500 dark:text-slate-400'}`}
+                className={`p-1.5 rounded ${viewMode === 'carousel' ? 'bg-slate-100 dark:bg-primary/20 text-primary' : 'hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-500 dark:text-slate-400'}`}
                 title="Visualização em Carrossel"
               >
                 <span className="material-symbols-outlined text-[18px]">view_carousel</span>
               </button>
-              <div className="w-px h-4 bg-slate-200 dark:bg-border-dark mx-0.5 hidden sm:block"></div>
+              <div className="w-px h-4 bg-slate-200 dark:bg-border-dark mx-0.5"></div>
               <div className="flex items-center gap-1 px-1">
                 <input
                   className="w-16 sm:w-24 md:w-24 accent-primary h-1 bg-slate-300 rounded-lg appearance-none cursor-pointer dark:bg-gray-700"
@@ -1109,10 +1164,10 @@ A sua função não é descrever o texto, mas sim dar suporte ao SENTIMENTO dele
               className="origin-top-left transition-transform duration-200"
               style={{
                 transform: `scale(${(isMobile ? 0.65 : 1) * (zoom / 100)})`,
-                width: `${100 * (100 / zoom)}%`,
+                width: `${100 / ((isMobile ? 0.65 : 1) * (zoom / 100))}%`,
               }}
             >
-              <div className={`flex ${viewMode === 'grid' ? 'flex-wrap' : 'flex-nowrap'} justify-start gap-6 pb-24 max-w-[2300px]`}>
+              <div className={`flex ${viewMode === 'grid' ? 'flex-wrap' : 'flex-nowrap snap-x snap-mandatory'} justify-start gap-4 sm:gap-6 pb-24 max-w-[2300px]`}>
                 {parsedSlides.map((parsedSlide, index) => {
                   const isFirst = index === 0;
 
@@ -1136,7 +1191,7 @@ A sua função não é descrever o texto, mas sim dar suporte ao SENTIMENTO dele
 
                   const theme = getSlideTheme();
                   let titleClass = isFirst ? `font-extrabold ${theme.textClass} leading-tight ` : `font-bold ${theme.textClass} leading-snug `;
-                  let subtitleClass = `${theme.subtextClass} leading-relaxed `;
+                  let subtitleClass = `${theme.subtextClass} leading-relaxed whitespace-pre-wrap `;
 
                   if (isFirst) {
                     if (titleLength > 100) titleClass += "text-xl";
@@ -1170,7 +1225,7 @@ A sua função não é descrever o texto, mas sim dar suporte ao SENTIMENTO dele
                   }
 
                   return (
-                    <div key={index} className={`relative group/slide ${getSlideDimensions()} shrink-0 rounded-2xl overflow-hidden shadow-2xl transition-transform hover:-translate-y-2 duration-300`}>
+                    <div key={index} className={`relative group/slide ${getSlideDimensions()} shrink-0 rounded-2xl overflow-hidden shadow-2xl transition-transform hover:-translate-y-2 duration-300 snap-center`}>
                       <div
                         ref={(el) => { slideRefs.current[index] = el; }}
                         className={`absolute inset-0 flex flex-col ${theme.bgClass}`}
@@ -1178,7 +1233,6 @@ A sua função não é descrever o texto, mas sim dar suporte ao SENTIMENTO dele
                       >
                         <div
                           className="w-full flex-1 min-h-0 overflow-hidden group/image z-10 relative"
-                          style={{ WebkitMaskImage: 'linear-gradient(to bottom, black calc(100% - 40px), transparent 100%)', maskImage: 'linear-gradient(to bottom, black calc(100% - 40px), transparent 100%)' }}
                         >
                           {(brandHandle || brandLogo) && (
                             <div className="absolute top-4 left-4 flex items-center gap-1 z-50 bg-[rgba(0,0,0,0.15)] backdrop-blur-md px-2 py-0.5 rounded-full border border-[rgba(255,255,255,0.05)]">
@@ -1209,8 +1263,8 @@ A sua função não é descrever o texto, mas sim dar suporte ao SENTIMENTO dele
                           )}
                         </div>
                       </div>
-                      <div className="absolute inset-0 bg-black/80 opacity-0 group-hover/slide:opacity-100 transition-opacity flex flex-col items-center justify-center p-6 backdrop-blur-[4px] z-[60] pointer-events-none">
-                        <div className="flex w-full h-full gap-4 items-center justify-center">
+                      <div className="absolute inset-0 bg-black/80 opacity-0 active:opacity-100 sm:group-hover/slide:opacity-100 transition-opacity flex flex-col items-center justify-center p-6 backdrop-blur-[4px] z-[60] sm:pointer-events-none">
+                        <div className="flex w-full h-full gap-2 sm:gap-4 items-center justify-center">
                           <div className="flex flex-col gap-2 w-1/2 max-w-[160px]">
                             <span className="text-[10px] text-white/50 font-bold uppercase tracking-wider mb-1">Conteúdo</span>
                             <button
@@ -1268,12 +1322,12 @@ A sua função não é descrever o texto, mas sim dar suporte ao SENTIMENTO dele
               </div>
             </div>
           </div>
-          <div className="absolute bottom-6 left-1/2 -translate-x-1/2 flex items-center gap-4 bg-white/80 dark:bg-surface-dark/80 backdrop-blur-md border border-slate-200 dark:border-border-dark rounded-full px-4 py-2 shadow-xl z-10">
-            <button className="text-slate-500 hover:text-primary"><span className="material-symbols-outlined">first_page</span></button>
-            <button className="text-slate-500 hover:text-primary"><span className="material-symbols-outlined">chevron_left</span></button>
-            <span className="text-xs font-mono text-slate-900 dark:text-white font-medium">Slide 1 / {slideCount}</span>
-            <button className="text-slate-500 hover:text-primary"><span className="material-symbols-outlined">chevron_right</span></button>
-            <button className="text-slate-500 hover:text-primary"><span className="material-symbols-outlined">last_page</span></button>
+          <div className="absolute bottom-6 left-1/2 -translate-x-1/2 flex items-center gap-2 sm:gap-4 bg-white/90 dark:bg-surface-dark/90 backdrop-blur-md border border-slate-200 dark:border-border-dark rounded-full px-3 sm:px-4 py-2 shadow-xl z-10 w-max max-w-[95vw]">
+            <button className="text-slate-500 hover:text-primary"><span className="material-symbols-outlined text-[18px] sm:text-[24px]">first_page</span></button>
+            <button className="text-slate-500 hover:text-primary"><span className="material-symbols-outlined text-[18px] sm:text-[24px]">chevron_left</span></button>
+            <span className="text-[10px] sm:text-xs font-mono text-slate-900 dark:text-white font-medium whitespace-nowrap">Slide 1 / {slideCount}</span>
+            <button className="text-slate-500 hover:text-primary"><span className="material-symbols-outlined text-[18px] sm:text-[24px]">chevron_right</span></button>
+            <button className="text-slate-500 hover:text-primary"><span className="material-symbols-outlined text-[18px] sm:text-[24px]">last_page</span></button>
           </div>
         </section>
       </main>

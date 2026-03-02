@@ -1309,7 +1309,7 @@ export default function CarouselGenerator({ onLogout }: { onLogout: () => void }
                 width: `${100 / ((isMobile ? 0.65 : 1) * (zoom / 100))}%`,
               }}
             >
-              <div className={`flex ${viewMode === 'grid' ? 'flex-wrap' : 'flex-nowrap snap-x snap-mandatory'} justify-start gap-4 sm:gap-6 pb-24 max-w-[2300px]`}>
+              <div className={`flex ${viewMode === 'grid' ? 'flex-wrap' : 'flex-nowrap snap-x snap-mandatory'} justify-start gap-12 sm:gap-16 pb-24 max-w-[2300px]`}>
                 {parsedSlides.map((parsedSlide, index) => {
                   const isFirst = index === 0;
 
@@ -1463,11 +1463,11 @@ export default function CarouselGenerator({ onLogout }: { onLogout: () => void }
                           </div>
                         </div>
                       </div>
-                      <div className="absolute top-1/2 -translate-y-1/2 -right-12 sm:-right-14 opacity-0 group-hover/slide-wrapper:opacity-100 transition-opacity z-50">
+                      <div className="absolute top-1/2 -translate-y-1/2 left-full ml-2 sm:ml-4 opacity-0 group-hover/slide-wrapper:opacity-100 transition-opacity z-50">
                         <button
                           onMouseDown={(e) => handleImgDragStart(e, index)}
                           onTouchStart={(e) => handleImgDragStart(e, index)}
-                          className="bg-white/50 backdrop-blur-md p-2 rounded-full cursor-ns-resize shadow-xl border border-white/40 hover:bg-white transition-colors flex items-center justify-center text-slate-700"
+                          className="bg-white/50 backdrop-blur-md p-2 rounded-full cursor-ns-resize shadow-xl border border-white/40 hover:bg-white transition-colors flex items-center justify-center text-slate-700 hover:text-primary"
                           title="Arraste para ajustar"
                         >
                           <span className="material-symbols-outlined text-[20px] sm:text-[24px]">swap_vert</span>

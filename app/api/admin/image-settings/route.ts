@@ -13,9 +13,39 @@ async function requireAuth() {
 export async function GET() {
     try {
         await requireAuth();
-        const settings = await prisma.imagePromptSetting.findMany({
+        let settings = await prisma.imagePromptSetting.findMany({
             orderBy: { nicheKey: 'asc' }
         });
+
+        if (settings.length === 0) {
+            // Seed defaults
+            await prisma.imagePromptSetting.createMany({
+                data: [
+                    {
+                        nicheKey: 'GLOBAL_IMAGE',
+                        label: 'Instruções Gerais (Imagens)',
+                        instruction: '🎨 1. PADRÃO ESTÉTICO OBRIGATÓRIO:\nVocê opera sempre no estilo "Theatrical Dark Cinematic" (Cinematográfico Escuro e Teatral) com foco em Chiaroscuro (contraste dramático) e efeito Bokeh (fundo elegantemente distorcido).\n\n📸 2. REGRAS DE DIREÇÃO DE ARTE:\n- Ângulos: Evite sempre visões padrão (eye-level). Alterne entre Low Angle (de baixo pra cima, denota poder/imposição), High Angle (vulnerabilidade), Over-the-shoulder e Close-ups detalhados.\n- Iluminação: Luzes de recorte dramáticas, sombras marcadas. Iluminação lateral misteriosa.\n- Metáforas: NUNCA crie interpretações literais e óbvias do texto. Se o texto for sobre "ganhar dinheiro", NÃO crie de pessoas segurando dinheiro ou cifrões. Crie algo como: "A close-up of a sleek black mechanical watch with gold gears turning amidst dark smoke".\n\n🧠 3. COMPOSIÇÃO:\n- Cores: Paleta Industrial e Terrosa (Preto, chumbo, ouro envelhecido, cobre escuro, verde musgo).\n- Sempre inclua: "High end, 8k resolution, raw photo, highly detailed, sharp focus" no final do seu prompt.',
+                        isDeletable: false,
+                    },
+                    {
+                        nicheKey: 'SAUDE',
+                        label: 'Saúde & Nutrição',
+                        instruction: 'Crie imagens focadas em transformar elementos de saúde (frutas escuras, stetoscópios sombrios, anatomia clássica) em obras de arte cinematográficas. Evite rostos sorridentes, foque em texturas e close-ups.',
+                        isDeletable: true,
+                    },
+                    {
+                        nicheKey: 'MINDSET',
+                        label: 'Mindset & Psicologia',
+                        instruction: 'Use metáforas visuais de profundidade psicológica: espelhos quebrados, xadrez, labirintos, nevoeiro. Mantenha o tom escuro e intelectual.',
+                        isDeletable: true,
+                    }
+                ]
+            });
+            settings = await prisma.imagePromptSetting.findMany({
+                orderBy: { nicheKey: 'asc' }
+            });
+        }
+
         return NextResponse.json({ success: true, settings });
     } catch (error) {
         return NextResponse.json({ error: 'Não autorizado' }, { status: 401 });

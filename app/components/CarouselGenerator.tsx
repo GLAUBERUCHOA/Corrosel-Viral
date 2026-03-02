@@ -92,6 +92,8 @@ export default function CarouselGenerator({ onLogout }: { onLogout: () => void }
   const [imageNiche, setImageNiche] = useState('SAUDE');
   const [aspectRatio, setAspectRatio] = useState('4:5');
   const [styleModel, setStyleModel] = useState('Escuro');
+  const [fontFamily, setFontFamily] = useState('var(--font-poppins), sans-serif');
+  const [textAlign, setTextAlign] = useState('text-left');
   const [generateWithAI, setGenerateWithAI] = useState(false);
   const [customApiKey, setCustomApiKey] = useState('');
   const [generatingImages, setGeneratingImages] = useState<boolean[]>([]);
@@ -153,6 +155,8 @@ export default function CarouselGenerator({ onLogout }: { onLogout: () => void }
         if (prefs.brandLogo) setBrandLogo(prefs.brandLogo);
         if (prefs.styleModel) setStyleModel(prefs.styleModel);
         if (prefs.customColor) setCustomColor(prefs.customColor);
+        if (prefs.fontFamily) setFontFamily(prefs.fontFamily);
+        if (prefs.textAlign) setTextAlign(prefs.textAlign);
 
         if (prefs.aspectRatio) setAspectRatio(prefs.aspectRatio);
         if (prefs.content) setContent(prefs.content);
@@ -224,11 +228,15 @@ export default function CarouselGenerator({ onLogout }: { onLogout: () => void }
         prefs.brandLogo = brandLogo;
         prefs.styleModel = styleModel;
         prefs.customColor = customColor;
+        prefs.fontFamily = fontFamily;
+        prefs.textAlign = textAlign;
       } else {
         prefs.brandHandle = '';
         prefs.brandLogo = null;
         prefs.styleModel = 'Escuro';
         prefs.customColor = '#6366f1';
+        prefs.fontFamily = 'var(--font-poppins), sans-serif';
+        prefs.textAlign = 'text-left';
       }
 
       try {
@@ -240,7 +248,7 @@ export default function CarouselGenerator({ onLogout }: { onLogout: () => void }
         localStorage.setItem('carousel_preferences', JSON.stringify(prefs));
       }
     }
-  }, [brandHandle, brandLogo, styleModel, customColor, aspectRatio, content, parsedSlides, saveDefaults, toneMode]);
+  }, [brandHandle, brandLogo, styleModel, customColor, aspectRatio, content, parsedSlides, saveDefaults, toneMode, fontFamily, textAlign]);
 
   const handleApiKeyChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const val = e.target.value;
@@ -956,7 +964,41 @@ export default function CarouselGenerator({ onLogout }: { onLogout: () => void }
                   </div>
                 </div>
               </div>
-              <div className="space-y-3 pt-2">
+              <div className="space-y-4 pt-4 border-t border-slate-100 dark:border-border-dark">
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="space-y-2">
+                    <label className="text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Tipografia</label>
+                    <select
+                      value={fontFamily}
+                      onChange={(e) => setFontFamily(e.target.value)}
+                      className="w-full bg-slate-50 dark:bg-surface-darker text-slate-900 dark:text-white border border-slate-200 dark:border-border-dark rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-primary outline-none cursor-pointer"
+                    >
+                      <option value="var(--font-poppins), sans-serif">Padrão (Poppins)</option>
+                      <option value="'Playfair Display', serif">Clássica (Playfair)</option>
+                      <option value="'Inter', sans-serif">Clean (Inter)</option>
+                      <option value="'Montserrat', sans-serif">Impacto (Montserrat)</option>
+                      <option value="'Courier New', monospace">Código (Monospace)</option>
+                    </select>
+                  </div>
+                  <div className="space-y-2">
+                    <label className="text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Alinhamento</label>
+                    <div className="flex bg-slate-50 dark:bg-surface-darker border border-slate-200 dark:border-border-dark rounded-lg h-[38px] overflow-hidden">
+                      <button onClick={(e) => { e.preventDefault(); setTextAlign('text-left'); }} className={`flex-1 flex items-center justify-center transition-colors ${textAlign === 'text-left' ? 'bg-primary text-white' : 'text-slate-500 hover:bg-slate-200 dark:hover:bg-slate-800'}`}>
+                        <span className="material-symbols-outlined text-[18px]">format_align_left</span>
+                      </button>
+                      <div className="w-px bg-slate-200 dark:bg-border-dark"></div>
+                      <button onClick={(e) => { e.preventDefault(); setTextAlign('text-center'); }} className={`flex-1 flex items-center justify-center transition-colors ${textAlign === 'text-center' ? 'bg-primary text-white' : 'text-slate-500 hover:bg-slate-200 dark:hover:bg-slate-800'}`}>
+                        <span className="material-symbols-outlined text-[18px]">format_align_center</span>
+                      </button>
+                      <div className="w-px bg-slate-200 dark:bg-border-dark"></div>
+                      <button onClick={(e) => { e.preventDefault(); setTextAlign('text-right'); }} className={`flex-1 flex items-center justify-center transition-colors ${textAlign === 'text-right' ? 'bg-primary text-white' : 'text-slate-500 hover:bg-slate-200 dark:hover:bg-slate-800'}`}>
+                        <span className="material-symbols-outlined text-[18px]">format_align_right</span>
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              <div className="space-y-3 pt-4 border-t border-slate-100 dark:border-border-dark">
                 <label className="text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Marca</label>
 
                 <div className="space-y-2">
@@ -1303,8 +1345,8 @@ export default function CarouselGenerator({ onLogout }: { onLogout: () => void }
                             <div className="absolute inset-0 bg-cover bg-center transition-transform duration-500 group-hover/image:scale-105" style={{ backgroundImage: `url('${imageSrc}')` }}></div>
                           </a>
                         </div>
-                        <div className={`w-full px-8 pt-1 flex flex-col justify-end shrink-0 z-20 relative ${index === 0 ? 'pb-14' : 'pb-8'}`}>
-                          <div className="flex flex-col gap-2">
+                        <div className={`w-full px-8 pt-1 flex flex-col justify-end shrink-0 z-20 relative ${index === 0 ? 'pb-14' : 'pb-8'} ${textAlign}`} style={{ fontFamily }}>
+                          <div className={`flex flex-col gap-2 ${textAlign === 'text-center' ? 'items-center text-center' : textAlign === 'text-right' ? 'items-end text-right' : 'items-start text-left'}`}>
                             {slide.title && <h2 className={titleClass}>{slide.title}</h2>}
                             {slide.subtitle && <p className={subtitleClass}>{slide.subtitle}</p>}
                           </div>

@@ -99,27 +99,34 @@ const SimpleRichTextEditor = ({ value, onChange, placeholder }: { value: string,
     editorRef.current?.focus();
   };
 
-  const colors = ['#ffffff', '#000000', '#64748b', '#ef4444', '#f97316', '#f59e0b', '#84cc16', '#22c55e', '#14b8a6', '#0ea5e9', '#6366f1', '#a855f7', '#ec4899'];
+  const fgColors = ['#ffffff', '#000000', '#ef4444', '#f59e0b', '#22c55e', '#3b82f6', '#ec4899'];
+  const bgColors = ['#000000', '#ffffff', '#ef4444', '#f59e0b', '#22c55e', '#3b82f6'];
 
   return (
-    <div className="w-full bg-slate-50 dark:bg-surface-darker border border-slate-200 dark:border-border-dark rounded-xl overflow-hidden shadow-inner flex flex-col">
-      <div className="bg-slate-100 dark:bg-slate-800 border-b border-slate-200 dark:border-slate-700 p-2 flex flex-wrap gap-1 items-center z-10">
+    <div className="w-full bg-slate-50 dark:bg-surface-darker border border-slate-200 dark:border-border-dark rounded-xl shadow-inner flex flex-col focus-within:ring-2 ring-primary transition-all">
+      <div className="bg-slate-100 dark:bg-slate-800 border-b border-slate-200 dark:border-slate-700 p-1.5 flex flex-wrap gap-1 items-center z-10 rounded-t-xl">
         <button tabIndex={-1} onMouseDown={(e) => { e.preventDefault(); exec('bold'); }} className="p-1 px-2 hover:bg-slate-200 dark:hover:bg-slate-700 rounded text-slate-700 dark:text-slate-300 font-bold" title="Negrito">B</button>
         <button tabIndex={-1} onMouseDown={(e) => { e.preventDefault(); exec('italic'); }} className="p-1 px-2 hover:bg-slate-200 dark:hover:bg-slate-700 rounded text-slate-700 dark:text-slate-300 italic font-serif" title="Itálico">I</button>
         <button tabIndex={-1} onMouseDown={(e) => { e.preventDefault(); exec('underline'); }} className="p-1 px-2 hover:bg-slate-200 dark:hover:bg-slate-700 rounded text-slate-700 dark:text-slate-300 underline" title="Sublinhado">U</button>
 
         <div className="w-px h-5 bg-slate-300 dark:bg-slate-600 mx-1"></div>
 
-        <select tabIndex={-1} onChange={(e) => { exec('foreColor', e.target.value); e.target.value = ''; }} className="bg-transparent border border-slate-300 dark:border-slate-600 rounded px-1 text-xs text-slate-700 dark:text-slate-300 outline-none cursor-pointer h-7">
-          <option value="" disabled selected>Cor</option>
-          {colors.map(c => <option key={`fg-${c}`} value={c} style={{ color: c, fontWeight: c === '#ffffff' ? 'normal' : 'bold', background: c === '#ffffff' ? '#000' : 'transparent' }}>{c}</option>)}
-        </select>
+        <span className="text-[10px] text-slate-500 font-bold uppercase ml-1">Letra:</span>
+        <div className="flex bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded p-0.5 gap-0.5 items-center">
+          {fgColors.map(c =>
+            <button key={`fg-${c}`} tabIndex={-1} onMouseDown={(e) => { e.preventDefault(); exec('foreColor', c); }} className="size-[14px] rounded-full border border-slate-300 dark:border-slate-600 shadow-sm" style={{ backgroundColor: c }} title={`Letra: ${c}`} />
+          )}
+        </div>
 
-        <select tabIndex={-1} onChange={(e) => { exec('hiliteColor', e.target.value); e.target.value = ''; }} className="bg-transparent border border-slate-300 dark:border-slate-600 rounded px-1 text-xs text-slate-700 dark:text-slate-300 outline-none cursor-pointer h-7">
-          <option value="" disabled selected>Fundo</option>
-          <option value="transparent">Sem fundo</option>
-          {colors.map(c => <option key={`bg-${c}`} value={c} style={{ backgroundColor: c, color: c === '#ffffff' ? '#000' : '#fff' }}>{c}</option>)}
-        </select>
+        <span className="text-[10px] text-slate-500 font-bold uppercase ml-2">Fundo:</span>
+        <div className="flex bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded p-0.5 gap-0.5 items-center">
+          <button tabIndex={-1} onMouseDown={(e) => { e.preventDefault(); exec('hiliteColor', 'transparent'); }} className="size-[14px] rounded-full border border-slate-300 flex items-center justify-center bg-slate-100 hover:bg-slate-200" title="Sem Fundo">
+            <span className="material-symbols-outlined text-[10px] text-red-500 font-bold">close</span>
+          </button>
+          {bgColors.map(c =>
+            <button key={`bg-${c}`} tabIndex={-1} onMouseDown={(e) => { e.preventDefault(); exec('hiliteColor', c); }} className="size-[14px] rounded-full border border-slate-300 dark:border-slate-600 shadow-sm" style={{ backgroundColor: c }} title={`Fundo: ${c}`} />
+          )}
+        </div>
 
         <div className="w-px h-5 bg-slate-300 dark:bg-slate-600 mx-1"></div>
 
@@ -135,7 +142,7 @@ const SimpleRichTextEditor = ({ value, onChange, placeholder }: { value: string,
       </div>
       <div
         ref={editorRef}
-        className="p-3 min-h-[100px] max-h-[150px] overflow-y-auto text-sm text-slate-700 dark:text-slate-300 outline-none focus:ring-0 [&_span]:!bg-transparent"
+        className="p-3 min-h-[100px] max-h-[150px] overflow-y-auto w-full text-sm text-slate-700 dark:text-slate-300 outline-none focus:ring-0 [&_span]:!bg-transparent rounded-b-xl"
         style={{
           // Hack para exibir placeholder quando vazio e desativado
           emptyCells: 'show'
@@ -1540,17 +1547,17 @@ export default function CarouselGenerator({ onLogout }: { onLogout: () => void }
                             )}
 
                             {(brandHandle || brandLogo) && (
-                              <div className={`w-full h-0 shrink-0 relative z-[60] flex items-center justify-center ${!ctaImage ? 'mb-12 mt-4' : ''}`}>
-                                <div className="flex items-center gap-1 px-2.5 py-1 rounded-full bg-black/40 backdrop-blur-lg border border-white/20 shadow-lg absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 mt-0.5">
+                              <div className={`w-full h-0 shrink-0 relative z-[60] flex items-center justify-center ${!ctaImage ? 'mb-10 mt-2' : ''}`}>
+                                <div className="flex items-center gap-0.5 px-2 py-0.5 rounded-full bg-black/40 backdrop-blur-lg border border-white/20 shadow-lg absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 mt-0.5" style={{ minWidth: 'fit-content' }}>
                                   {brandLogo && (
-                                    <div className={`size-3.5 sm:size-4 rounded-full overflow-hidden shrink-0 shadow-sm ring-1 ring-white/50`}>
+                                    <div className={`size-3 sm:size-[14px] rounded-full overflow-hidden shrink-0 shadow-sm ring-1 ring-white/50 bg-white`}>
                                       <img src={brandLogo} alt="Logo" className="w-full h-full object-cover" />
                                     </div>
                                   )}
                                   {brandHandle && (
-                                    <div className={`flex items-center gap-0.5 text-[7px] sm:text-[8px] font-bold tracking-wider text-white drop-shadow-md`}>
+                                    <div className={`flex items-center gap-[2px] text-[6px] sm:text-[7px] font-bold tracking-wider text-white drop-shadow-md pr-1`}>
                                       <span className="ml-0.5">{brandHandle}</span>
-                                      <span className="material-symbols-outlined text-[8px] sm:text-[9px] text-blue-500 fill" style={{ fontVariationSettings: "'FILL' 1" }}>verified</span>
+                                      <span className="material-symbols-outlined text-[6px] sm:text-[7px] text-blue-500 fill" style={{ fontVariationSettings: "'FILL' 1" }}>verified</span>
                                     </div>
                                   )}
                                 </div>
@@ -1611,16 +1618,16 @@ export default function CarouselGenerator({ onLogout }: { onLogout: () => void }
 
                           <div className="w-full h-0 shrink-0 relative z-[60] flex items-center justify-center">
                             {(brandHandle || brandLogo) && (
-                              <div className="flex items-center gap-1 px-2.5 py-1 rounded-full bg-black/40 backdrop-blur-lg border border-white/20 shadow-lg absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 mt-0.5">
+                              <div className="flex items-center gap-0.5 px-2 py-0.5 rounded-full bg-black/40 backdrop-blur-lg border border-white/20 shadow-lg absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 mt-0.5" style={{ minWidth: 'fit-content' }}>
                                 {brandLogo && (
-                                  <div className={`size-3.5 sm:size-4 rounded-full overflow-hidden shrink-0 shadow-sm ring-1 ring-white/50`}>
+                                  <div className={`size-3 sm:size-[14px] rounded-full overflow-hidden shrink-0 shadow-sm ring-1 ring-white/50 bg-white`}>
                                     <img src={brandLogo} alt="Logo" className="w-full h-full object-cover" />
                                   </div>
                                 )}
                                 {brandHandle && (
-                                  <div className={`flex items-center gap-0.5 text-[7px] sm:text-[8px] font-bold tracking-wider text-white drop-shadow-md`}>
+                                  <div className={`flex items-center gap-[2px] text-[6px] sm:text-[7px] font-bold tracking-wider text-white drop-shadow-md pr-1`}>
                                     <span className="ml-0.5">{brandHandle}</span>
-                                    <span className="material-symbols-outlined text-[8px] sm:text-[9px] text-blue-500 fill" style={{ fontVariationSettings: "'FILL' 1" }}>verified</span>
+                                    <span className="material-symbols-outlined text-[6px] sm:text-[7px] text-blue-500 fill" style={{ fontVariationSettings: "'FILL' 1" }}>verified</span>
                                   </div>
                                 )}
                               </div>

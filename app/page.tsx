@@ -56,15 +56,15 @@ export default function HomePage() {
           <FadeInSection>
 
             <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-extrabold text-white tracking-tight leading-tight mb-4">
-              Transforme seu Instagram em uma <br className="hidden lg:block" />
+              Crie Carrosséis virais <br className="hidden lg:block" />
               <span className="text-transparent bg-clip-text bg-gradient-to-r from-orange-400 to-amber-400">
-                MÁQUINA de vendas automática
+                COM APENAS 1 CLIQUE
               </span><br className="hidden md:block" />
-              <span className="text-xl sm:text-2xl md:text-3xl lg:text-4xl mt-2 block">com carrosséis virais criados com APENAS 1 CLIQUE</span>
+              <span className="text-xl sm:text-2xl md:text-3xl lg:text-4xl mt-2 block">e transforme seu Instagram em uma máquina de vendas automáticas</span>
             </h1>
 
-            <p className="text-sm sm:text-base md:text-lg text-slate-400 max-w-2xl mx-auto leading-relaxed mb-8 px-2">
-              A ferramenta de IA essencial para produtos, serviços e vendas. Gere carrosséis para todos os nichos e fure a bolha do algoritmo em instantes.
+            <p className="text-sm sm:text-base md:text-lg text-slate-400 max-w-2xl mx-auto leading-relaxed mb-8 px-2 font-medium">
+              A nossa ferramenta Carrossel Viral Labs e nossas IAs fazem o trabalho todo por você.
             </p>
 
             {/* ESPAÇO PARA O VÍDEO DE VENDAS */}

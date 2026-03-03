@@ -113,11 +113,7 @@ Você opera sempre no estilo "Theatrical Dark Cinematic" (Cinematográfico Escur
             label: '💼 Negócios e Empreendedorismo',
             instruction: 'Crie visuais de poder, controle e solidão corporativa. Salas de reuniões escuras, mesas de mogno, peças de xadrez em detalhes, arquitetura brutalista, relógios de luxo.',
         },
-        {
-            nicheKey: 'TECNOLOGIA',
-            label: '💻 Tecnologia e Código',
-            instruction: 'Crie visuais focados em precisão cirúrgica e frio digital. Cabos de fibra ótica, servidores imersos em líquido de resfriamento escuro, neons sutis em verde, macrofotografia de microchips.',
-        },
+
         {
             nicheKey: 'MINDSET',
             label: '🧠 Psicologia e Mindset',

@@ -52,9 +52,10 @@ export async function POST(req: NextRequest) {
       });
       console.log(`Granted access to ${email}`);
     } else if (inactiveStatuses.includes(status)) {
-      await prisma.user.updateMany({
+      await prisma.user.upsert({
         where: { email },
-        data: { status: 'inativo' }
+        update: { status: 'inativo' },
+        create: { email, status: 'inativo', role: 'USER' }
       });
       console.log(`Revoked access from ${email}`);
     } else {

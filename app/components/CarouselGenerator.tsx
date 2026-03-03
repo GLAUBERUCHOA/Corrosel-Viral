@@ -1618,7 +1618,7 @@ export default function CarouselGenerator({ onLogout }: { onLogout: () => void }
                             </div>
                           </div>
 
-                          <div className="absolute inset-0 bg-black/80 opacity-0 group-active/slide:opacity-100 sm:group-hover/slide:opacity-100 transition-opacity flex flex-col items-center justify-center p-6 backdrop-blur-[4px] z-[60] pointer-events-none">
+                          <div tabIndex={0} className="absolute inset-0 bg-black/80 opacity-0 group-hover/slide:opacity-100 focus:opacity-100 focus-within:opacity-100 transition-opacity flex flex-col items-center justify-center p-6 backdrop-blur-[4px] z-[60] cursor-pointer outline-none">
                             <div className="flex w-full h-full gap-2 sm:gap-4 items-center justify-center">
                               <button
                                 onClick={() => handleDownloadSingle(index)}
@@ -1695,7 +1695,7 @@ export default function CarouselGenerator({ onLogout }: { onLogout: () => void }
                             )}
                           </div>
                         </div>
-                        <div className="absolute inset-0 bg-black/80 opacity-0 group-active/slide:opacity-100 sm:group-hover/slide:opacity-100 transition-opacity flex flex-col items-center justify-center p-6 backdrop-blur-[4px] z-[60] pointer-events-none">
+                        <div tabIndex={0} className="absolute inset-0 bg-black/80 opacity-0 group-hover/slide:opacity-100 focus:opacity-100 focus-within:opacity-100 transition-opacity flex flex-col items-center justify-center p-6 backdrop-blur-[4px] z-[60] cursor-pointer outline-none">
                           <div className="flex w-full h-full gap-2 sm:gap-4 items-center justify-center">
                             <div className="flex flex-col gap-2 w-1/2 max-w-[160px]">
                               <span className="text-[10px] text-white/50 font-bold uppercase tracking-wider mb-1">Conteúdo</span>

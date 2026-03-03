@@ -16,12 +16,14 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ success: true });
     }
 
-    const users = await prisma.$queryRaw`SELECT status FROM usuarios WHERE email = ${cleanEmail}` as any[];
+    const user = await prisma.user.findUnique({
+      where: { email: cleanEmail }
+    });
 
-    if (users.length > 0 && users[0].status === 'ativo') {
+    if (user && user.status === 'ativo') {
       return NextResponse.json({ success: true });
     } else {
-      return NextResponse.json({ error: 'Acesso negado. Verifique se vocÃª comprou o produto e se a compra foi aprovada.' }, { status: 403 });
+      return NextResponse.json({ error: 'Acesso negado. Verifique se você comprou o produto e se a compra foi aprovada.' }, { status: 403 });
     }
   } catch (error) {
     console.error('Error in login:', error);

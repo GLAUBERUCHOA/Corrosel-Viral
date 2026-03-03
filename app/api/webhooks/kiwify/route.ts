@@ -45,10 +45,17 @@ export async function POST(req: NextRequest) {
     const inactiveStatuses = ['refunded', 'chargeback', 'canceled', 'expired', 'waiting_payment', 'refused'];
 
     if (activeStatuses.includes(status)) {
-      await prisma.$executeRaw`INSERT INTO usuarios (email, status) VALUES (${email}, 'ativo') ON DUPLICATE KEY UPDATE status = 'ativo'`;
+      await prisma.user.upsert({
+        where: { email },
+        update: { status: 'ativo' },
+        create: { email, status: 'ativo', role: 'USER' }
+      });
       console.log(`Granted access to ${email}`);
     } else if (inactiveStatuses.includes(status)) {
-      await prisma.$executeRaw`UPDATE usuarios SET status = 'inativo' WHERE email = ${email}`;
+      await prisma.user.updateMany({
+        where: { email },
+        data: { status: 'inativo' }
+      });
       console.log(`Revoked access from ${email}`);
     } else {
       console.log(`Ignored status ${status} for ${email}`);

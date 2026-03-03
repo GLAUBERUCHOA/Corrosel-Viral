@@ -246,18 +246,9 @@ export default function HomePage() {
               </div>
 
               {/* MOCKUP DO LABORATÓRIO */}
-              <div className="w-full max-w-5xl mx-auto flex items-center justify-center mb-16 relative group px-2 sm:px-4">
-                <div className="absolute inset-0 bg-indigo-500/10 blur-[120px] rounded-full mix-blend-screen opacity-0 group-hover:opacity-100 transition-opacity duration-1000 z-0 pointer-events-none"></div>
-                <div className="relative z-10 w-full h-auto flex justify-center">
-                  <Image
-                    src="/images/mockup-lab.png"
-                    alt="Mockup do Carrossel Viral Lab no Celular e Computador"
-                    width={1200}
-                    height={800}
-                    quality={90}
-                    className="w-full h-auto max-w-full sm:max-w-[900px] object-contain drop-shadow-[0_20px_50px_rgba(0,0,0,0.5)] hover:-translate-y-2 hover:scale-[1.02] transition-transform duration-700 ease-out"
-                  />
-                </div>
+              <div className="w-full max-w-4xl mx-auto h-[350px] border border-slate-800 border-dashed rounded-[2rem] bg-slate-900/40 backdrop-blur-sm flex flex-col items-center justify-center text-slate-500 gap-4 group hover:border-slate-600 transition-colors mb-16">
+                <ImageIcon size={48} className="text-slate-700 group-hover:text-slate-500 transition-colors" />
+                <p className="font-medium text-center px-4">[ESPAÇO 3] Imagem: Mockup do Carrossel Viral Lab no Celular e Computador</p>
               </div>
 
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-8 relative max-w-5xl mx-auto">
@@ -292,9 +283,18 @@ export default function HomePage() {
               </div>
 
               {/* MOCKUP DO BUNDLE */}
-              <div className="w-full max-w-4xl mx-auto h-[350px] border border-slate-800 border-dashed rounded-[2rem] bg-slate-900/40 backdrop-blur-sm flex flex-col items-center justify-center text-slate-500 gap-4 group hover:border-slate-600 transition-colors mb-16">
-                <ImageIcon size={48} className="text-slate-700 group-hover:text-slate-500 transition-colors" />
-                <p className="font-medium text-center px-4">[ESPAÇO 4] Imagem: Uma caixa de produto digital "Bundle" mostrando o acesso ao Lab, aos Agentes e aos Bônus</p>
+              <div className="w-full max-w-5xl mx-auto flex items-center justify-center mb-16 relative group px-2 sm:px-4">
+                <div className="absolute inset-0 bg-indigo-500/10 blur-[120px] rounded-full mix-blend-screen opacity-0 group-hover:opacity-100 transition-opacity duration-1000 z-0 pointer-events-none"></div>
+                <div className="relative z-10 w-full h-auto flex justify-center">
+                  <Image
+                    src="/images/mockup-lab.png"
+                    alt="Mockup do Bundle Carrossel Viral Lab"
+                    width={1200}
+                    height={800}
+                    quality={90}
+                    className="w-full h-auto max-w-full sm:max-w-[900px] object-contain drop-shadow-[0_20px_50px_rgba(0,0,0,0.5)] hover:-translate-y-2 hover:scale-[1.02] transition-transform duration-700 ease-out"
+                  />
+                </div>
               </div>
 
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">

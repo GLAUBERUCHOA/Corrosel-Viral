@@ -60,7 +60,7 @@ export default function HomePage() {
               <span className="text-transparent bg-clip-text bg-gradient-to-r from-orange-400 to-amber-400">
                 COM APENAS 1 CLIQUE
               </span><br className="hidden md:block" />
-              <span className="text-xl sm:text-2xl md:text-3xl lg:text-4xl mt-2 block">e transforme seu Instagram em uma máquina de vendas automáticas</span>
+              <span className="mt-2 block">e transforme seu Instagram em uma máquina de vendas automáticas</span>
             </h1>
 
             <p className="text-sm sm:text-base md:text-lg text-slate-400 max-w-2xl mx-auto leading-relaxed mb-8 px-2 font-medium">

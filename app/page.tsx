@@ -185,14 +185,52 @@ export default function HomePage() {
                 </div>
               </div>
 
-              <div className="bg-gradient-to-br from-indigo-900/30 to-purple-900/30 border border-indigo-500/20 p-8 rounded-3xl text-left">
-                <h4 className="text-xl font-bold text-white mb-2">Com Inteligência Artificial você pode:</h4>
-                <ul className="text-slate-300 list-disc list-inside space-y-2 mb-4">
-                  <li>Criar posts profissionais em 5 minutos.</li>
-                  <li>Atrair público qualificado que realmente compra.</li>
-                  <li>Viralizar sem precisar de dancinhas ou exposição ridícula.</li>
-                </ul>
-                <p className="text-purple-300 font-semibold italic">Seja você nutricionista, psicólogo, advogado ou empreendedor digital: se você não tem velocidade, você está perdendo dinheiro.</p>
+              <div className="bg-[#0A0A0B] border border-slate-800/80 rounded-[2rem] overflow-hidden flex flex-col md:flex-row mt-16 group hover:border-slate-700 transition-all duration-500 shadow-2xl max-w-5xl mx-auto">
+                <div className="w-full md:w-5/12 h-[350px] md:h-auto relative overflow-hidden shrink-0">
+                  <Image
+                    src="/images/cinematic_portrait.png"
+                    alt="Empreendedor Digital"
+                    fill
+                    className="object-cover object-center transition-transform duration-700 group-hover:scale-105"
+                    sizes="(max-width: 768px) 100vw, 40vw"
+                  />
+                  <div className="absolute inset-0 bg-gradient-to-t from-[#0A0A0B] via-transparent to-transparent md:bg-gradient-to-l md:from-[#0A0A0B] md:via-transparent opacity-90 z-10"></div>
+                </div>
+
+                <div className="w-full md:w-7/12 p-8 md:p-10 lg:p-12 text-left flex flex-col justify-center relative z-20 bg-[#0A0A0B]">
+                  <h3 className="text-2xl md:text-3xl font-bold text-white mb-4 leading-snug">
+                    Quer crescer a audiência do seu perfil, viralizar e atrair mais clientes para <span className="text-transparent bg-clip-text bg-gradient-to-r from-orange-400 to-amber-300">vender todos os dias?</span>
+                  </h3>
+
+                  <p className="text-slate-300 text-base md:text-lg mb-8 leading-relaxed">
+                    Com os modelos de carrosséis virais gerados com um clique por IA você acelera sua produção e seus resultados.
+                  </p>
+
+                  <ul className="space-y-4 mb-8">
+                    <li className="flex items-center gap-3">
+                      <span className="text-xl bg-slate-900/50 p-2 rounded-xl">🚀</span>
+                      <span className="text-slate-200 font-medium">Aulas práticas de como usar a ferramenta</span>
+                    </li>
+                    <li className="flex items-center gap-3">
+                      <span className="text-xl bg-slate-900/50 p-2 rounded-xl">🧩</span>
+                      <span className="text-slate-200 font-medium">Serve para qualquer nicho</span>
+                    </li>
+                    <li className="flex items-center gap-3">
+                      <span className="text-xl bg-slate-900/50 p-2 rounded-xl">🤖</span>
+                      <span className="text-slate-200 font-medium">Inteligência Artificial que faz o trabalho duro por você</span>
+                    </li>
+                  </ul>
+
+                  <div className="text-slate-200 font-medium mb-8 space-y-3 leading-relaxed text-sm lg:text-base">
+                    <p>Seja você nutricionista, psicólogo, advogado, empreendedor digital ou de qualquer outro nicho: <strong className="text-white">se você não tem velocidade, você está perdendo dinheiro.</strong></p>
+                    <p>Se você não sabe criar narrativas, <strong className="text-white">você está perdendo dinheiro.</strong></p>
+                    <p>Se você ainda não usa IA no seu processo produtivo, <strong className="text-purple-400">vai ficar pra trás.</strong></p>
+                  </div>
+
+                  <p className="text-orange-400 font-bold text-sm md:text-base tracking-wide mt-auto">
+                    Esqueça o trabalho manual, o Canva... Nossos modelos são validados em diversos nichos!
+                  </p>
+                </div>
               </div>
             </FadeInSection>
           </div>

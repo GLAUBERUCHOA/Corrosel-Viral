@@ -1,7 +1,7 @@
 ﻿'use client';
 
 import React, { useEffect, useRef } from 'react';
-import { Sparkles, Zap, Image as ImageIcon, LayoutTemplate, Calendar, Video, BookOpen, Infinity, CheckCircle2, ChevronDown, ShieldCheck } from 'lucide-react';
+import { Sparkles, Zap, Image as ImageIcon, LayoutTemplate, Calendar, Video, BookOpen, Infinity, CheckCircle2, ChevronDown, ShieldCheck, TrendingUp, Magnet, Target } from 'lucide-react';
 import ViralCoverflow from './components/ViralCoverflow';
 import Image from 'next/image';
 
@@ -120,43 +120,71 @@ export default function HomePage() {
           </FadeInSection>
         </section>
 
-        {/* SOCIAL PROOF */}
-        <section className="py-16 border-y border-white/5 bg-white/[0.02]">
-          <div className="max-w-6xl mx-auto px-6">
+        {/* VALUE PROPOSITION: WHY CAROUSELS */}
+        <section className="py-24 px-6 relative overflow-hidden bg-slate-950">
+          {/* Subtle Background Glow */}
+          <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] bg-indigo-500/10 blur-[150px] rounded-full pointer-events-none mix-blend-screen opacity-60"></div>
+
+          <div className="max-w-6xl mx-auto relative z-10">
             <FadeInSection>
-              <div className="text-center mb-10">
-                <h3 className="text-sm font-bold text-slate-500 uppercase tracking-widest flex items-center justify-center gap-2">
-                  <span className="w-8 h-px bg-slate-700"></span>
-                  Métricas Comprovadas 🔥
-                  <span className="w-8 h-px bg-slate-700"></span>
-                </h3>
-              </div>
+              <div className="bg-[#0A0A0B]/80 backdrop-blur-xl border border-slate-800/80 rounded-[2.5rem] overflow-hidden shadow-2xl">
+                <div className="flex flex-col lg:flex-row">
 
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-8 text-center mb-12">
-                <div className="flex flex-col gap-2">
-                  <span className="text-4xl sm:text-5xl font-black text-white">+2.540</span>
-                  <span className="text-slate-400 font-medium">Alunos Lucrando.</span>
-                </div>
-                <div className="flex flex-col gap-2">
-                  <span className="text-4xl sm:text-5xl font-black text-white">+20 Milhões</span>
-                  <span className="text-slate-400 font-medium">de Alcance Mensal gerado.</span>
-                </div>
-                <div className="flex flex-col gap-2">
-                  <span className="text-4xl sm:text-5xl font-black text-white">+1 Milhão</span>
-                  <span className="text-slate-400 font-medium">de Seguidores nos Perfis da Comunidade.</span>
-                </div>
-              </div>
+                  {/* Text Content Area */}
+                  <div className="w-full lg:w-1/2 p-10 sm:p-14 flex flex-col justify-center relative">
+                    <div className="absolute top-0 right-0 w-32 h-32 bg-purple-500/10 blur-[60px] rounded-full pointer-events-none"></div>
 
-              {/* ESPAÇO PARA A IMAGEM DE DASHBOARD / GRÁFICO DE ALCANCE */}
-              <div className="w-full max-w-5xl mx-auto h-[350px] border border-slate-800 border-dashed rounded-[2rem] bg-slate-900/40 backdrop-blur-sm flex flex-col items-center justify-center text-slate-500 gap-4 group hover:border-slate-600 transition-colors mb-16">
-                <ImageIcon size={48} className="text-slate-700 group-hover:text-slate-500 transition-colors" />
-                <p className="font-medium">[ESPAÇO 2] Imagem: Um dashboard ou gráfico mostrando a curva de crescimento de alcance de 20 milhões e um contador de 1.000.000+ seguidores</p>
-              </div>
+                    <h2 className="text-3xl sm:text-4xl lg:text-5xl font-extrabold text-white mb-8 leading-tight">
+                      Será que carrosséis realmente atraem um público <span className="text-transparent bg-clip-text bg-gradient-to-r from-orange-400 to-amber-400">mais qualificado?</span> <br className="hidden sm:block" /> Será se <span className="text-transparent bg-clip-text bg-gradient-to-r from-purple-400 to-indigo-400">vale a pena</span> investir neles?
+                    </h2>
 
-              {/* ESPAÇO PARA PRINTS E PROVAS SOCIAIS (Carrossel ou Grid) */}
-              <div className="w-full max-w-5xl mx-auto h-[350px] border border-slate-800 border-dashed rounded-[2rem] bg-slate-900/40 backdrop-blur-sm flex flex-col items-center justify-center text-slate-500 gap-4 group hover:border-slate-600 transition-colors">
-                <ImageIcon size={48} className="text-slate-700 group-hover:text-slate-500 transition-colors" />
-                <p className="font-medium">[ESPAÇO 2] Insira aqui os prints de métricas absurdas ou depoimentos do WhatsApp</p>
+                    <div className="space-y-6 text-slate-300 text-base sm:text-lg leading-relaxed">
+                      <p>
+                        Carrosséis são o <strong className="text-white">filtro perfeito</strong> para separar curiosos de seguidores com potencial de se tornarem seus compradores. Quem arrasta cada slide não quer apenas algo raso, busca soluções reais.
+                      </p>
+                      <div className="bg-slate-900/60 border-l-4 border-amber-500 p-5 rounded-r-xl italic text-slate-400 font-medium">
+                        Isso eleva sua autoridade e aciona o gatilho: "Se entrega tudo isso aqui no Instagram, <span className="text-amber-400">imagina o produto ou o serviço dele(a)</span>".
+                      </div>
+                      <p>
+                        E mais do que isso, são excelentes para <strong className="text-white">viralizar seu perfil</strong>. O Instagram <strong className="text-purple-400">ama prender a atenção</strong> das pessoas e posts que geram muitos salvamentos.
+                      </p>
+                      <p>
+                        Como o carrossel prende a atenção por mais tempo, a plataforma impulsiona seu alcance, criando uma <strong className="text-white">explosão orgânica de visualizações</strong> direto para uma audiência quente e pronta para comprar.
+                      </p>
+                    </div>
+                  </div>
+
+                  {/* Visual Impact Area */}
+                  <div className="w-full lg:w-1/2 bg-gradient-to-br from-slate-900 via-[#0A0A0B] to-slate-900 border-l border-slate-800/50 p-10 sm:p-14 flex flex-col justify-center items-center relative overflow-hidden">
+                    {/* Glowing Accent Ring */}
+                    <div className="absolute inset-0 flex items-center justify-center opacity-30 pointer-events-none">
+                      <div className="w-[400px] h-[400px] border border-purple-500/30 rounded-full animate-[spin_20s_linear_infinite]"></div>
+                      <div className="absolute w-[500px] h-[500px] border border-indigo-500/20 rounded-full animate-[spin_30s_linear_infinite_reverse]"></div>
+                    </div>
+
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 w-full relative z-10">
+                      {[
+                        { icon: Target, title: "Filtro Automático", desc: "Separe meros curiosos de potenciais compradores em cada slide.", color: "orange" },
+                        { icon: Magnet, title: "Autoridade Instantânea", desc: "Mostre profundidade e ative o gatilho da qualidade no seu nicho.", color: "purple" },
+                        { icon: Zap, title: "Explosão Orgânica", desc: "O algoritmo premia a retenção do seu conteúdo.", color: "yellow" },
+                        { icon: TrendingUp, title: "Tráfego Quente", desc: "Visualizações que se convertem em uma audiência pronta pra comprar.", color: "blue" }
+                      ].map((item, i) => (
+                        <div key={i} className="bg-slate-950/60 backdrop-blur-md border border-white/5 rounded-2xl p-6 group hover:border-slate-700 hover:-translate-y-1 transition-all duration-300">
+                          <div className={`w-12 h-12 rounded-xl mb-4 flex items-center justify-center bg-slate-900 border ${item.color === 'orange' ? 'border-orange-500/40 text-orange-400 group-hover:bg-orange-500/10' :
+                              item.color === 'purple' ? 'border-purple-500/40 text-purple-400 group-hover:bg-purple-500/10' :
+                                item.color === 'yellow' ? 'border-amber-500/40 text-amber-400 group-hover:bg-amber-500/10' :
+                                  'border-blue-500/40 text-blue-400 group-hover:bg-blue-500/10'
+                            } transition-colors shadow-lg`}>
+                            <item.icon size={24} strokeWidth={1.5} />
+                          </div>
+                          <h4 className="text-white font-bold mb-2">{item.title}</h4>
+                          <p className="text-slate-400 text-sm leading-relaxed">{item.desc}</p>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+
+                </div>
               </div>
             </FadeInSection>
           </div>

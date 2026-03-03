@@ -101,7 +101,7 @@ export default function HomePage() {
         </section>
 
         {/* VIRAL CAROUSEL SHOWCASE */}
-        <section className="py-20 relative overflow-hidden bg-slate-950/50">
+        <section className="py-24 relative overflow-hidden bg-slate-950/50">
           <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,rgba(168,85,247,0.05)_0%,transparent_70%)] pointer-events-none"></div>
 
           <div className="max-w-6xl mx-auto px-6 mb-2 text-center relative z-10">
@@ -198,18 +198,18 @@ export default function HomePage() {
                 Você se sente um <span className="text-red-400 relative">"escravo"<svg className="absolute w-full h-3 -bottom-1 left-0 text-red-500 opacity-50" viewBox="0 0 100 10" preserveAspectRatio="none"><path d="M0 5 Q 50 10 100 5" stroke="currentColor" strokeWidth="4" fill="transparent" /></svg></span> do Instagram?
               </h2>
 
-              <div className="grid grid-cols-1 sm:grid-cols-3 gap-6 mb-16">
-                <div className="bg-slate-900/40 border border-slate-800/80 p-8 rounded-2xl flex flex-col items-center gap-4">
-                  <div className="w-12 h-12 rounded-full bg-red-500/10 text-red-400 flex items-center justify-center"><Zap /></div>
-                  <p className="text-slate-300 font-medium">Você passa horas tentando ter uma ideia, sofre olhando para a tela em branco do Canva...</p>
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-6 mb-20">
+                <div className="bg-slate-950/40 border border-slate-800/50 p-8 rounded-3xl flex flex-col items-center gap-5 hover:-translate-y-2 hover:bg-slate-900/60 transition-all duration-300 shadow-xl">
+                  <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-red-500/20 to-orange-500/20 text-red-400 flex items-center justify-center"><Zap size={24} /></div>
+                  <p className="text-slate-300 font-medium text-center leading-relaxed">Você passa horas tentando ter uma ideia, sofre olhando para a tela em branco do Canva...</p>
                 </div>
-                <div className="bg-slate-900/40 border border-slate-800/80 p-8 rounded-2xl flex flex-col items-center gap-4">
-                  <div className="w-12 h-12 rounded-full bg-red-500/10 text-red-400 flex items-center justify-center"><Infinity /></div>
-                  <p className="text-slate-300 font-medium">E quando finalmente posta o seu Carrossel, recebe apenas 15 curtidas e zero vendas.</p>
+                <div className="bg-slate-950/40 border border-slate-800/50 p-8 rounded-3xl flex flex-col items-center gap-5 hover:-translate-y-2 hover:bg-slate-900/60 transition-all duration-300 shadow-xl">
+                  <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-red-500/20 to-orange-500/20 text-red-400 flex items-center justify-center"><Infinity size={24} /></div>
+                  <p className="text-slate-300 font-medium text-center leading-relaxed">E quando finalmente posta o seu Carrossel, recebe apenas 15 curtidas e zero vendas.</p>
                 </div>
-                <div className="bg-slate-900/40 border border-slate-800/80 p-8 rounded-2xl flex flex-col items-center gap-4">
-                  <div className="w-12 h-12 rounded-full bg-red-500/10 text-red-400 flex items-center justify-center"><ShieldCheck /></div>
-                  <p className="text-slate-300 font-medium">Enquanto você patina no amadorismo, seus concorrentes estão usando Sistemas Inteligentes.</p>
+                <div className="bg-slate-950/40 border border-slate-800/50 p-8 rounded-3xl flex flex-col items-center gap-5 hover:-translate-y-2 hover:bg-slate-900/60 transition-all duration-300 shadow-xl">
+                  <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-red-500/20 to-orange-500/20 text-red-400 flex items-center justify-center"><ShieldCheck size={24} /></div>
+                  <p className="text-slate-300 font-medium text-center leading-relaxed">Enquanto você patina no amadorismo, seus concorrentes estão usando Sistemas Inteligentes.</p>
                 </div>
               </div>
 
@@ -261,7 +261,7 @@ export default function HomePage() {
         </section>
 
         {/* SOLUTION 3 STEPS */}
-        <section className="py-24 bg-black/40 border-y border-white/5">
+        <section className="py-24 bg-slate-900/20 border-y border-slate-800/50 relative overflow-hidden">
           <div className="max-w-5xl mx-auto px-6">
             <FadeInSection>
               <div className="text-center mb-16">
@@ -355,7 +355,7 @@ export default function HomePage() {
         </section>
 
         {/* BONUSES */}
-        <section className="py-20 bg-gradient-to-b from-transparent to-purple-900/10 border-t border-white/5">
+        <section className="py-24 bg-gradient-to-b from-slate-950 to-indigo-950/20 border-t border-slate-800/50">
           <div className="max-w-4xl mx-auto px-6">
             <FadeInSection>
               <h2 className="text-3xl sm:text-4xl md:text-5xl font-extrabold text-center text-white tracking-tight mb-12">ENTRE HOJE E LEVE TAMBÉM: 🎁 <span className="text-transparent bg-clip-text bg-gradient-to-r from-amber-200 to-yellow-500">Bônus Exclusivos</span></h2>
@@ -431,7 +431,7 @@ export default function HomePage() {
         </section>
 
         {/* GUARANTEE */}
-        <section className="py-16 bg-white/[0.02] border-y border-white/5">
+        <section className="py-24 bg-slate-900/30 border-y border-slate-800/50 relative overflow-hidden">
           <div className="max-w-4xl mx-auto px-6 text-center">
             <FadeInSection>
               <div className="w-20 h-20 mx-auto bg-green-500/10 border border-green-500/20 flex items-center justify-center rounded-3xl text-green-400 mb-8">
@@ -476,7 +476,7 @@ export default function HomePage() {
         </section>
 
         {/* AUTHOR SUMMARY */}
-        <section className="py-24 bg-slate-900 border-t border-white/5 px-6">
+        <section className="py-24 bg-slate-950 border-t border-slate-800/50 px-6 relative overflow-hidden">
           <div className="max-w-5xl mx-auto flex flex-col md:flex-row items-center gap-16">
             <div className="w-64 h-64 md:w-80 md:h-80 rounded-[2rem] bg-gradient-to-tr from-slate-900 to-slate-800 shrink-0 shadow-[0_0_50px_rgba(0,0,0,0.5)] overflow-hidden relative border border-slate-700 flex items-center justify-center group flex-col text-slate-500">
               <div className="absolute inset-0 bg-cyan-500/10 mix-blend-overlay z-0"></div>
@@ -502,11 +502,11 @@ export default function HomePage() {
         </section>
 
         {/* FOOTER & SCARCITY */}
-        <footer className="pt-24 pb-12 px-6 bg-slate-950 border-t border-white/10 text-center relative overflow-hidden">
+        <footer className="pt-24 pb-12 px-6 bg-[#0A0A0B] border-t border-slate-800/80 text-center relative overflow-hidden">
           <div className="absolute bottom-0 left-1/2 -translate-x-1/2 w-full max-w-3xl h-[300px] bg-purple-600/10 blur-[100px] rounded-t-full pointer-events-none"></div>
 
           <div className="max-w-3xl mx-auto relative z-10">
-            <h2 className="text-3xl sm:text-4xl font-bold text-white mb-8">Sua decisão de <span className="text-purple-400">hoje</span> define seu Instagram pelos próximos 12 meses.</h2>
+            <h2 className="text-3xl sm:text-4xl md:text-5xl font-extrabold text-white tracking-tight mb-8 leading-tight">Sua decisão de <span className="text-purple-400">hoje</span> define seu Instagram <br className="hidden sm:block" />pelos próximos 12 meses.</h2>
 
             <div className="flex flex-col sm:flex-row justify-center gap-4 sm:gap-8 mb-12 text-left sm:text-center text-lg">
               <div className="flex items-center gap-3 text-slate-400">

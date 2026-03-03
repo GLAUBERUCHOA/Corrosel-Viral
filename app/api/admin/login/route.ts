@@ -6,20 +6,29 @@ import { cookies } from 'next/headers';
 
 export async function POST(request: Request) {
     try {
-        const { email, password } = await request.json();
+        const { email } = await request.json();
 
-        const user = await prisma.user.findUnique({
-            where: { email },
+        const ALLOWED_EMAIL = 'drglauberabreu@gmail.com';
+
+        if (email.toLowerCase() !== ALLOWED_EMAIL) {
+            return NextResponse.json({ error: 'Acesso não autorizado.' }, { status: 401 });
+        }
+
+        let user = await prisma.user.findUnique({
+            where: { email: ALLOWED_EMAIL },
         });
 
         if (!user) {
-            return NextResponse.json({ error: 'Credenciais invÃ¡lidas.' }, { status: 401 });
-        }
-
-        const isPasswordValid = await bcrypt.compare(password, user.password);
-
-        if (!isPasswordValid) {
-            return NextResponse.json({ error: 'Credenciais invÃ¡lidas.' }, { status: 401 });
+            // Se ainda não existir, cria-se automaticamente como admin para que tenha acesso total
+            const hashedPassword = await bcrypt.hash('admin123', 10);
+            user = await prisma.user.create({
+                data: {
+                    email: ALLOWED_EMAIL,
+                    name: 'Glauber Uchoa',
+                    password: hashedPassword,
+                    role: 'ADMIN',
+                }
+            });
         }
 
         // Criar sessÃ£o JWT

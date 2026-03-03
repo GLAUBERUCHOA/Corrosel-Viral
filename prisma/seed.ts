@@ -123,6 +123,11 @@ Você opera sempre no estilo "Theatrical Dark Cinematic" (Cinematográfico Escur
             label: '🧠 Psicologia e Mindset',
             instruction: 'Visuais abstratos e metafóricos sobre o lado sombrio e poderoso da mente. Labirintos obscuros iluminados por uma única tocha, espelhos estilhaçados, correntes de prata se quebrando, tempestades silenciosas no horizonte.',
         },
+        {
+            nicheKey: 'OUTROS',
+            label: '✨ Outros nichos não especificados',
+            instruction: 'Mantenha as texturas cinematográficas obscuras e iluminação dramática. Foque em criar composições geométricas, misteriosas e minimalistas livremente relacionadas ao tema do slide, evitando completamente a literalidade e mantendo o espaço em branco na parte inferior.',
+        },
     ];
 
     for (const imgPrompt of imagePrompts) {

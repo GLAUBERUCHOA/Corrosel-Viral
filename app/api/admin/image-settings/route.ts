@@ -38,6 +38,24 @@ export async function GET() {
                         label: 'Mindset & Psicologia',
                         instruction: 'Use metÃ¡foras visuais de profundidade psicolÃ³gica: espelhos quebrados, xadrez, labirintos, nevoeiro. Mantenha o tom escuro e intelectual.',
                         isDeletable: true,
+                    },
+                    {
+                        nicheKey: 'EMPREENDEDORISMO',
+                        label: 'NegÃ³cios & Empreendedorismo',
+                        instruction: 'Crie visuais de poder, controle e solidÃ£o corporativa. Salas de reuniÃµes escuras, mesas de mogno, peÃ§as de xadrez em detalhes, arquitetura brutalista.',
+                        isDeletable: true,
+                    },
+                    {
+                        nicheKey: 'TECNOLOGIA',
+                        label: 'Tecnologia & CÃ³digo',
+                        instruction: 'Crie visuais focados em precisÃ£o cirÃºrgica e frio digital. Cabos de fibra Ã³tica, servidores imersos em lÃ­quido escuro, macrofotografia de microchips minimalistas.',
+                        isDeletable: true,
+                    },
+                    {
+                        nicheKey: 'OUTROS',
+                        label: 'Outros Nichos (Geral)',
+                        instruction: 'Mantenha as texturas cinematogrÃ¡ficas obscuras e iluminaÃ§Ã£o dramÃ¡tica. Foque em criar composiÃ§Ãµes geomÃ©tricas, misteriosas e minimalistas livremente relacionadas ao tema.',
+                        isDeletable: true,
                     }
                 ]
             });

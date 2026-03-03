@@ -199,6 +199,7 @@ export default function CarouselGenerator({ onLogout }: { onLogout: () => void }
   const [generatingImages, setGeneratingImages] = useState<boolean[]>([]);
   const [isIuryMode, setIsIuryMode] = useState(false);
   const [isGeneratingText, setIsGeneratingText] = useState(false);
+  const [hasNewPreview, setHasNewPreview] = useState(false);
   const [toneMode, setToneMode] = useState('PROVOCATIVO');
   const [content, setContent] = useState('');
   const [zoom, setZoom] = useState(100);
@@ -736,8 +737,10 @@ export default function CarouselGenerator({ onLogout }: { onLogout: () => void }
       const generated = await executarIury();
       if (!generated) return;
       newSlides = generated;
+      setHasNewPreview(true);
     } else {
       newSlides = processTextIntoSlides(content, addCtaSlide, ctaContent);
+      setHasNewPreview(true);
     }
 
     if (generateWithAI) {
@@ -930,40 +933,55 @@ export default function CarouselGenerator({ onLogout }: { onLogout: () => void }
 
   return (
     <div className="bg-background-light dark:bg-background-dark text-slate-900 dark:text-slate-100 font-display h-[100dvh] flex flex-col overflow-hidden">
-      <header className="flex items-center justify-between whitespace-nowrap border-b border-solid border-slate-200 dark:border-border-dark bg-white dark:bg-surface-dark px-6 py-3 shrink-0 z-20">
-        <div className="flex items-center gap-4 text-slate-900 dark:text-white">
-          <div className="size-8 flex items-center justify-center bg-primary/10 rounded-lg text-primary">
-            <span className="material-symbols-outlined">view_carousel</span>
-          </div>
-          <h2 className="text-lg font-bold leading-tight tracking-tight">Carrossel Viral Lab</h2>
-        </div>
-        <div className="flex flex-1 justify-end gap-4 items-center">
-          <button
-            onClick={onLogout}
-            className="text-sm font-semibold text-slate-500 hover:text-red-500 transition-colors flex items-center gap-1"
-          >
-            <span className="material-symbols-outlined text-[18px]">logout</span>
-            <span className="hidden sm:inline">Sair</span>
-          </button>
-          <div className="w-px h-6 bg-slate-200 dark:bg-border-dark"></div>
-          <div className="bg-center bg-no-repeat bg-cover rounded-full size-9 ring-2 ring-slate-100 dark:ring-border-dark cursor-pointer" data-alt="User profile picture" style={{ backgroundImage: 'url("https://lh3.googleusercontent.com/aida-public/AB6AXuDq8gwC2gYGw_ekJwtNXfCb7lnyQKPM_v5edKwjUZbSvOHK3eYZUrn0j9Zsp7DnI1y5irWu2M9jQ8s27oX9C8VS53cOb9lolxw7slhfmMAVnMrVv7AoCeW5zlCoAc6K89RUNfLyHiuWD2nCP-hNqvC-N3TSMzM6wY_FpkfrN3zKZ4yMFoV73t4WFlcggVqWO74G61RtArjXqmpvvCjTcciK-vFVCqOgWfn7BHR7aqjPLuP0MvRVXmzESNUpycuKFMtYIohCwRulGoY")' }}></div>
-        </div>
-      </header>
 
-      {/* Mobile Tab Switcher */}
-      <div className="md:hidden flex border-b border-slate-200 dark:border-border-dark bg-white dark:bg-surface-dark shrink-0">
-        <button
-          onClick={() => setActiveMobileTab('config')}
-          className={`flex-1 py-3 text-sm font-bold transition-colors ${activeMobileTab === 'config' ? 'text-primary border-b-2 border-primary' : 'text-slate-500'}`}
-        >
-          Configurações
-        </button>
-        <button
-          onClick={() => setActiveMobileTab('preview')}
-          className={`flex-1 py-3 text-sm font-bold transition-colors ${activeMobileTab === 'preview' ? 'text-primary border-b-2 border-primary' : 'text-slate-500'}`}
-        >
-          Visualização ({slideCount})
-        </button>
+      {/* Wrapper fixo para Header e Tabs no Celular */}
+      <div className="sticky top-0 z-40 flex flex-col w-full shadow-sm relative">
+        <header className="flex items-center justify-between whitespace-nowrap border-b border-solid border-slate-200 dark:border-border-dark bg-white dark:bg-surface-dark px-6 py-3 shrink-0 z-20">
+          <div className="flex items-center gap-4 text-slate-900 dark:text-white">
+            <div className="size-8 flex items-center justify-center bg-primary/10 rounded-lg text-primary">
+              <span className="material-symbols-outlined">view_carousel</span>
+            </div>
+            <h2 className="text-lg font-bold leading-tight tracking-tight">Carrossel Viral Lab</h2>
+          </div>
+          <div className="flex flex-1 justify-end gap-4 items-center">
+            <button
+              onClick={onLogout}
+              className="text-sm font-semibold text-slate-500 hover:text-red-500 transition-colors flex items-center gap-1"
+            >
+              <span className="material-symbols-outlined text-[18px]">logout</span>
+              <span className="hidden sm:inline">Sair</span>
+            </button>
+            <div className="w-px h-6 bg-slate-200 dark:bg-border-dark"></div>
+            <div className="bg-center bg-no-repeat bg-cover rounded-full size-9 ring-2 ring-slate-100 dark:ring-border-dark cursor-pointer" data-alt="User profile picture" style={{ backgroundImage: 'url("https://lh3.googleusercontent.com/aida-public/AB6AXuDq8gwC2gYGw_ekJwtNXfCb7lnyQKPM_v5edKwjUZbSvOHK3eYZUrn0j9Zsp7DnI1y5irWu2M9jQ8s27oX9C8VS53cOb9lolxw7slhfmMAVnMrVv7AoCeW5zlCoAc6K89RUNfLyHiuWD2nCP-hNqvC-N3TSMzM6wY_FpkfrN3zKZ4yMFoV73t4WFlcggVqWO74G61RtArjXqmpvvCjTcciK-vFVCqOgWfn7BHR7aqjPLuP0MvRVXmzESNUpycuKFMtYIohCwRulGoY")' }}></div>
+          </div>
+        </header>
+
+        {/* Mobile Tab Switcher */}
+        <div className="md:hidden flex border-b border-slate-200 dark:border-border-dark bg-white dark:bg-surface-dark shrink-0">
+          <button
+            onClick={() => setActiveMobileTab('config')}
+            className={`flex-1 py-3 text-sm font-bold transition-colors ${activeMobileTab === 'config' ? 'text-primary border-b-2 border-primary' : 'text-slate-500'}`}
+          >
+            Configurações
+          </button>
+          <button
+            onClick={() => {
+              setActiveMobileTab('preview');
+              setHasNewPreview(false);
+            }}
+            className={`flex-1 flex justify-center items-center py-3 text-sm font-bold transition-colors ${activeMobileTab === 'preview' ? 'text-primary border-b-2 border-primary' : 'text-slate-500'}`}
+          >
+            <div className="relative flex items-center gap-1.5">
+              <span>Visualização ({slideCount})</span>
+              {hasNewPreview && activeMobileTab !== 'preview' && (
+                <span className="absolute -top-1 -right-3 flex h-3 w-3">
+                  <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-400 opacity-75"></span>
+                  <span className="relative inline-flex rounded-full h-3 w-3 bg-red-500 shadow-sm"></span>
+                </span>
+              )}
+            </div>
+          </button>
+        </div>
       </div>
 
       <main className="flex flex-1 min-h-0 overflow-hidden relative flex-col md:flex-row">

@@ -106,10 +106,10 @@ export default function HomePage() {
 
           <div className="max-w-6xl mx-auto px-6 mb-2 text-center relative z-10">
             <FadeInSection>
-              <h2 className="text-3xl sm:text-4xl md:text-5xl font-extrabold text-white mb-4">
+              <h2 className="text-3xl sm:text-4xl md:text-5xl font-extrabold text-white tracking-tight mb-4">
                 Veja o poder dos <span className="text-transparent bg-clip-text bg-gradient-to-r from-purple-400 to-indigo-400">Carrosséis Virais</span>
               </h2>
-              <p className="text-slate-400 text-base sm:text-lg max-w-2xl mx-auto font-medium">
+              <p className="text-lg sm:text-xl text-slate-400 max-w-2xl mx-auto leading-relaxed">
                 Milhões de visualizações = audiência = seguidores = muitas vendas em qualquer nicho!
               </p>
             </FadeInSection>
@@ -171,9 +171,9 @@ export default function HomePage() {
                       ].map((item, i) => (
                         <div key={i} className="bg-slate-950/60 backdrop-blur-md border border-white/5 rounded-2xl p-6 group hover:border-slate-700 hover:-translate-y-1 transition-all duration-300">
                           <div className={`w-12 h-12 rounded-xl mb-4 flex items-center justify-center bg-slate-900 border ${item.color === 'orange' ? 'border-orange-500/40 text-orange-400 group-hover:bg-orange-500/10' :
-                              item.color === 'purple' ? 'border-purple-500/40 text-purple-400 group-hover:bg-purple-500/10' :
-                                item.color === 'yellow' ? 'border-amber-500/40 text-amber-400 group-hover:bg-amber-500/10' :
-                                  'border-blue-500/40 text-blue-400 group-hover:bg-blue-500/10'
+                            item.color === 'purple' ? 'border-purple-500/40 text-purple-400 group-hover:bg-purple-500/10' :
+                              item.color === 'yellow' ? 'border-amber-500/40 text-amber-400 group-hover:bg-amber-500/10' :
+                                'border-blue-500/40 text-blue-400 group-hover:bg-blue-500/10'
                             } transition-colors shadow-lg`}>
                             <item.icon size={24} strokeWidth={1.5} />
                           </div>
@@ -194,7 +194,7 @@ export default function HomePage() {
         <section className="py-24 px-6">
           <div className="max-w-4xl mx-auto text-center">
             <FadeInSection>
-              <h2 className="text-3xl sm:text-4xl font-bold text-white mb-16">
+              <h2 className="text-3xl sm:text-4xl md:text-5xl font-extrabold text-white tracking-tight mb-16">
                 Você se sente um <span className="text-red-400 relative">"escravo"<svg className="absolute w-full h-3 -bottom-1 left-0 text-red-500 opacity-50" viewBox="0 0 100 10" preserveAspectRatio="none"><path d="M0 5 Q 50 10 100 5" stroke="currentColor" strokeWidth="4" fill="transparent" /></svg></span> do Instagram?
               </h2>
 
@@ -226,13 +226,9 @@ export default function HomePage() {
                 </div>
 
                 <div className="w-full md:w-7/12 p-8 md:p-10 lg:p-12 text-left flex flex-col justify-center relative z-20 bg-[#0A0A0B]">
-                  <h3 className="text-2xl md:text-3xl font-bold text-white mb-4 leading-snug">
-                    Quer crescer a audiência do seu perfil, viralizar e atrair mais clientes para <span className="text-transparent bg-clip-text bg-gradient-to-r from-orange-400 to-amber-300">vender todos os dias?</span>
+                  <h3 className="text-2xl md:text-3xl font-extrabold text-white mb-4 leading-snug tracking-tight">
+                    Com os modelos de carrosséis virais gerados com um clique por IA você acelera sua <span className="text-transparent bg-clip-text bg-gradient-to-r from-orange-400 to-amber-300">produção e seus resultados.</span>
                   </h3>
-
-                  <p className="text-slate-300 text-base md:text-lg mb-8 leading-relaxed">
-                    Com os modelos de carrosséis virais gerados com um clique por IA você acelera sua produção e seus resultados.
-                  </p>
 
                   <ul className="space-y-4 mb-8">
                     <li className="flex items-center gap-3">
@@ -269,8 +265,8 @@ export default function HomePage() {
           <div className="max-w-5xl mx-auto px-6">
             <FadeInSection>
               <div className="text-center mb-16">
-                <h2 className="text-3xl sm:text-5xl font-bold text-white mb-6">Conheça o seu novo <span className="text-purple-400">"Time de Elite" de IA</span> 🤖</h2>
-                <p className="text-slate-400 text-lg">Dentro do Carrossel Viral Lab, você não ganha apenas um curso, você ganha agentes treinados para trabalhar por você:</p>
+                <h2 className="text-3xl sm:text-4xl md:text-5xl font-extrabold text-white tracking-tight mb-6">Conheça o seu novo <span className="text-purple-400">"Time de Elite" de IA</span> 🤖</h2>
+                <p className="text-lg sm:text-xl text-slate-400 max-w-2xl mx-auto leading-relaxed mb-8">Dentro do Carrossel Viral Lab, você não ganha apenas um curso, você ganha agentes treinados para trabalhar por você:</p>
               </div>
 
               {/* MOCKUP DO LABORATÓRIO */}
@@ -316,7 +312,7 @@ export default function HomePage() {
                 <div className="inline-flex items-center gap-2 px-3 py-1 bg-slate-800 rounded-full text-slate-300 text-xs font-semibold tracking-wide mb-6">
                   TUDO O QUE ESTÁ INCLUSO NO SEU ACESSO HOJE
                 </div>
-                <h2 className="text-3xl sm:text-5xl font-bold text-white mb-6">O que você vai receber</h2>
+                <h2 className="text-3xl sm:text-4xl md:text-5xl font-extrabold text-white tracking-tight mb-6">O que você vai receber</h2>
               </div>
 
               {/* MOCKUP DO BUNDLE */}
@@ -362,7 +358,7 @@ export default function HomePage() {
         <section className="py-20 bg-gradient-to-b from-transparent to-purple-900/10 border-t border-white/5">
           <div className="max-w-4xl mx-auto px-6">
             <FadeInSection>
-              <h2 className="text-3xl sm:text-4xl font-bold text-center text-white mb-12">ENTRE HOJE E LEVE TAMBÉM: 🎁 <span className="text-transparent bg-clip-text bg-gradient-to-r from-amber-200 to-yellow-500">Bônus Exclusivos</span></h2>
+              <h2 className="text-3xl sm:text-4xl md:text-5xl font-extrabold text-center text-white tracking-tight mb-12">ENTRE HOJE E LEVE TAMBÉM: 🎁 <span className="text-transparent bg-clip-text bg-gradient-to-r from-amber-200 to-yellow-500">Bônus Exclusivos</span></h2>
 
               <div className="space-y-4">
                 {[
@@ -441,8 +437,8 @@ export default function HomePage() {
               <div className="w-20 h-20 mx-auto bg-green-500/10 border border-green-500/20 flex items-center justify-center rounded-3xl text-green-400 mb-8">
                 <ShieldCheck size={40} />
               </div>
-              <h2 className="text-3xl font-bold text-white mb-6">Risco Zero: 15 Dias de Garantia Blindada</h2>
-              <p className="text-slate-400 text-lg leading-relaxed max-w-2xl mx-auto">
+              <h2 className="text-3xl sm:text-4xl md:text-5xl font-extrabold text-white tracking-tight mb-6">Risco Zero: 15 Dias de Garantia Blindada</h2>
+              <p className="text-lg sm:text-xl text-slate-400 leading-relaxed max-w-2xl mx-auto">
                 Teste o sistema, use o Iury e o DaVinci. Se em 15 dias você não achar que esse é o sistema mais rápido de criação de conteúdo que já viu, eu devolvo seu dinheiro integralmente.
               </p>
             </FadeInSection>
@@ -453,7 +449,7 @@ export default function HomePage() {
         <section className="py-24 px-6">
           <div className="max-w-3xl mx-auto">
             <FadeInSection>
-              <h2 className="text-3xl font-bold text-center text-white mb-16">Dúvidas Frequentes</h2>
+              <h2 className="text-3xl sm:text-4xl md:text-5xl font-extrabold text-center text-white tracking-tight mb-16">Dúvidas Frequentes</h2>
 
               <div className="space-y-4">
                 {[
@@ -491,7 +487,7 @@ export default function HomePage() {
                 <div className="inline-flex items-center gap-2 px-3 py-1 bg-slate-800 rounded-full text-slate-300 text-xs font-semibold tracking-wide mb-6">
                   SOBRE O AUTOR
                 </div>
-                <h2 className="text-3xl md:text-5xl font-bold text-white mb-6">Quem é Glauber Uchoa?</h2>
+                <h2 className="text-3xl sm:text-4xl md:text-5xl font-extrabold text-white tracking-tight mb-6">Quem é Glauber Uchoa?</h2>
                 <div className="text-slate-400 text-lg leading-relaxed space-y-4">
                   <p>
                     Estrategista digital e criador de ecossistemas que somam mais de 1,5 milhão de seguidores. Glauber transformou sua paixão por tecnologia e marketing em ferramentas práticas que eliminam o trabalho braçal de quem quer crescer na internet.

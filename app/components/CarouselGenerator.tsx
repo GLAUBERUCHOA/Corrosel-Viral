@@ -1743,15 +1743,17 @@ export default function CarouselGenerator({ onLogout }: { onLogout: () => void }
                             )}
                           </div>
 
-                          <div className={`w-full px-8 flex flex-col shrink-0 z-20 relative pt-6 pb-6 ${textAlign}`} style={{ fontFamily }}>
+                          <div className={`w-full px-8 flex flex-col shrink-0 z-20 relative pt-6 ${index === 0 ? 'pb-16' : 'pb-6'} ${textAlign}`} style={{ fontFamily }}>
                             <div className={`flex flex-col gap-2 ${textAlign === 'text-center' ? 'items-center text-center' : textAlign === 'text-right' ? 'items-end text-right' : 'items-start text-left'}`}>
                               {slide.title && <h2 className={titleClass}>{slide.title}</h2>}
                               {slide.subtitle && <p className={subtitleClass}>{slide.subtitle}</p>}
                             </div>
                             {index === 0 && (
-                              <div className={`absolute bottom-5 left-8 right-6 flex items-center justify-end gap-1 ${theme.textClass} opacity-50`}>
-                                <span className="text-[8px] font-bold uppercase tracking-wider">Deslize para ver mais</span>
-                                <span className="material-symbols-outlined text-[14px]">arrow_forward</span>
+                              <div className={`absolute bottom-3 right-5 flex items-center gap-2.5 px-3.5 py-1.5 rounded-full bg-black/20 backdrop-blur-md border border-white/10 ${theme.textClass} shadow-xl group/swipe select-none`}>
+                                <span className="text-[9px] font-black uppercase tracking-[0.2em] opacity-90 drop-shadow-md">Passe para ver mais</span>
+                                <div className="flex items-center justify-center size-5 rounded-full bg-white/10 border border-white/20 group-hover/swipe:translate-x-1 transition-transform duration-300">
+                                  <span className="material-symbols-outlined text-[14px] !font-bold">arrow_forward</span>
+                                </div>
                               </div>
                             )}
                           </div>

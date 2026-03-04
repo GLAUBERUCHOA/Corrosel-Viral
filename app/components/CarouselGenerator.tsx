@@ -1797,31 +1797,30 @@ export default function CarouselGenerator({ onLogout }: { onLogout: () => void }
                             </div>
                           </div>
 
-                          <div className={`absolute left-6 z-[60] flex items-center pointer-events-none w-[32%] ${index === 0 || !isImageBottom ? 'top-6' : 'bottom-6'}`}>
+                          <div className={`absolute left-4 z-[60] flex items-center pointer-events-none w-[33%] opacity-30 transition-opacity hover:opacity-100 ${index === 0 || !isImageBottom ? 'top-4' : 'bottom-4'}`}>
                             {brandHandle && (
                               <svg
-                                viewBox={`0 0 ${brandHandle.length * 15 + 60} 40`}
-                                className="w-full h-auto drop-shadow-lg select-none"
+                                viewBox={`0 0 ${brandHandle.length * 20 + 100} 50`}
+                                className="w-full h-auto select-none"
                                 preserveAspectRatio="xMinYCenter meet"
                               >
                                 <text
-                                  x="5"
-                                  y="30"
+                                  x="0"
+                                  y="35"
                                   className="font-black uppercase fill-white"
                                   style={{
-                                    fontSize: '24px',
+                                    fontSize: '32px',
                                     paintOrder: 'stroke',
                                     stroke: '#000',
-                                    strokeWidth: '4px',
+                                    strokeWidth: '8px',
                                     strokeLinejoin: 'round',
                                     fontFamily: 'var(--font-poppins), system-ui, sans-serif'
                                   }}
                                 >
                                   {brandHandle}
                                 </text>
-                                <g transform={`translate(${brandHandle.length * 15 + 10}, 6)`} className="fill-blue-500">
+                                <g transform={`translate(${brandHandle.length * 20 + 20}, 4)`} className="fill-blue-500">
                                   <path
-                                    className="drop-shadow-sm"
                                     d="M22.5 12.5c0-1.58-.88-2.97-2.18-3.72.26-1.54-.23-3.15-1.35-4.27-1.13-1.12-2.73-1.6-4.27-1.35-.75-1.3-2.14-2.18-3.72-2.18s-2.97.88-3.72 2.18c-1.54-.25-3.15.23-4.27 1.35C1.87 5.65 1.39 7.25 1.64 8.78 0.34 9.53-0.54 10.92-0.54 12.5s0.88 2.97 2.18 3.72c-0.26 1.54 0.23 3.15 1.35 4.27 1.13 1.12 2.73 1.6 4.27 1.35 0.75 1.3 2.14 2.18 3.72 2.18s2.97-.88 3.72-2.18c1.54 0.25 3.15-0.23 4.27-1.35 1.12-1.13 1.6-2.73 1.35-4.27 1.3-0.75 2.18-2.14 2.18-3.72zM10.69 17.03l-3.5-3.56 1.27-1.27 2.23 2.22 5.63-5.64 1.27 1.27-6.9 6.98z"
                                   />
                                 </g>

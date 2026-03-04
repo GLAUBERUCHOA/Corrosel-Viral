@@ -1,0 +1,54 @@
+﻿[
+  {
+    id: 'cmm8ketnb00061074wgznolz4',
+    nicheKey: 'GLOBAL_IMAGE',
+    label: '­ƒîƒ INSTRU├ç├òES GERAIS DE IMAGEM (Visual Base)',
+    instruction: '­ƒÄ¿ 1. REGRAS OBRIGAT├ôRIAS ANTES DE GERAR QUALQUER IMAGEM:\n' +
+      '\n' +
+      ' - Primeira coisa, voc├¬ deve interpretar o texto completo que foi enviado e definir dentro de qual nicho ele est├í. Cruzar os dados para saber se aquele nicho tem alguma descri├º├úo dentro do nosso sistema que seja espec├¡fica para ele, como por exemplo, se ├® de empreendedorismo, nutri├º├úo etc, e se for, usar o estilo de imagem que est├í descrito nele!\n' +
+      '- Voc├¬ deve sempre obedecer o padr├úo est├®tico obrigat├│rio que estiver descrito dentro das chaves do sistema para cada nicho ou estilo, e n├úo tendo nenhum, o padr├úo geral!\n' +
+      '- Voc├¬ nunca deve gerar imagens gen├®ricas ou abstratas. Suas imagens sempre devem descrever algo da realidade, seja uma realidade no mundo real ou uma realidade virtual.\n' +
+      '- Quando for necess├írio usar pessoas na imagem para descrever bem o slide, use sem receio!\n' +
+      '- Evite usar textos ou frases nas imagens, a n├úo ser textos pequenos quando for necess├írio como: nome de marcas, fachadas de pr├®dios e outros exemplos nesse estilo. Nunca usar textos grandes e que resumam o tema do slide, nem bal├Áes de falas.',
+    isDeletable: true,
+    updatedAt: 2026-03-04T11:19:00.288Z
+  },
+  {
+    id: 'cmm8ketxu000710742714s14g',
+    nicheKey: 'SAUDE',
+    label: '­ƒìÄ Sa├║de, Nutri├º├úo e Metabolismo',
+    instruction: "Nicho de sa├║de, fitness, bem estar, estilo de vida: A est├®tica visual deve alternar entre Fotografia Macro de Est├║dio Ultradetalhada (para elementos f├¡sicos, alimentos e partes humanas como m├úos) e Renderiza├º├úo Cient├¡fica Premium (para ├│rg├úos e conceitos internos). As texturas f├¡sicas devem ser extremamente t├íteis e realistas. Utilize ilumina├º├úo direcional dram├ítica com alto contraste. Para criar o efeito 'Bio-Hacking', incorpore intera├º├Áes sutis de tecnologia sobre o mundo real, como interfaces hologr├íficas (HUDs), luzes de fibra ├│tica, ou elementos de dados flutuantes. Utilize enquadramentos bem fechados (Close-ups ou Macro). O foco central pode ser um objeto isolado, uma representa├º├úo conceitual, ou a intera├º├úo humana focalizada (ex: m├úos detalhadas segurando ingredientes). O fundo deve ser escuro, texturizado ou neutro para garantir o destaque absoluto dos elementos em primeiro plano. Se o texto falar de pessoas famosas ou personalidades, considere us├í-las nas imagens.",
+    isDeletable: true,
+    updatedAt: 2026-03-04T11:19:00.288Z
+  },
+  {
+    id: 'cmm8keu4j0008107414k0kvi4',
+    nicheKey: 'EMPREENDEDORISMO',
+    label: '­ƒÆ╝ Neg├│cios e Empreendedorismo',
+    instruction: 'Voc├¬ atua nos Nichos de: empreendedorismo, marketing, tecnologia, curiosidades, hist├│ria, fofocas.\n' +
+      '\n' +
+      'Gere a imagem em propor├º├úo vertical (4:5). Centralize o sujeito principal estabelecendo contato visual forte ou postura imponente. Utilize profundidade de campo (depth of field) para manter o protagonista hiper-n├¡tido e o cen├írio de fundo levemente desfocado (bokeh sutil), garantindo separa├º├úo visual clara."\n' +
+      '\n' +
+      'Estilo visual de fotografia hiper-realista, qualidade editorial de revista (estilo Time ou Forbes). Aplique ilumina├º├úo cinematogr├ífica dram├ítica adequada ao contexto (ex: luzes de est├ídio com lens flare, luz do entardecer dourada, ou luz natural de alto contraste). As texturas de pele, roupas e objetos devem ser ultradetalhadas."\n' +
+      '\n' +
+      'Crie uma justaposi├º├úo surreal ou metaf├│rica de alto impacto. Combine figuras p├║blicas, mascotes ou s├¡mbolos conhecidos do nicho com objetos ou elementos de contextos completamente diferentes e inesperados (ex: elementos m├®dicos em fast food, animais fora de contexto em esportes). A imagem deve causar estranheza inicial, mas fazer sentido absoluto com a met├ífora da manchete. Se o texto cita, ou fale o nome de pessoas conhecidas, famosas, cogite utiliz├í-las.',
+    isDeletable: true,
+    updatedAt: 2026-03-04T11:19:00.288Z
+  },
+  {
+    id: 'cmm8keuhh000a1074w580m7k4',
+    nicheKey: 'MINDSET',
+    label: '­ƒºá Psicologia e Mindset',
+    instruction: "Nicho de psicologia e Mindset: Gere a imagem em propor├º├úo vertical (4:5). Centralize o sujeito, mas priorize poses e express├Áes que evoquem tranquilidade, autenticidade, relaxamento ou autoconhecimento. O contato visual deve ser suave ou opcional. A composi├º├úo deve parecer um 'momento capturado' de bem-estar. Estilo visual de fotografia editorial de moda suave ou estilo anal├│gico/gr├úo de filme. Utilize ilumina├º├úo suave e difusa, evitando sombras duras. Adote paletas de cores mais suaves, quentes e nost├ílgicas (tons creme, pastel, suaves e 'envelhecidos'). A imagem deve ter uma 'vibe' aconchegante. Crie uma imagem evocativa de um estado emocional ou estilo de vida espec├¡fico. A met├ífora visual deve ser sutil e focada em capturar a 'vibe' do t├│pico (ex: a sensa├º├úo de desconex├úo, autenticidade, conex├úo comunit├íria ou calma). A imagem deve evocar uma sensa├º├úo, n├úo criar um choque visual absurdo. Se o texto cita, ou fale o nome de pessoas conhecidas, famosas, cogite utiliz├í-las.",
+    isDeletable: true,
+    updatedAt: 2026-03-04T11:19:00.288Z
+  },
+  {
+    id: 'cmmay183l00007q4ftxpxee60',
+    nicheKey: 'OUTROS',
+    label: ' Outros nichos n├úo especificados',
+    instruction: "Gere a imagem sempre em propor├º├úo vertical. Estabele├ºa um ├║nico ponto focal claro (um sujeito humano, um objeto ou uma a├º├úo). Aplique obrigatoriamente uma profundidade de campo reduzida (depth of field / bokeh), mantendo o elemento principal hiper-n├¡tido e desfocando o cen├írio de fundo (background) ou o primeiro plano (foreground) para criar dimens├úo e separar o protagonista do ambiente. Evite estilos de ilustra├º├úo digital 2D ou renderiza├º├Áes cartoonizadas, a menos que estritamente solicitado. Priorize a est├®tica de 'Fotografia Editorial de Alta Qualidade'. Utilize ilumina├º├úo volum├®trica e direcional (chiaroscuro sutil, luz de janela, ou ilumina├º├úo de est├║dio dram├ítica). O objetivo ├® criar texturas palp├íveis e contrastes ricos que transmitam seriedade, sofistica├º├úo e autoridade no assunto abordado.Proibida a interpreta├º├úo literal e ├│bvia do tema. Crie uma met├ífora visual ou uma justaposi├º├úo inesperada. Se o tema for abstrato (ex: justi├ºa, viagem, finan├ºas), materialize-o atrav├®s de uma perspectiva inusitada, um ├óngulo extremo, ou combinando um elemento comum do nicho com uma atmosfera ou objeto contrastante. A imagem deve gerar intriga inicial e curiosidade, for├ºando o usu├írio a ler o t├¡tulo para entender o contexto.Se o texto falar de pessoas famosas ou personalidades, considere us├í-las nas imagens.",
+    isDeletable: true,
+    updatedAt: 2026-03-04T11:19:00.288Z
+  }
+]

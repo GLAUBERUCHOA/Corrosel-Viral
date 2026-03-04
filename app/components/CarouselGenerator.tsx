@@ -54,34 +54,28 @@ CRIANDO COM BASE NO SEU TOM SELECIONADO ACIMA, metamorfoseie brutalmente o segui
 };
 
 const getImagePrompt = (nicheMode: string, dynamicImageInstructions: Record<string, string>, title: string, subtitle: string) => {
-  const globalInstruction = dynamicImageInstructions['GLOBAL_IMAGE'] ||
-    `🎨 1. PADRÃO ESTÉTICO OBRIGATÓRIO:
-Você opera sempre no estilo "Theatrical Dark Cinematic" (Cinematográfico Escuro e Teatral) com foco em Chiaroscuro (contraste dramático) e efeito Bokeh (fundo elegantemente distorcido).
+  const globalInstruction = dynamicImageInstructions['GLOBAL_IMAGE'] || '';
 
-📸 2. REGRAS DE DIREÇÃO DE ARTE:
-- Ângulos: Evite sempre visões padrão (eye-level). Alterne entre Low Angle (de baixo pra cima, denota poder/imposição), High Angle (vulnerabilidade), Over-the-shoulder e Close-ups detalhados.
-- Iluminação: Luzes de recorte dramáticas, sombras marcadas. Iluminação lateral misteriosa.
-- Metáforas: NUNCA crie interpretações literais e óbvias do texto. Se o texto for sobre "ganhar dinheiro", NÃO crie de pessoas segurando dinheiro ou cifrões. Crie algo como: "A close-up of a sleek black mechanical watch with gold gears turning amidst dark smoke".
+  const nicheInstructions = Object.entries(dynamicImageInstructions)
+    .filter(([key]) => key !== 'GLOBAL_IMAGE')
+    .map(([key, value]) => `[NICHO: ${key}]\n${value}`)
+    .join('\n\n');
 
-🧠 3. COMPOSIÇÃO:
-- Cores: Paleta Industrial e Terrosa (Preto, chumbo, ouro envelhecido, cobre escuro, verde musgo).
-- Sempre inclua: "High end, 8k resolution, raw photo, highly detailed, sharp focus" no final do seu prompt.`;
-
-  const nicheInstruction = dynamicImageInstructions[nicheMode] ||
-    'Crie algo focado em cinematografia dark de altíssimo nível com as regras gerais acima.';
-
-  return `Crie UMA ÚNICA IMAGEM de "Cinematografia Multimodal" de altíssimo nível, baseada na seguinte semente emocional do texto do slide:
+  return `Crie UMA ÚNICA IMAGEM de alta qualidade baseada no seguinte slide:
 Título do Slide: "${title}"
 Subtítulo: "${subtitle}"
 
 INSTRUÇÕES GERAIS DE ARTE (BASE):
 ${globalInstruction}
 
-DIRETRIZ ESPECÍFICA DO NICHO ESCOLHIDO (IMPRESCINDÍVEL):
-${nicheInstruction}
+DIRETRIZES ESPECÍFICAS DE CADA NICHO:
+(Atenção: de acordo com as instruções gerais, tente identificar a qual nicho esse slide pertence e utilize EXCLUSIVAMENTE o estilo de arte correspondente. NÃO misture os nichos.)
+${nicheInstructions}
 
-5. Restrição Absoluta de Textos Nativos: É VERBEMENTE PROIBIDO criar qualquer frase, palavra ou explicação legível ilustrada dentro da arte! A imagem PRECISA ser muda. O texto longo será redigido por nós por cima. 
-6. Composição Vertical (Top-Heavy) - LEI INQUEBRÁVEL: O texto descritivo ocupará quase toda a METADE INFERIOR (Bottom Half) do slide. Portanto, posicione os objetos centrais, personagens e elementos dramáticos EXCLUSIVAMENTE NA METADE SUPERIOR (Top Half). A metade inferior DEVE SER um imenso e pesado VAZIO ESCURO (Negative Space), garantindo contraste absoluto para leitura.`;
+REGRAS DE LAYOUT E COMPOSIÇÃO (OBRIGATÓRIO):
+1. Restrição Absoluta de Textos Nativos: É ESTRITAMENTE PROIBIDO criar qualquer frase, palavra ou explicação legível ilustrada dentro da arte! A imagem PRECISA ser muda. O texto longo será redigido por nós por cima.
+2. Composição Vertical (Top-Heavy): O texto descritivo será sobreposto e ocupará a METADE INFERIOR (Bottom Half) do slide. Portanto, posicione os objetos centrais, personagens e elementos dramáticos EXCLUSIVAMENTE NA METADE SUPERIOR (Top Half) ou de modo centralizado. Deixe um espaço mais limpo (com pouca informação visual) na parte inferior.
+3. Fidelidade ao Nicho: NUNCA crie estilo "dark/futurista" nem imagens "abstratas" se o nicho classificado não pedir isso. Siga rigorosamente o estilo de cor, textura e iluminação descrito nas regras do nicho que você identificar!`;
 };
 
 const SimpleRichTextEditor = ({ value, onChange, placeholder }: { value: string, onChange: (val: string) => void, placeholder: string }) => {
@@ -662,11 +656,11 @@ export default function CarouselGenerator({ onLogout }: { onLogout: () => void }
 
       const generatedText = response.text || '';
       setContent(generatedText); // Sobrescreve a caixa
-      return processTextIntoSlides(generatedText); // Processa e retorna
+      processTextIntoSlides(generatedText, addCtaSlide, ctaContent); // Processa imediatamente
+      setHasNewPreview(true);
     } catch (error) {
       console.error("Erro ao gerar Modo Iury:", error);
       alert("Ocorreu um erro ao processar o texto pelo Iury. Tente novamente.");
-      return null;
     } finally {
       setIsGeneratingText(false);
     }
@@ -731,17 +725,8 @@ export default function CarouselGenerator({ onLogout }: { onLogout: () => void }
   const handleGenerateCarousel = async () => {
     if (!content.trim()) return;
 
-    let newSlides: { title: string, subtitle: string, isCta?: boolean }[] = [];
-
-    if (isIuryMode) {
-      const generated = await executarIury();
-      if (!generated) return;
-      newSlides = generated;
-      setHasNewPreview(true);
-    } else {
-      newSlides = processTextIntoSlides(content, addCtaSlide, ctaContent);
-      setHasNewPreview(true);
-    }
+    let newSlides = processTextIntoSlides(content, addCtaSlide, ctaContent);
+    setHasNewPreview(true);
 
     if (generateWithAI) {
       const apiKey = customApiKey || process.env.NEXT_PUBLIC_GEMINI_API_KEY;
@@ -1055,6 +1040,21 @@ export default function CarouselGenerator({ onLogout }: { onLogout: () => void }
                 ></textarea>
                 <div className="absolute bottom-3 right-3 text-xs text-slate-400 font-medium bg-slate-100 dark:bg-border-dark px-2 py-1 rounded">{content.length} caracteres</div>
               </div>
+
+              {isIuryMode && (
+                <button
+                  onClick={executarIury}
+                  disabled={!content.trim() || isGeneratingText}
+                  className="w-full flex items-center justify-center gap-2 rounded-xl h-11 text-white text-sm font-bold shadow-md transition-all disabled:opacity-70 disabled:hover:scale-100 disabled:cursor-not-allowed bg-indigo-600 hover:bg-indigo-700 shadow-indigo-600/25 mt-2"
+                >
+                  {isGeneratingText ? (
+                    <span className="material-symbols-outlined animate-spin text-[18px]">progress_activity</span>
+                  ) : (
+                    <span className="material-symbols-outlined text-[18px]">psychology</span>
+                  )}
+                  {isGeneratingText ? 'Pensando de Forma Visceral...' : 'Gerar Texto com Iury'}
+                </button>
+              )}
 
               <div className="space-y-4 pt-4 border-t border-slate-100 dark:border-border-dark">
                 <div className="grid grid-cols-2 gap-4">
@@ -1456,14 +1456,10 @@ export default function CarouselGenerator({ onLogout }: { onLogout: () => void }
             <div className="mt-auto p-6 border-t border-slate-200 dark:border-border-dark bg-slate-50 dark:bg-surface-darker sticky bottom-0">
               <button
                 onClick={handleGenerateCarousel}
-                disabled={!content.trim() || isGeneratingText}
-                className={`w-full flex items-center justify-center gap-2 rounded-xl h-12 text-white text-base font-bold shadow-lg transition-all disabled:opacity-70 disabled:hover:scale-100 disabled:cursor-not-allowed ${isIuryMode ? 'bg-indigo-600 hover:bg-indigo-700 shadow-indigo-600/25' : 'bg-primary hover:bg-primary/90 hover:scale-[1.02] shadow-primary/25 active:scale-[0.98]'}`}>
-                {isGeneratingText ? (
-                  <span className="material-symbols-outlined animate-spin">progress_activity</span>
-                ) : (
-                  <span className="material-symbols-outlined">{isIuryMode ? 'psychology' : 'auto_fix_high'}</span>
-                )}
-                {isGeneratingText ? 'Pensando de Forma Visceral...' : isIuryMode ? 'Gerar com Iury' : 'Gerar Carrossel'}
+                disabled={!content.trim() || isGeneratingText || (isIuryMode && content.length < 50)}
+                className={`w-full flex items-center justify-center gap-2 rounded-xl h-12 text-white text-base font-bold shadow-lg transition-all disabled:opacity-70 disabled:hover:scale-100 disabled:cursor-not-allowed bg-primary hover:bg-primary/90 hover:scale-[1.02] shadow-primary/25 active:scale-[0.98]`}>
+                <span className="material-symbols-outlined">auto_fix_high</span>
+                Gerar Carrossel e Imagens
               </button>
             </div>
           </div>

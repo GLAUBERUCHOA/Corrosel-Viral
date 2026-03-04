@@ -732,8 +732,8 @@ export default function CarouselGenerator({ onLogout }: { onLogout: () => void }
     try {
       const ai = new GoogleGenAI({ apiKey });
       const response = await ai.models.generateContent({
-        model: 'gemini-2.5-flash',
-        contents: `${getIuryPrompt(toneMode, dbPrompts)}\n\nRASCUNHO DO USUÁRIO:\n${content}`,
+        model: 'gemini-1.5-flash',
+        contents: [{ role: 'user', parts: [{ text: `${getIuryPrompt(toneMode, dbPrompts)}\n\nRASCUNHO DO USUÁRIO:\n${content}` }] }],
       });
 
       const generatedText = response.text || '';
@@ -844,8 +844,8 @@ export default function CarouselGenerator({ onLogout }: { onLogout: () => void }
     if (!apiKey) throw new Error('Chave da API Gemini não encontrada.');
     const ai = new GoogleGenAI({ apiKey });
     const response = await ai.models.generateContent({
-      model: 'gemini-2.5-flash-image',
-      contents: prompt,
+      model: 'gemini-1.5-flash',
+      contents: [{ role: 'user', parts: [{ text: prompt }] }],
       config: { imageConfig: { aspectRatio: aspectRatio === '9:16' ? '9:16' : '3:4' } }
     });
     for (const part of response.candidates?.[0]?.content?.parts || []) {

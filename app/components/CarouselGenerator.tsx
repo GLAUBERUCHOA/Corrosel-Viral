@@ -665,16 +665,31 @@ export default function CarouselGenerator({ onLogout }: { onLogout: () => void }
   };
 
   // ── IMAGE ENGINE ROUTER ──────────────────────────────────────────────────
-  const proxyToDataUrl = async (externalUrl: string): Promise<string | null> => {
-    console.log(`[CarouselGenerator] Proxying image via server: ${externalUrl.substring(0, 80)}...`);
-    const res = await fetch(`/api/proxy-image?url=${encodeURIComponent(externalUrl)}`);
-    if (!res.ok) {
-      const err = await res.json().catch(() => ({ error: res.statusText }));
-      throw new Error(`Proxy error: ${err.error || res.status}`);
-    }
-    const data = await res.json();
-    console.log(`[CarouselGenerator] Proxy success: ${data.mimeType}, ${data.bytes} bytes`);
-    return data.dataUrl as string;
+
+  // Convert an external image URL to base64 data URL via hidden <img> + canvas
+  // This works because <img> tags bypass CORS/Cloudflare restrictions in the browser
+  const urlToDataUrl = (url: string): Promise<string> => {
+    return new Promise((resolve, reject) => {
+      const img = new Image();
+      img.crossOrigin = 'anonymous';
+      img.onload = () => {
+        try {
+          const canvas = document.createElement('canvas');
+          canvas.width = img.naturalWidth;
+          canvas.height = img.naturalHeight;
+          const ctx = canvas.getContext('2d');
+          if (!ctx) { reject(new Error('Canvas not supported')); return; }
+          ctx.drawImage(img, 0, 0);
+          const dataUrl = canvas.toDataURL('image/jpeg', 0.92);
+          console.log(`[CarouselGenerator] Canvas converted: ${img.naturalWidth}x${img.naturalHeight}`);
+          resolve(dataUrl);
+        } catch (e) {
+          reject(e);
+        }
+      };
+      img.onerror = () => reject(new Error('Failed to load image from URL'));
+      img.src = url;
+    });
   };
 
   const generateImageWithEngine = async (
@@ -682,62 +697,67 @@ export default function CarouselGenerator({ onLogout }: { onLogout: () => void }
     slideIndex: number,
     _totalSlides: number
   ): Promise<string | null> => {
+
     // ── Pollinations: free, no API key ──
+    // Strategy: Build the URL, load via <img> (bypasses Cloudflare), convert via canvas
     if (imageEngine === 'pollinations') {
       const encodedPrompt = encodeURIComponent(prompt);
       const seed = Date.now() + slideIndex;
       const pollinationsUrl = `https://image.pollinations.ai/prompt/${encodedPrompt}?seed=${seed}&width=768&height=960&nologo=true&model=flux`;
-      console.log(`[CarouselGenerator] Pollinations URL generated for slide ${slideIndex}`);
-      // Proxy through server so it becomes a data URL (avoids CSP + CORS)
-      return await proxyToDataUrl(pollinationsUrl);
+      console.log(`[CarouselGenerator] Pollinations: loading image for slide ${slideIndex}...`);
+
+      // Pollinations generates on-the-fly, the <img> request will hang until ready (10-30s)
+      // We try loading it directly as an image, then canvas-convert to base64
+      try {
+        const dataUrl = await urlToDataUrl(pollinationsUrl);
+        console.log(`[CarouselGenerator] Pollinations: success for slide ${slideIndex}`);
+        return dataUrl;
+      } catch (err) {
+        console.warn(`[CarouselGenerator] Pollinations canvas failed (CORS), returning raw URL`);
+        // Fallback: return the raw URL — it'll work in background-image
+        return pollinationsUrl;
+      }
     }
 
-    // ── Leonardo AI ──
+    // ── Leonardo AI: calls go through our server-side endpoint ──
     if (imageEngine === 'leonardo') {
       const apiKey = customApiKey;
-      if (!apiKey) throw new Error('Leonardo API key is required');
+      if (!apiKey) throw new Error('Chave da API Leonardo AI é obrigatória.');
 
-      console.log(`[CarouselGenerator] Starting Leonardo generation for slide ${slideIndex}`);
-      const initRes = await fetch('https://cloud.leonardo.ai/api/rest/v1/generations', {
+      console.log(`[CarouselGenerator] Leonardo: starting server-side generation for slide ${slideIndex}`);
+      const res = await fetch('/api/leonardo-generate', {
         method: 'POST',
-        headers: { 'Authorization': `Bearer ${apiKey}`, 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          prompt,
-          modelId: 'b24e16ff-06e3-43eb-8d33-4416c2d75876', // Leonardo Diffusion XL
-          width: 768,
-          height: 960,
-          num_images: 1,
-        }),
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ prompt, apiKey, width: 768, height: 960 }),
       });
-      const initData = await initRes.json();
-      const generationId = initData?.sdGenerationJob?.generationId;
-      if (!generationId) {
-        console.error('[CarouselGenerator] Leonardo init failed:', JSON.stringify(initData));
-        throw new Error('Failed to start Leonardo generation');
-      }
-      console.log(`[CarouselGenerator] Leonardo generationId: ${generationId}`);
 
-      // Poll until images are ready (up to 90s)
-      for (let attempt = 0; attempt < 30; attempt++) {
-        await new Promise(r => setTimeout(r, 3000));
-        const pollRes = await fetch(`https://cloud.leonardo.ai/api/rest/v1/generations/${generationId}`, {
-          headers: { 'Authorization': `Bearer ${apiKey}` },
-        });
-        const pollData = await pollRes.json();
-        const images = pollData?.generations_by_pk?.generated_images;
-        console.log(`[CarouselGenerator] Leonardo poll ${attempt + 1}: ${images?.length ?? 0} images ready`);
-        if (images && images.length > 0) {
-          const leonardoUrl = images[0].url as string;
-          // Proxy through server to get a data URL
-          return await proxyToDataUrl(leonardoUrl);
+      const data = await res.json();
+
+      if (!res.ok) {
+        console.error(`[CarouselGenerator] Leonardo server error:`, data);
+        throw new Error(data.error || `Leonardo falhou: HTTP ${res.status}`);
+      }
+
+      if (data.dataUrl) {
+        console.log(`[CarouselGenerator] Leonardo: got base64 image for slide ${slideIndex}`);
+        return data.dataUrl;
+      }
+
+      if (data.url) {
+        console.log(`[CarouselGenerator] Leonardo: got URL, converting via canvas...`);
+        try {
+          return await urlToDataUrl(data.url);
+        } catch {
+          return data.url;
         }
       }
-      throw new Error('Leonardo generation timed out after 90s');
+
+      throw new Error('Leonardo não retornou imagem.');
     }
 
-    // ── Default: Gemini ──
+    // ── Default: Gemini (SDK, returns base64 inline) ──
     const apiKey = customApiKey || process.env.NEXT_PUBLIC_GEMINI_API_KEY;
-    if (!apiKey) throw new Error('Gemini API key not found');
+    if (!apiKey) throw new Error('Chave da API Gemini não encontrada.');
     const ai = new GoogleGenAI({ apiKey });
     const response = await ai.models.generateContent({
       model: 'gemini-2.5-flash-image',
@@ -746,11 +766,11 @@ export default function CarouselGenerator({ onLogout }: { onLogout: () => void }
     });
     for (const part of response.candidates?.[0]?.content?.parts || []) {
       if (part.inlineData) {
-        console.log(`[CarouselGenerator] Gemini image received: ${part.inlineData.mimeType}`);
+        console.log(`[CarouselGenerator] Gemini: image received (${part.inlineData.mimeType})`);
         return `data:${part.inlineData.mimeType || 'image/png'};base64,${part.inlineData.data}`;
       }
     }
-    console.warn('[CarouselGenerator] Gemini returned no image parts');
+    console.warn('[CarouselGenerator] Gemini: no image parts returned');
     return null;
   };
 
@@ -779,8 +799,9 @@ export default function CarouselGenerator({ onLogout }: { onLogout: () => void }
         });
       }
     } catch (error) {
-      console.error('Erro ao regerar imagem:', error);
-      alert('Falha ao regerar a imagem. Verifique sua chave e tente novamente.');
+      const msg = error instanceof Error ? error.message : 'Erro desconhecido';
+      console.error('Erro ao regerar imagem:', msg, error);
+      alert(`❌ Falha ao gerar imagem (${imageEngine === 'pollinations' ? 'Pollinations' : imageEngine === 'leonardo' ? 'Leonardo AI' : 'Gemini'}): ${msg}`);
     } finally {
       setGeneratingImages(prev => {
         const updated = [...prev];
@@ -821,7 +842,9 @@ export default function CarouselGenerator({ onLogout }: { onLogout: () => void }
             });
           }
         } catch (error) {
-          console.error(`Error generating image for slide ${i}:`, error);
+          const msg = error instanceof Error ? error.message : 'Erro desconhecido';
+          console.error(`Error generating image for slide ${i}:`, msg, error);
+          alert(`⚠️ Slide ${i + 1}: falha ao gerar imagem (${imageEngine === 'pollinations' ? 'Pollinations' : imageEngine === 'leonardo' ? 'Leonardo AI' : 'Gemini'}). ${msg}`);
         } finally {
           setGeneratingImages(prev => {
             const updated = [...prev];

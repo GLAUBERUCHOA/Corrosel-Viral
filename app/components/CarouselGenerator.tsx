@@ -1797,32 +1797,30 @@ export default function CarouselGenerator({ onLogout }: { onLogout: () => void }
                             </div>
                           </div>
 
-                          <div className="w-full h-0 shrink-0 relative z-[60] flex items-center justify-center">
-                            {(brandHandle || brandLogo) && (
-                              <div className="flex items-center gap-[4px] pr-2 pl-[1px] py-1 rounded-full absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2"
+                          <div className={`absolute left-6 z-[60] flex items-center gap-2 pointer-events-none ${index === 0 || !isImageBottom ? 'top-6' : 'bottom-6'}`}>
+                            {brandLogo && (
+                              <div className="size-7 sm:size-8 rounded-full overflow-hidden shrink-0 border-2 shadow-sm"
                                 style={{
-                                  minWidth: 'fit-content',
-                                  filter: theme.textClass === 'text-white'
-                                    ? 'drop-shadow(0 2px 6px rgba(0,0,0,0.6)) drop-shadow(0 1px 2px rgba(0,0,0,0.4))'
-                                    : 'drop-shadow(0 1px 3px rgba(0,0,0,0.15))'
+                                  borderColor: theme.textClass === 'text-white' ? 'rgba(255,255,255,0.8)' : 'rgba(0,0,0,0.15)'
                                 }}>
-                                {brandLogo && (
-                                  <div className={`size-[22px] sm:size-[26px] rounded-full overflow-hidden shrink-0 bg-white border-2 border-white/50`} style={{ boxShadow: '0 0 0 1px rgba(0,0,0,0.1), 0 2px 8px rgba(0,0,0,0.2)' }}>
-                                    <img src={brandLogo} alt="Logo" className="w-full h-full object-cover" />
-                                  </div>
-                                )}
-                                {brandHandle && (
-                                  <div className={`flex items-center text-[10px] sm:text-[12px] font-black tracking-widest ${theme.textClass} pb-[0.5px]`}
-                                    style={{
-                                      textShadow: theme.textClass === 'text-white'
-                                        ? '0 1px 4px rgba(0,0,0,0.5)'
-                                        : '0 1px 2px rgba(0,0,0,0.05)'
-                                    }}>
-                                    <span className="ml-[2px]">{brandHandle}</span>
-                                  </div>
-                                )}
+                                <img src={brandLogo} alt="Logo" className="w-full h-full object-cover" />
                               </div>
                             )}
+                            <div className="flex flex-col">
+                              <div className="flex items-center gap-1">
+                                {brandHandle && (
+                                  <span className={`text-[10px] sm:text-[11px] font-black tracking-widest uppercase ${theme.textClass}`}
+                                    style={{
+                                      WebkitTextStroke: theme.textClass === 'text-white' ? '0.5px rgba(0,0,0,0.4)' : '0.5px rgba(255,255,255,0.4)',
+                                    }}>
+                                    {brandHandle}
+                                  </span>
+                                )}
+                                <svg viewBox="0 0 24 24" className="size-3.5 sm:size-4 fill-blue-500 drop-shadow-sm">
+                                  <path d="M22.5 12.5c0-1.58-.88-2.97-2.18-3.72.26-1.54-.23-3.15-1.35-4.27-1.13-1.12-2.73-1.6-4.27-1.35-.75-1.3-2.14-2.18-3.72-2.18s-2.97.88-3.72 2.18c-1.54-.25-3.15.23-4.27 1.35C1.87 5.65 1.39 7.25 1.64 8.78 0.34 9.53-0.54 10.92-0.54 12.5s0.88 2.97 2.18 3.72c-0.26 1.54 0.23 3.15 1.35 4.27 1.13 1.12 2.73 1.6 4.27 1.35 0.75 1.3 2.14 2.18 3.72 2.18s2.97-.88 3.72-2.18c1.54 0.25 3.15-0.23 4.27-1.35 1.12-1.13 1.6-2.73 1.35-4.27 1.3-0.75 2.18-2.14 2.18-3.72zM10.69 17.03l-3.5-3.56 1.27-1.27 2.23 2.22 5.63-5.64 1.27 1.27-6.9 6.98z" />
+                                </svg>
+                              </div>
+                            </div>
                           </div>
 
                           <div className={`w-full px-8 flex flex-col shrink-0 z-20 relative pt-6 ${index === 0 ? 'pb-16' : 'pb-6'} ${textAlign}`} style={{ fontFamily }}>

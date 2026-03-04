@@ -665,28 +665,45 @@ export default function CarouselGenerator({ onLogout }: { onLogout: () => void }
   };
 
   // ── IMAGE ENGINE ROUTER ──────────────────────────────────────────────────
+  const proxyToDataUrl = async (externalUrl: string): Promise<string | null> => {
+    console.log(`[CarouselGenerator] Proxying image via server: ${externalUrl.substring(0, 80)}...`);
+    const res = await fetch(`/api/proxy-image?url=${encodeURIComponent(externalUrl)}`);
+    if (!res.ok) {
+      const err = await res.json().catch(() => ({ error: res.statusText }));
+      throw new Error(`Proxy error: ${err.error || res.status}`);
+    }
+    const data = await res.json();
+    console.log(`[CarouselGenerator] Proxy success: ${data.mimeType}, ${data.bytes} bytes`);
+    return data.dataUrl as string;
+  };
+
   const generateImageWithEngine = async (
     prompt: string,
     slideIndex: number,
     _totalSlides: number
   ): Promise<string | null> => {
-    // Pollinations: free, no API key, returns a URL directly
+    // ── Pollinations: free, no API key ──
     if (imageEngine === 'pollinations') {
       const encodedPrompt = encodeURIComponent(prompt);
       const seed = Date.now() + slideIndex;
-      return `https://image.pollinations.ai/prompt/${encodedPrompt}?seed=${seed}&width=768&height=960&nologo=true`;
+      const pollinationsUrl = `https://image.pollinations.ai/prompt/${encodedPrompt}?seed=${seed}&width=768&height=960&nologo=true&model=flux`;
+      console.log(`[CarouselGenerator] Pollinations URL generated for slide ${slideIndex}`);
+      // Proxy through server so it becomes a data URL (avoids CSP + CORS)
+      return await proxyToDataUrl(pollinationsUrl);
     }
 
-    // Leonardo AI
+    // ── Leonardo AI ──
     if (imageEngine === 'leonardo') {
       const apiKey = customApiKey;
       if (!apiKey) throw new Error('Leonardo API key is required');
+
+      console.log(`[CarouselGenerator] Starting Leonardo generation for slide ${slideIndex}`);
       const initRes = await fetch('https://cloud.leonardo.ai/api/rest/v1/generations', {
         method: 'POST',
         headers: { 'Authorization': `Bearer ${apiKey}`, 'Content-Type': 'application/json' },
         body: JSON.stringify({
           prompt,
-          modelId: 'b24e16ff-06e3-43eb-8d33-4416c2d75876',
+          modelId: 'b24e16ff-06e3-43eb-8d33-4416c2d75876', // Leonardo Diffusion XL
           width: 768,
           height: 960,
           num_images: 1,
@@ -694,7 +711,13 @@ export default function CarouselGenerator({ onLogout }: { onLogout: () => void }
       });
       const initData = await initRes.json();
       const generationId = initData?.sdGenerationJob?.generationId;
-      if (!generationId) throw new Error('Failed to start Leonardo generation');
+      if (!generationId) {
+        console.error('[CarouselGenerator] Leonardo init failed:', JSON.stringify(initData));
+        throw new Error('Failed to start Leonardo generation');
+      }
+      console.log(`[CarouselGenerator] Leonardo generationId: ${generationId}`);
+
+      // Poll until images are ready (up to 90s)
       for (let attempt = 0; attempt < 30; attempt++) {
         await new Promise(r => setTimeout(r, 3000));
         const pollRes = await fetch(`https://cloud.leonardo.ai/api/rest/v1/generations/${generationId}`, {
@@ -702,12 +725,17 @@ export default function CarouselGenerator({ onLogout }: { onLogout: () => void }
         });
         const pollData = await pollRes.json();
         const images = pollData?.generations_by_pk?.generated_images;
-        if (images && images.length > 0) return images[0].url as string;
+        console.log(`[CarouselGenerator] Leonardo poll ${attempt + 1}: ${images?.length ?? 0} images ready`);
+        if (images && images.length > 0) {
+          const leonardoUrl = images[0].url as string;
+          // Proxy through server to get a data URL
+          return await proxyToDataUrl(leonardoUrl);
+        }
       }
-      throw new Error('Leonardo generation timed out');
+      throw new Error('Leonardo generation timed out after 90s');
     }
 
-    // Default: Gemini
+    // ── Default: Gemini ──
     const apiKey = customApiKey || process.env.NEXT_PUBLIC_GEMINI_API_KEY;
     if (!apiKey) throw new Error('Gemini API key not found');
     const ai = new GoogleGenAI({ apiKey });
@@ -718,9 +746,11 @@ export default function CarouselGenerator({ onLogout }: { onLogout: () => void }
     });
     for (const part of response.candidates?.[0]?.content?.parts || []) {
       if (part.inlineData) {
+        console.log(`[CarouselGenerator] Gemini image received: ${part.inlineData.mimeType}`);
         return `data:${part.inlineData.mimeType || 'image/png'};base64,${part.inlineData.data}`;
       }
     }
+    console.warn('[CarouselGenerator] Gemini returned no image parts');
     return null;
   };
 

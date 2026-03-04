@@ -1798,34 +1798,24 @@ export default function CarouselGenerator({ onLogout }: { onLogout: () => void }
                           </div>
 
                           <div className={`absolute left-4 z-[60] flex items-center pointer-events-none w-[33%] opacity-30 transition-opacity hover:opacity-100 ${index === 0 || !isImageBottom ? 'top-4' : 'bottom-4'}`}>
-                            {brandHandle && (
-                              <svg
-                                viewBox={`0 0 ${brandHandle.length * 20 + 100} 50`}
-                                className="w-full h-auto select-none"
-                                preserveAspectRatio="xMinYCenter meet"
-                              >
-                                <text
-                                  x="0"
-                                  y="35"
-                                  className="font-black uppercase fill-white"
+                            <div className="flex items-center gap-1.5 min-w-0">
+                              {brandHandle && (
+                                <span className="text-[10px] sm:text-[11px] font-[900] uppercase tracking-widest text-white whitespace-nowrap"
                                   style={{
-                                    fontSize: '32px',
                                     paintOrder: 'stroke',
-                                    stroke: '#000',
-                                    strokeWidth: '8px',
-                                    strokeLinejoin: 'round',
+                                    WebkitTextStroke: '1px rgba(0,0,0,0.8)',
+                                    textShadow: '0 2px 4px rgba(0,0,0,0.3)',
                                     fontFamily: 'var(--font-poppins), system-ui, sans-serif'
-                                  }}
-                                >
+                                  }}>
                                   {brandHandle}
-                                </text>
-                                <g transform={`translate(${brandHandle.length * 20 + 20}, 4)`} className="fill-blue-500">
-                                  <path
-                                    d="M22.5 12.5c0-1.58-.88-2.97-2.18-3.72.26-1.54-.23-3.15-1.35-4.27-1.13-1.12-2.73-1.6-4.27-1.35-.75-1.3-2.14-2.18-3.72-2.18s-2.97.88-3.72 2.18c-1.54-.25-3.15.23-4.27 1.35C1.87 5.65 1.39 7.25 1.64 8.78 0.34 9.53-0.54 10.92-0.54 12.5s0.88 2.97 2.18 3.72c-0.26 1.54 0.23 3.15 1.35 4.27 1.13 1.12 2.73 1.6 4.27 1.35 0.75 1.3 2.14 2.18 3.72 2.18s2.97-.88 3.72-2.18c1.54 0.25 3.15-0.23 4.27-1.35 1.12-1.13 1.6-2.73 1.35-4.27 1.3-0.75 2.18-2.14 2.18-3.72zM10.69 17.03l-3.5-3.56 1.27-1.27 2.23 2.22 5.63-5.64 1.27 1.27-6.9 6.98z"
-                                  />
-                                </g>
-                              </svg>
-                            )}
+                                </span>
+                              )}
+                              <div className="shrink-0 flex items-center">
+                                <svg viewBox="0 0 24 24" className="size-3.5 sm:size-4 fill-blue-500" style={{ filter: 'drop-shadow(0 1px 2px rgba(0,0,0,0.5))' }}>
+                                  <path d="M22.5 12.5c0-1.58-.88-2.97-2.18-3.72.26-1.54-.23-3.15-1.35-4.27-1.13-1.12-2.73-1.6-4.27-1.35-.75-1.3-2.14-2.18-3.72-2.18s-2.97.88-3.72 2.18c-1.54-.25-3.15.23-4.27 1.35C1.87 5.65 1.39 7.25 1.64 8.78 0.34 9.53-0.54 10.92-0.54 12.5s0.88 2.97 2.18 3.72c-0.26 1.54 0.23 3.15 1.35 4.27 1.13 1.12 2.73 1.6 4.27 1.35 0.75 1.3 2.14 2.18 3.72 2.18s2.97-.88 3.72-2.18c1.54 0.25 3.15-0.23 4.27-1.35 1.12-1.13 1.6-2.73 1.35-4.27 1.3-0.75 2.18-2.14 2.18-3.72zM10.69 17.03l-3.5-3.56 1.27-1.27 2.23 2.22 5.63-5.64 1.27 1.27-6.9 6.98z" />
+                                </svg>
+                              </div>
+                            </div>
                           </div>
 
                           <div className={`w-full px-8 flex flex-col shrink-0 z-20 relative pt-6 ${index === 0 ? 'pb-16' : 'pb-6'} ${textAlign}`} style={{ fontFamily }}>

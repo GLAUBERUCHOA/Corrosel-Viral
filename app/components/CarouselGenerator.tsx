@@ -1416,70 +1416,35 @@ export default function CarouselGenerator({ onLogout }: { onLogout: () => void }
 
               {generateWithAI && (
                 <>
-                  {/* ENGINE SELECTOR */}
-                  <div className="mt-3 space-y-2">
-                    <label className="text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider flex items-center gap-1.5">
-                      <span className="material-symbols-outlined text-[14px]">hub</span>
-                      Motor de Criação
-                    </label>
-                    <select
-                      value={imageEngine}
-                      onChange={(e) => setImageEngine(e.target.value as 'gemini' | 'leonardo' | 'pollinations')}
-                      className="w-full bg-slate-50 dark:bg-surface-darker text-slate-900 dark:text-white border border-slate-200 dark:border-border-dark rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-primary outline-none cursor-pointer font-medium"
-                    >
-                      <option value="gemini">🤖 Gemini (Padrão)</option>
-                      <option value="leonardo">🎨 Leonardo AI (Premium)</option>
-                      <option value="pollinations">⚡ Pollinations.ai (Gratuito/Rápido)</option>
-                    </select>
-                  </div>
-
-                  {/* ENGINE BADGES */}
-                  <div className="flex gap-2 mt-1">
-                    {imageEngine === 'gemini' && (
-                      <span className="text-[10px] bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300 px-2 py-0.5 rounded-full font-bold">Google IA · Alta qualidade</span>
-                    )}
-                    {imageEngine === 'leonardo' && (
-                      <span className="text-[10px] bg-purple-100 dark:bg-purple-900/30 text-purple-700 dark:text-purple-300 px-2 py-0.5 rounded-full font-bold">Imagens fotorrealistas premium</span>
-                    )}
-                    {imageEngine === 'pollinations' && (
-                      <span className="text-[10px] bg-emerald-100 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-300 px-2 py-0.5 rounded-full font-bold">Sem chave · Geração imediata</span>
-                    )}
-                  </div>
-
-                  {/* API KEY FIELD — hidden for Pollinations */}
-                  {imageEngine !== 'pollinations' && (
-                    <div className="space-y-2 mt-4 p-3 bg-slate-50 dark:bg-surface-darker rounded-lg border border-slate-200 dark:border-border-dark">
-                      <div className="flex items-center justify-between">
-                        <label className="text-xs font-semibold text-slate-700 dark:text-slate-300">
-                          Sua Chave da API {imageEngine === 'leonardo' ? 'Leonardo AI' : 'Gemini'}
-                          {imageEngine === 'gemini' && <span className="text-slate-400 font-normal ml-1">(Opcional)</span>}
-                        </label>
-                        {customApiKey && <span className="text-[10px] text-emerald-600 font-bold flex items-center gap-1"><span className="material-symbols-outlined text-[12px]">lock</span> Salva</span>}
-                      </div>
-                      <p className="text-[10px] text-slate-500 dark:text-slate-400 leading-tight">
-                        {imageEngine === 'gemini'
-                          ? <>Insira sua chave para uso ilimitado. Ela é <strong>criptografada e salva apenas no seu navegador</strong>.</>
-                          : <>Sua chave Leonardo AI. Acesse o painel e copie em <strong>API Access</strong>.</>}
-                      </p>
-                      <input
-                        type="password"
-                        value={customApiKey}
-                        onChange={handleApiKeyChange}
-                        placeholder={imageEngine === 'leonardo' ? 'Cole sua chave Leonardo aqui...' : 'Cole sua chave AIzaSy... aqui'}
-                        className="w-full bg-white dark:bg-surface-dark border border-slate-200 dark:border-border-dark rounded-md px-3 py-2 text-xs text-slate-700 dark:text-slate-300 focus:ring-2 focus:ring-primary focus:border-transparent"
-                      />
-                      <div className="flex justify-end">
-                        <a
-                          href={imageEngine === 'leonardo' ? 'https://app.leonardo.ai/api-access' : 'https://aistudio.google.com/app/apikey'}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="text-[10px] text-primary hover:underline flex items-center gap-1"
-                        >
-                          Pegar minha chave {imageEngine === 'gemini' ? 'gratuita' : 'Leonardo'} <span className="material-symbols-outlined text-[10px]">open_in_new</span>
-                        </a>
-                      </div>
+                  {/* API KEY FIELD — simplified for Gemini only */}
+                  <div className="space-y-2 mt-4 p-3 bg-slate-50 dark:bg-surface-darker rounded-lg border border-slate-200 dark:border-border-dark">
+                    <div className="flex items-center justify-between">
+                      <label className="text-xs font-semibold text-slate-700 dark:text-slate-300">
+                        Sua Chave da API Gemini <span className="text-slate-400 font-normal ml-1">(Opcional)</span>
+                      </label>
+                      {customApiKey && <span className="text-[10px] text-emerald-600 font-bold flex items-center gap-1"><span className="material-symbols-outlined text-[12px]">lock</span> Salva</span>}
                     </div>
-                  )}
+                    <p className="text-[10px] text-slate-500 dark:text-slate-400 leading-tight">
+                      Insira sua chave para uso ilimitado. Ela é <strong>criptografada e salva apenas no seu navegador</strong>.
+                    </p>
+                    <input
+                      type="password"
+                      value={customApiKey}
+                      onChange={handleApiKeyChange}
+                      placeholder="Cole sua chave AIzaSy... aqui"
+                      className="w-full bg-white dark:bg-surface-dark border border-slate-200 dark:border-border-dark rounded-md px-3 py-2 text-xs text-slate-700 dark:text-slate-300 focus:ring-2 focus:ring-primary focus:border-transparent"
+                    />
+                    <div className="flex justify-end">
+                      <a
+                        href="https://aistudio.google.com/app/apikey"
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="text-[10px] text-primary hover:underline flex items-center gap-1"
+                      >
+                        Pegar minha chave gratuita <span className="material-symbols-outlined text-[10px]">open_in_new</span>
+                      </a>
+                    </div>
+                  </div>
                 </>
               )}
 

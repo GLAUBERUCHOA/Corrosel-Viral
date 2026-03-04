@@ -193,6 +193,7 @@ export default function CarouselGenerator({ onLogout }: { onLogout: () => void }
   const [generatingImages, setGeneratingImages] = useState<boolean[]>([]);
   const [isIuryMode, setIsIuryMode] = useState(false);
   const [isGeneratingText, setIsGeneratingText] = useState(false);
+  const [imageEngine, setImageEngine] = useState<'gemini' | 'leonardo' | 'pollinations'>('gemini');
   const [hasNewPreview, setHasNewPreview] = useState(false);
   const [toneMode, setToneMode] = useState('PROVOCATIVO');
   const [content, setContent] = useState('');
@@ -663,53 +664,93 @@ export default function CarouselGenerator({ onLogout }: { onLogout: () => void }
     }
   };
 
+  // ── IMAGE ENGINE ROUTER ──────────────────────────────────────────────────
+  const generateImageWithEngine = async (
+    prompt: string,
+    slideIndex: number,
+    _totalSlides: number
+  ): Promise<string | null> => {
+    // Pollinations: free, no API key, returns a URL directly
+    if (imageEngine === 'pollinations') {
+      const encodedPrompt = encodeURIComponent(prompt);
+      const seed = Date.now() + slideIndex;
+      return `https://image.pollinations.ai/prompt/${encodedPrompt}?seed=${seed}&width=768&height=960&nologo=true`;
+    }
+
+    // Leonardo AI
+    if (imageEngine === 'leonardo') {
+      const apiKey = customApiKey;
+      if (!apiKey) throw new Error('Leonardo API key is required');
+      const initRes = await fetch('https://cloud.leonardo.ai/api/rest/v1/generations', {
+        method: 'POST',
+        headers: { 'Authorization': `Bearer ${apiKey}`, 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          prompt,
+          modelId: 'b24e16ff-06e3-43eb-8d33-4416c2d75876',
+          width: 768,
+          height: 960,
+          num_images: 1,
+        }),
+      });
+      const initData = await initRes.json();
+      const generationId = initData?.sdGenerationJob?.generationId;
+      if (!generationId) throw new Error('Failed to start Leonardo generation');
+      for (let attempt = 0; attempt < 30; attempt++) {
+        await new Promise(r => setTimeout(r, 3000));
+        const pollRes = await fetch(`https://cloud.leonardo.ai/api/rest/v1/generations/${generationId}`, {
+          headers: { 'Authorization': `Bearer ${apiKey}` },
+        });
+        const pollData = await pollRes.json();
+        const images = pollData?.generations_by_pk?.generated_images;
+        if (images && images.length > 0) return images[0].url as string;
+      }
+      throw new Error('Leonardo generation timed out');
+    }
+
+    // Default: Gemini
+    const apiKey = customApiKey || process.env.NEXT_PUBLIC_GEMINI_API_KEY;
+    if (!apiKey) throw new Error('Gemini API key not found');
+    const ai = new GoogleGenAI({ apiKey });
+    const response = await ai.models.generateContent({
+      model: 'gemini-2.5-flash-image',
+      contents: prompt,
+      config: { imageConfig: { aspectRatio: aspectRatio === '9:16' ? '9:16' : '3:4' } }
+    });
+    for (const part of response.candidates?.[0]?.content?.parts || []) {
+      if (part.inlineData) {
+        return `data:${part.inlineData.mimeType || 'image/png'};base64,${part.inlineData.data}`;
+      }
+    }
+    return null;
+  };
+
   const regenerateImageForSlide = async (index: number) => {
     const slide = parsedSlides[index];
     if (!slide) return;
-
-    const apiKey = customApiKey || process.env.NEXT_PUBLIC_GEMINI_API_KEY;
-    if (!apiKey) {
-      alert("Chave da API Gemini não encontrada. Insira sua chave nas configurações para regerar imagens com IA.");
+    if (imageEngine !== 'pollinations' && !customApiKey && !process.env.NEXT_PUBLIC_GEMINI_API_KEY) {
+      alert('Por favor, insira sua chave da API para regerar a imagem.');
       return;
     }
-
     setGeneratingImages(prev => {
       const updated = [...prev];
       while (updated.length <= index) updated.push(false);
       updated[index] = true;
       return updated;
     });
-
     try {
-      const ai = new GoogleGenAI({ apiKey });
       const prompt = getImagePrompt(imageNiche, dbImagePrompts, slide.title, slide.subtitle);
-
-      const response = await ai.models.generateContent({
-        model: 'gemini-2.5-flash-image',
-        contents: prompt,
-        config: {
-          imageConfig: {
-            aspectRatio: aspectRatio === '9:16' ? '9:16' : '3:4',
-          }
-        }
-      });
-
-      for (const part of response.candidates?.[0]?.content?.parts || []) {
-        if (part.inlineData) {
-          const base64 = part.inlineData.data;
-          const imageUrl = `data:${part.inlineData.mimeType || 'image/png'};base64,${base64}`;
-          setUploadedImages(prev => {
-            const updated = [...prev];
-            while (updated.length <= index) updated.push(null);
-            updated[index] = imageUrl;
-            return updated;
-          });
-          break;
-        }
+      const imageUrl = await generateImageWithEngine(prompt, index, parsedSlides.length);
+      if (imageUrl) {
+        setUploadedImages(prev => {
+          const updated = [...prev];
+          while (updated.length <= index) updated.push(null);
+          updated[index] = imageUrl;
+          return updated;
+        });
       }
     } catch (error) {
-      console.error("Erro ao regerar imagem:", error);
-      alert("Falha ao regerar a imagem. Tente novamente.");
+      console.error('Erro ao regerar imagem:', error);
+      alert('Falha ao regerar a imagem. Verifique sua chave e tente novamente.');
     } finally {
       setGeneratingImages(prev => {
         const updated = [...prev];
@@ -726,46 +767,28 @@ export default function CarouselGenerator({ onLogout }: { onLogout: () => void }
     setHasNewPreview(true);
 
     if (generateWithAI) {
-      const apiKey = customApiKey || process.env.NEXT_PUBLIC_GEMINI_API_KEY;
-      if (!apiKey) {
-        alert("Chave da API Gemini não encontrada. Por favor, insira sua chave nas configurações.");
-        console.error("Gemini API key is missing");
-        return;
+      if (imageEngine !== 'pollinations') {
+        const apiKey = customApiKey || (imageEngine === 'gemini' ? process.env.NEXT_PUBLIC_GEMINI_API_KEY : null);
+        if (!apiKey) {
+          alert(`Chave da API ${imageEngine === 'leonardo' ? 'Leonardo AI' : 'Gemini'} não encontrada. Por favor, insira sua chave.`);
+          return;
+        }
       }
 
-      const ai = new GoogleGenAI({ apiKey });
       const newGenerating = Array(newSlides.length).fill(true);
       setGeneratingImages(newGenerating);
-
-      const newImages = [...uploadedImages];
-      while (newImages.length < newSlides.length) newImages.push(null);
 
       for (let i = 0; i < newSlides.length; i++) {
         try {
           const prompt = getImagePrompt(imageNiche, dbImagePrompts, newSlides[i].title, newSlides[i].subtitle);
-
-          const response = await ai.models.generateContent({
-            model: 'gemini-2.5-flash-image',
-            contents: prompt,
-            config: {
-              imageConfig: {
-                aspectRatio: aspectRatio === '9:16' ? '9:16' : '3:4',
-              }
-            }
-          });
-
-          for (const part of response.candidates?.[0]?.content?.parts || []) {
-            if (part.inlineData) {
-              const base64 = part.inlineData.data;
-              const imageUrl = `data:${part.inlineData.mimeType || 'image/png'};base64,${base64}`;
-              setUploadedImages(prev => {
-                const updated = [...prev];
-                while (updated.length < newSlides.length) updated.push(null);
-                updated[i] = imageUrl;
-                return updated;
-              });
-              break;
-            }
+          const imageUrl = await generateImageWithEngine(prompt, i, newSlides.length);
+          if (imageUrl) {
+            setUploadedImages(prev => {
+              const updated = [...prev];
+              while (updated.length < newSlides.length) updated.push(null);
+              updated[i] = imageUrl;
+              return updated;
+            });
           }
         } catch (error) {
           console.error(`Error generating image for slide ${i}:`, error);
@@ -1340,48 +1363,70 @@ export default function CarouselGenerator({ onLogout }: { onLogout: () => void }
 
               {generateWithAI && (
                 <>
-                  <div className="hidden space-y-2 mt-2 p-3 bg-emerald-50 dark:bg-emerald-900/10 rounded-lg border border-emerald-200 dark:border-emerald-800">
-                    <label className="text-xs font-semibold text-emerald-800 dark:text-emerald-300 uppercase tracking-wider flex items-center gap-1">
-                      <span className="material-symbols-outlined text-[14px]">imagesmode</span> Nicho Visual da Imagem
+                  {/* ENGINE SELECTOR */}
+                  <div className="mt-3 space-y-2">
+                    <label className="text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider flex items-center gap-1.5">
+                      <span className="material-symbols-outlined text-[14px]">hub</span>
+                      Motor de Criação
                     </label>
                     <select
-                      value={imageNiche}
-                      onChange={(e) => setImageNiche(e.target.value)}
-                      className="w-full bg-white dark:bg-surface-dark border border-emerald-200 dark:border-emerald-700 rounded-lg px-3 py-2 text-sm text-emerald-900 dark:text-emerald-100 focus:ring-2 focus:ring-emerald-500 outline-none cursor-pointer font-medium"
+                      value={imageEngine}
+                      onChange={(e) => setImageEngine(e.target.value as 'gemini' | 'leonardo' | 'pollinations')}
+                      className="w-full bg-slate-50 dark:bg-surface-darker text-slate-900 dark:text-white border border-slate-200 dark:border-border-dark rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-primary outline-none cursor-pointer font-medium"
                     >
-                      {dbImageLabels.filter(label => label.key !== 'GLOBAL_IMAGE').length > 0 ? (
-                        dbImageLabels.filter(label => label.key !== 'GLOBAL_IMAGE').map(label => (
-                          <option key={label.key} value={label.key}>{label.label}</option>
-                        ))
-                      ) : (
-                        <>
-                          <option value="SAUDE">🍎 Saúde, Nutrição</option>
-                          <option value="MINDSET">🧠 Mindset, Psicologia</option>
-                        </>
-                      )}
+                      <option value="gemini">🤖 Gemini (Padrão)</option>
+                      <option value="leonardo">🎨 Leonardo AI (Premium)</option>
+                      <option value="pollinations">⚡ Pollinations.ai (Gratuito/Rápido)</option>
                     </select>
                   </div>
-                  <div className="space-y-2 mt-4 p-3 bg-slate-50 dark:bg-surface-darker rounded-lg border border-slate-200 dark:border-border-dark">
-                    <div className="flex items-center justify-between">
-                      <label className="text-xs font-semibold text-slate-700 dark:text-slate-300">Sua Chave da API Gemini (Opcional)</label>
-                      {customApiKey && <span className="text-[10px] text-emerald-600 font-bold flex items-center gap-1"><span className="material-symbols-outlined text-[12px]">lock</span> Salva</span>}
-                    </div>
-                    <p className="text-[10px] text-slate-500 dark:text-slate-400 leading-tight">
-                      Insira sua chave para uso ilimitado. Ela é <strong>criptografada e salva apenas no seu navegador</strong>. Você só precisa inserir uma vez.
-                    </p>
-                    <input
-                      type="password"
-                      value={customApiKey}
-                      onChange={handleApiKeyChange}
-                      placeholder="Cole sua chave AIzaSy... aqui"
-                      className="w-full bg-white dark:bg-surface-dark border border-slate-200 dark:border-border-dark rounded-md px-3 py-2 text-xs text-slate-700 dark:text-slate-300 focus:ring-2 focus:ring-primary focus:border-transparent"
-                    />
-                    <div className="flex justify-end">
-                      <a href="https://aistudio.google.com/app/apikey" target="_blank" rel="noopener noreferrer" className="text-[10px] text-primary hover:underline flex items-center gap-1">
-                        Pegar minha chave gratuita <span className="material-symbols-outlined text-[10px]">open_in_new</span>
-                      </a>
-                    </div>
+
+                  {/* ENGINE BADGES */}
+                  <div className="flex gap-2 mt-1">
+                    {imageEngine === 'gemini' && (
+                      <span className="text-[10px] bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300 px-2 py-0.5 rounded-full font-bold">Google IA · Alta qualidade</span>
+                    )}
+                    {imageEngine === 'leonardo' && (
+                      <span className="text-[10px] bg-purple-100 dark:bg-purple-900/30 text-purple-700 dark:text-purple-300 px-2 py-0.5 rounded-full font-bold">Imagens fotorrealistas premium</span>
+                    )}
+                    {imageEngine === 'pollinations' && (
+                      <span className="text-[10px] bg-emerald-100 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-300 px-2 py-0.5 rounded-full font-bold">Sem chave · Geração imediata</span>
+                    )}
                   </div>
+
+                  {/* API KEY FIELD — hidden for Pollinations */}
+                  {imageEngine !== 'pollinations' && (
+                    <div className="space-y-2 mt-4 p-3 bg-slate-50 dark:bg-surface-darker rounded-lg border border-slate-200 dark:border-border-dark">
+                      <div className="flex items-center justify-between">
+                        <label className="text-xs font-semibold text-slate-700 dark:text-slate-300">
+                          Sua Chave da API {imageEngine === 'leonardo' ? 'Leonardo AI' : 'Gemini'}
+                          {imageEngine === 'gemini' && <span className="text-slate-400 font-normal ml-1">(Opcional)</span>}
+                        </label>
+                        {customApiKey && <span className="text-[10px] text-emerald-600 font-bold flex items-center gap-1"><span className="material-symbols-outlined text-[12px]">lock</span> Salva</span>}
+                      </div>
+                      <p className="text-[10px] text-slate-500 dark:text-slate-400 leading-tight">
+                        {imageEngine === 'gemini'
+                          ? <>Insira sua chave para uso ilimitado. Ela é <strong>criptografada e salva apenas no seu navegador</strong>.</>
+                          : <>Sua chave Leonardo AI. Acesse o painel e copie em <strong>API Access</strong>.</>}
+                      </p>
+                      <input
+                        type="password"
+                        value={customApiKey}
+                        onChange={handleApiKeyChange}
+                        placeholder={imageEngine === 'leonardo' ? 'Cole sua chave Leonardo aqui...' : 'Cole sua chave AIzaSy... aqui'}
+                        className="w-full bg-white dark:bg-surface-dark border border-slate-200 dark:border-border-dark rounded-md px-3 py-2 text-xs text-slate-700 dark:text-slate-300 focus:ring-2 focus:ring-primary focus:border-transparent"
+                      />
+                      <div className="flex justify-end">
+                        <a
+                          href={imageEngine === 'leonardo' ? 'https://app.leonardo.ai/api-access' : 'https://aistudio.google.com/app/apikey'}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="text-[10px] text-primary hover:underline flex items-center gap-1"
+                        >
+                          Pegar minha chave {imageEngine === 'gemini' ? 'gratuita' : 'Leonardo'} <span className="material-symbols-outlined text-[10px]">open_in_new</span>
+                        </a>
+                      </div>
+                    </div>
+                  )}
                 </>
               )}
 

@@ -1046,28 +1046,47 @@ export default function CarouselGenerator({ onLogout }: { onLogout: () => void }
     setIsDownloading(true);
 
     try {
-      const zip = new JSZip();
-      const promises = parsedSlides.map(async (_, index) => {
-        const slideElement = slideRefs.current[index];
-        if (!slideElement) return null;
+      if (isMobile) {
+        // No celular, baixa as imagens uma a uma (estilo Canva) para evitar o ZIP
+        for (let index = 0; index < parsedSlides.length; index++) {
+          const slideElement = slideRefs.current[index];
+          if (!slideElement) continue;
 
-        const dataUrl = await htmlToImage.toPng(slideElement, {
-          quality: 1,
-          pixelRatio: 3,
+          const dataUrl = await htmlToImage.toPng(slideElement, {
+            quality: 1,
+            pixelRatio: 3,
+          });
+
+          saveAs(dataUrl, `slide-${index + 1}.png`);
+
+          // Pequeno delay entre downloads para o navegador mobile processar corretamente
+          if (index < parsedSlides.length - 1) {
+            await new Promise(resolve => setTimeout(resolve, 800));
+          }
+        }
+      } else {
+        const zip = new JSZip();
+        const promises = parsedSlides.map(async (_, index) => {
+          const slideElement = slideRefs.current[index];
+          if (!slideElement) return null;
+
+          const dataUrl = await htmlToImage.toPng(slideElement, {
+            quality: 1,
+            pixelRatio: 3,
+          });
+
+          const base64Data = dataUrl.replace(/^data:image\/(png|jpg);base64,/, "");
+          zip.file(`slide-${index + 1}.png`, base64Data, { base64: true });
         });
 
-        // Remove the data:image/png;base64, part
-        const base64Data = dataUrl.replace(/^data:image\/(png|jpg);base64,/, "");
-        zip.file(`slide-${index + 1}.png`, base64Data, { base64: true });
-      });
+        await Promise.all(promises);
 
-      await Promise.all(promises);
-
-      const zipContent = await zip.generateAsync({ type: "blob" });
-      saveAs(zipContent, "carrossel.zip");
+        const zipContent = await zip.generateAsync({ type: "blob" });
+        saveAs(zipContent, "carrossel.zip");
+      }
     } catch (error) {
       console.error("Erro ao baixar todos os slides:", error);
-      alert("Ocorreu um erro ao gerar o arquivo ZIP.");
+      alert(isMobile ? "Erro ao baixar as imagens." : "Ocorreu um erro ao gerar o arquivo ZIP.");
     } finally {
       setIsDownloading(false);
     }

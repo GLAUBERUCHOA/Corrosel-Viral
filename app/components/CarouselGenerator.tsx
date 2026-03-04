@@ -1512,7 +1512,7 @@ export default function CarouselGenerator({ onLogout }: { onLogout: () => void }
                 width: `${100 / (zoom / 100)}%`,
               }}
             >
-              <div className={`flex ${viewMode === 'grid' ? 'flex-wrap' : 'flex-nowrap snap-x snap-mandatory'} justify-start gap-12 sm:gap-16 pb-24 max-w-[2300px]`}>
+              <div className={`flex ${viewMode === 'grid' ? 'flex-wrap' : 'flex-nowrap snap-x snap-mandatory'} justify-start gap-12 sm:gap-16 pb-24 ${isMobile ? 'px-4' : ''} max-w-[2300px]`}>
                 {parsedSlides.map((parsedSlide, index) => {
                   const isFirst = index === 0;
 
@@ -1735,11 +1735,11 @@ export default function CarouselGenerator({ onLogout }: { onLogout: () => void }
                           </div>
                         </div>
                       </div>
-                      <div className="absolute top-1/2 -translate-y-1/2 left-[calc(100%+8px)] sm:left-[calc(100%+16px)] max-lg:opacity-100 opacity-0 group-hover/slide-wrapper:opacity-100 group-hover/slide:opacity-100 focus-within:opacity-100 transition-opacity z-[999] pointer-events-auto">
+                      <div className="absolute top-1/2 -translate-y-1/2 right-4 lg:left-full lg:right-auto lg:ml-4 max-lg:opacity-100 opacity-0 group-hover/slide-wrapper:opacity-100 group-hover/slide:opacity-100 focus-within:opacity-100 transition-opacity z-[999] pointer-events-auto">
                         <button
                           onMouseDown={(e) => handleImgDragStart(e, index)}
                           onTouchStart={(e) => handleImgDragStart(e, index)}
-                          className="bg-white/90 backdrop-blur-md p-2 sm:p-3 rounded-full cursor-ns-resize shadow-2xl border border-white/40 hover:bg-white transition-colors flex items-center justify-center text-slate-700 hover:text-primary touch-none"
+                          className="bg-white/90 backdrop-blur-md p-2 rounded-full cursor-ns-resize shadow-[0_0_15px_rgba(0,0,0,0.5)] border border-white/40 hover:bg-white transition-colors flex items-center justify-center text-slate-900 hover:text-primary touch-none"
                           title="Arraste para ajustar"
                         >
                           <span className="material-symbols-outlined text-[20px] sm:text-[24px]">swap_vert</span>

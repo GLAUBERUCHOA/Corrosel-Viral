@@ -1799,14 +1799,25 @@ export default function CarouselGenerator({ onLogout }: { onLogout: () => void }
 
                           <div className="w-full h-0 shrink-0 relative z-[60] flex items-center justify-center">
                             {(brandHandle || brandLogo) && (
-                              <div className="flex items-center gap-[4px] pr-2 pl-[1px] py-1 rounded-full absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2" style={{ minWidth: 'fit-content', filter: 'drop-shadow(0 3px 8px rgba(0,0,0,0.95)) drop-shadow(0 1px 3px rgba(0,0,0,0.8))' }}>
+                              <div className="flex items-center gap-[4px] pr-2 pl-[1px] py-1 rounded-full absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2"
+                                style={{
+                                  minWidth: 'fit-content',
+                                  filter: theme.textClass === 'text-white'
+                                    ? 'drop-shadow(0 2px 6px rgba(0,0,0,0.6)) drop-shadow(0 1px 2px rgba(0,0,0,0.4))'
+                                    : 'drop-shadow(0 1px 3px rgba(0,0,0,0.15))'
+                                }}>
                                 {brandLogo && (
-                                  <div className={`size-[22px] sm:size-[26px] rounded-full overflow-hidden shrink-0 bg-white border-2 border-white/50`} style={{ boxShadow: '0 0 0 2px rgba(0,0,0,0.4), 0 4px 12px rgba(0,0,0,0.7)' }}>
+                                  <div className={`size-[22px] sm:size-[26px] rounded-full overflow-hidden shrink-0 bg-white border-2 border-white/50`} style={{ boxShadow: '0 0 0 1px rgba(0,0,0,0.1), 0 2px 8px rgba(0,0,0,0.2)' }}>
                                     <img src={brandLogo} alt="Logo" className="w-full h-full object-cover" />
                                   </div>
                                 )}
                                 {brandHandle && (
-                                  <div className={`flex items-center text-[10px] sm:text-[12px] font-black tracking-widest text-white pb-[0.5px]`} style={{ textShadow: '0 1px 4px rgba(0,0,0,1), 0 0 12px rgba(0,0,0,0.8)' }}>
+                                  <div className={`flex items-center text-[10px] sm:text-[12px] font-black tracking-widest ${theme.textClass} pb-[0.5px]`}
+                                    style={{
+                                      textShadow: theme.textClass === 'text-white'
+                                        ? '0 1px 4px rgba(0,0,0,0.5)'
+                                        : '0 1px 2px rgba(0,0,0,0.05)'
+                                    }}>
                                     <span className="ml-[2px]">{brandHandle}</span>
                                   </div>
                                 )}
@@ -1821,7 +1832,7 @@ export default function CarouselGenerator({ onLogout }: { onLogout: () => void }
                             </div>
                             {index === 0 && (
                               <div className={`absolute bottom-3 right-5 flex items-center gap-2.5 px-3.5 py-1.5 rounded-full bg-black/20 backdrop-blur-md border border-white/10 ${theme.textClass} shadow-xl group/swipe select-none`}>
-                                <span className="text-[9px] font-black uppercase tracking-[0.2em] opacity-90 drop-shadow-md">Passe para ver mais</span>
+                                <span className="text-[10px] font-black uppercase tracking-[0.2em] opacity-90 drop-shadow-md">Ver mais</span>
                                 <div className="flex items-center justify-center size-5 rounded-full bg-white/10 border border-white/20 group-hover/swipe:translate-x-1 transition-transform duration-300">
                                   <span className="material-symbols-outlined text-[14px] !font-bold">arrow_forward</span>
                                 </div>

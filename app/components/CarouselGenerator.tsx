@@ -1914,7 +1914,7 @@ export default function CarouselGenerator({ onLogout }: { onLogout: () => void }
                             </div>
                           </div>
 
-                          <div className={`w-full px-8 flex flex-col shrink-0 z-20 relative pt-6 ${index === 0 ? 'pb-16' : 'pb-6'} ${textAlign}`} style={{ fontFamily }}>
+                          <div className={`w-full px-8 flex flex-col shrink-0 z-20 relative pt-6 ${index === 0 ? 'pb-10' : 'pb-6'} ${textAlign}`} style={{ fontFamily }}>
                             <div className={`flex flex-col gap-2 ${textAlign === 'text-center' ? 'items-center text-center' : textAlign === 'text-right' ? 'items-end text-right' : 'items-start text-left'}`}>
                               {slide.title && (
                                 <h2
@@ -1934,11 +1934,10 @@ export default function CarouselGenerator({ onLogout }: { onLogout: () => void }
                               )}
                             </div>
                             {index === 0 && (
-                              <div className={`absolute bottom-3 right-5 flex items-center gap-2.5 px-3.5 py-1.5 rounded-full bg-black/20 backdrop-blur-md border border-white/10 ${theme.textClass} shadow-xl group/swipe select-none`}>
-                                <span className="text-[10px] font-black uppercase tracking-[0.2em] opacity-90 drop-shadow-md">Ver mais</span>
-                                <div className="flex items-center justify-center size-5 rounded-full bg-white/10 border border-white/20 group-hover/swipe:translate-x-1 transition-transform duration-300">
-                                  <span className="material-symbols-outlined text-[14px] !font-bold">arrow_forward</span>
-                                </div>
+                              <div className={`absolute bottom-2.5 right-6 flex items-center gap-1 px-3 py-1 rounded-full bg-black/10 backdrop-blur-sm border border-white/5 ${theme.textClass} group/swipe select-none`}>
+                                <span className="text-[9px] font-light tracking-wide opacity-60" style={{ fontFamily: "'Inter', sans-serif" }}>
+                                  Arraste para o lado {'>'}
+                                </span>
                               </div>
                             )}
                           </div>

@@ -1588,14 +1588,14 @@ export default function CarouselGenerator({ onLogout }: { onLogout: () => void }
 
                             {(brandHandle || brandLogo) && (
                               <div className={`w-full h-0 shrink-0 relative z-[60] flex items-center justify-center ${!ctaImage ? 'mb-10 mt-2' : ''}`}>
-                                <div className="flex items-center gap-[4px] pr-2 pl-[1px] py-1 rounded-full absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 drop-shadow-[0_4px_10px_rgba(0,0,0,0.9)]" style={{ minWidth: 'fit-content' }}>
+                                <div className="flex items-center gap-[4px] pr-2 pl-[1px] py-1 rounded-full absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2" style={{ minWidth: 'fit-content', filter: 'drop-shadow(0 3px 8px rgba(0,0,0,0.95)) drop-shadow(0 1px 3px rgba(0,0,0,0.8))' }}>
                                   {brandLogo && (
-                                    <div className={`size-[22px] sm:size-[26px] rounded-full overflow-hidden shrink-0 shadow-2xl bg-white border-2 border-white/50`}>
+                                    <div className={`size-[22px] sm:size-[26px] rounded-full overflow-hidden shrink-0 bg-white border-2 border-white/50`} style={{ boxShadow: '0 0 0 2px rgba(0,0,0,0.4), 0 4px 12px rgba(0,0,0,0.7)' }}>
                                       <img src={brandLogo} alt="Logo" className="w-full h-full object-cover" />
                                     </div>
                                   )}
                                   {brandHandle && (
-                                    <div className={`flex items-center text-[10px] sm:text-[12px] font-black tracking-widest text-white pb-[0.5px]`}>
+                                    <div className={`flex items-center text-[10px] sm:text-[12px] font-black tracking-widest text-white pb-[0.5px]`} style={{ textShadow: '0 1px 4px rgba(0,0,0,1), 0 0 12px rgba(0,0,0,0.8)' }}>
                                       <span className="ml-[2px]">{brandHandle}</span>
                                     </div>
                                   )}
@@ -1609,7 +1609,7 @@ export default function CarouselGenerator({ onLogout }: { onLogout: () => void }
                             </div>
                           </div>
 
-                          <div tabIndex={0} onClick={(e) => { e.currentTarget.blur(); }} className="absolute inset-0 bg-black/80 opacity-0 group-hover/slide:opacity-100 focus:opacity-100 focus-within:opacity-100 transition-opacity flex flex-col items-center justify-center p-6 backdrop-blur-[4px] z-[60] cursor-pointer outline-none overflow-hidden">
+                          <div data-slide-overlay tabIndex={0} onClick={(e) => { e.currentTarget.blur(); }} className="absolute inset-0 bg-black/80 opacity-0 group-hover/slide:opacity-100 focus:opacity-100 focus-within:opacity-100 transition-opacity flex flex-col items-center justify-center p-6 backdrop-blur-[4px] z-[60] cursor-pointer outline-none overflow-hidden">
                             <div className="flex w-full h-full gap-2 sm:gap-4 items-center justify-center pointer-events-none">
                               <button
                                 onClick={(e) => { e.stopPropagation(); handleDownloadSingle(index); }}
@@ -1627,8 +1627,8 @@ export default function CarouselGenerator({ onLogout }: { onLogout: () => void }
                   const isImageBottom = index === 0 ? false : randomPattern[index % randomPattern.length];
                   const contentOrder = isImageBottom ? 'flex-col-reverse' : 'flex-col';
                   const textAlignmentPadding = isImageBottom
-                    ? 'pt-24 pb-12 justify-center'
-                    : (index === 0 ? 'pt-6 pb-14 justify-end' : 'pt-6 pb-8 justify-end');
+                    ? 'pt-12 pb-6 justify-center'
+                    : (index === 0 ? 'pt-3 pb-10 justify-end' : 'pt-3 pb-4 justify-end');
 
                   return (
                     <div key={index} className={`relative shrink-0 snap-center flex items-center group/slide-wrapper ${getSlideDimensions()}`}>
@@ -1657,14 +1657,14 @@ export default function CarouselGenerator({ onLogout }: { onLogout: () => void }
 
                           <div className="w-full h-0 shrink-0 relative z-[60] flex items-center justify-center">
                             {(brandHandle || brandLogo) && (
-                              <div className="flex items-center gap-[4px] pr-2 pl-[1px] py-1 rounded-full absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 drop-shadow-[0_4px_10px_rgba(0,0,0,0.9)]" style={{ minWidth: 'fit-content' }}>
+                              <div className="flex items-center gap-[4px] pr-2 pl-[1px] py-1 rounded-full absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2" style={{ minWidth: 'fit-content', filter: 'drop-shadow(0 3px 8px rgba(0,0,0,0.95)) drop-shadow(0 1px 3px rgba(0,0,0,0.8))' }}>
                                 {brandLogo && (
-                                  <div className={`size-[22px] sm:size-[26px] rounded-full overflow-hidden shrink-0 shadow-2xl bg-white border-2 border-white/50`}>
+                                  <div className={`size-[22px] sm:size-[26px] rounded-full overflow-hidden shrink-0 bg-white border-2 border-white/50`} style={{ boxShadow: '0 0 0 2px rgba(0,0,0,0.4), 0 4px 12px rgba(0,0,0,0.7)' }}>
                                     <img src={brandLogo} alt="Logo" className="w-full h-full object-cover" />
                                   </div>
                                 )}
                                 {brandHandle && (
-                                  <div className={`flex items-center text-[10px] sm:text-[12px] font-black tracking-widest text-white pb-[0.5px]`}>
+                                  <div className={`flex items-center text-[10px] sm:text-[12px] font-black tracking-widest text-white pb-[0.5px]`} style={{ textShadow: '0 1px 4px rgba(0,0,0,1), 0 0 12px rgba(0,0,0,0.8)' }}>
                                     <span className="ml-[2px]">{brandHandle}</span>
                                   </div>
                                 )}
@@ -1672,7 +1672,7 @@ export default function CarouselGenerator({ onLogout }: { onLogout: () => void }
                             )}
                           </div>
 
-                          <div className={`w-full px-8 flex flex-col shrink-0 z-20 relative pt-12 pb-12 ${textAlign}`} style={{ fontFamily }}>
+                          <div className={`w-full px-8 flex flex-col shrink-0 z-20 relative pt-6 pb-6 ${textAlign}`} style={{ fontFamily }}>
                             <div className={`flex flex-col gap-2 ${textAlign === 'text-center' ? 'items-center text-center' : textAlign === 'text-right' ? 'items-end text-right' : 'items-start text-left'}`}>
                               {slide.title && <h2 className={titleClass}>{slide.title}</h2>}
                               {slide.subtitle && <p className={subtitleClass}>{slide.subtitle}</p>}
@@ -1685,7 +1685,7 @@ export default function CarouselGenerator({ onLogout }: { onLogout: () => void }
                             )}
                           </div>
                         </div>
-                        <div tabIndex={0} onClick={(e) => { e.currentTarget.blur(); }} className="absolute inset-0 bg-black/80 opacity-0 group-hover/slide:opacity-100 focus:opacity-100 focus-within:opacity-100 transition-opacity flex flex-col items-center justify-center p-6 backdrop-blur-[4px] z-[60] cursor-pointer outline-none overflow-hidden">
+                        <div data-slide-overlay tabIndex={0} onClick={(e) => { e.currentTarget.blur(); }} className="absolute inset-0 bg-black/80 opacity-0 group-hover/slide:opacity-100 focus:opacity-100 focus-within:opacity-100 transition-opacity flex flex-col items-center justify-center p-6 backdrop-blur-[4px] z-[60] cursor-pointer outline-none overflow-hidden">
                           <div className="flex w-full h-full gap-2 sm:gap-4 items-center justify-center pointer-events-none">
                             <div className="flex flex-col gap-2 w-1/2 max-w-[160px] pointer-events-none">
                               <span className="text-[10px] text-white/50 font-bold uppercase tracking-wider mb-1">Conteúdo</span>
@@ -1736,7 +1736,11 @@ export default function CarouselGenerator({ onLogout }: { onLogout: () => void }
                       <div className="absolute top-auto bottom-8 right-6 lg:bottom-auto lg:top-1/2 lg:-translate-y-1/2 lg:left-full lg:right-auto lg:ml-4 max-lg:opacity-100 opacity-0 group-hover/slide-wrapper:opacity-100 group-hover/slide:opacity-100 focus-within:opacity-100 transition-opacity z-[999] pointer-events-auto">
                         <button
                           onMouseDown={(e) => handleImgDragStart(e, index)}
-                          onTouchStart={(e) => handleImgDragStart(e, index)}
+                          onTouchStart={(e) => {
+                            // Close any open slide overlay before dragging
+                            document.querySelectorAll<HTMLElement>('[data-slide-overlay]').forEach(el => el.blur());
+                            handleImgDragStart(e, index);
+                          }}
                           className="bg-white/90 backdrop-blur-md p-2 rounded-full cursor-ns-resize shadow-[0_0_15px_rgba(0,0,0,0.5)] border border-white/40 hover:bg-white transition-colors flex items-center justify-center text-slate-900 hover:text-primary touch-none"
                           title="Arraste para ajustar"
                         >

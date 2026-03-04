@@ -1457,7 +1457,7 @@ export default function CarouselGenerator({ onLogout }: { onLogout: () => void }
               <button
                 onClick={handleGenerateCarousel}
                 disabled={!content.trim() || isGeneratingText || (isIuryMode && content.length < 50)}
-                className={`w-full flex items-center justify-center gap-2 rounded-xl h-12 text-white text-base font-bold shadow-lg transition-all disabled:opacity-70 disabled:hover:scale-100 disabled:cursor-not-allowed bg-primary hover:bg-primary/90 hover:scale-[1.02] shadow-primary/25 active:scale-[0.98]`}>
+                className={`w-full flex items-center justify-center gap-2 rounded-xl h-12 text-white text-base font-bold shadow-lg transition-all disabled:opacity-70 disabled:hover:scale-100 disabled:cursor-not-allowed bg-gradient-to-r from-emerald-500 to-emerald-400 hover:from-emerald-400 hover:to-emerald-300 shadow-emerald-500/25 active:scale-[0.98]`}>
                 <span className="material-symbols-outlined">auto_fix_high</span>
                 Gerar Carrossel e Imagens
               </button>

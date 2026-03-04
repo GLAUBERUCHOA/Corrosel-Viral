@@ -744,16 +744,18 @@ export default function CarouselGenerator({ onLogout }: { onLogout: () => void }
 
     setIsGeneratingText(true);
     try {
-      const ai = new GoogleGenAI(apiKey);
-      const model = ai.getGenerativeModel({ model: textModel });
-      const result = await model.generateContent(`${getIuryPrompt(toneMode, dbPrompts)}\n\nRASCUNHO DO USUÁRIO:\n${content}`);
-      const response = await result.response;
-      const generatedText = response.text();
+      const ai = new GoogleGenAI({ apiKey });
+      const response = await ai.models.generateContent({
+        model: textModel,
+        contents: `${getIuryPrompt(toneMode, dbPrompts)}\n\nRASCUNHO DO USUÁRIO:\n${content}`,
+      });
 
+      const generatedText = response.text || '';
       setContent(generatedText); // Sobrescreve a caixa
       processTextIntoSlides(generatedText, addCtaSlide, ctaContent); // Processa imediatamente
       setHasNewPreview(true);
     } catch (error) {
+
       console.error("Erro ao gerar Modo Iury:", error);
       const msg = error instanceof Error ? error.message : 'Erro desconhecido';
       alert(`Ocorreu um erro ao processar o texto pelo Iury: ${msg}\nVerifique sua chave de API e conexão.`);
@@ -796,88 +798,63 @@ export default function CarouselGenerator({ onLogout }: { onLogout: () => void }
     _totalSlides: number
   ): Promise<string | null> => {
 
-    // ── Pollinations: free, no API key ──
-    // Strategy: Build the URL, load via <img> (bypasses Cloudflare), convert via canvas
+    // ── 1. Pollinations: Link + Canvas (Grátis & Rápido) ──
     if (imageEngine === 'pollinations') {
       const encodedPrompt = encodeURIComponent(prompt);
       const seed = Date.now() + slideIndex;
       const pollinationsUrl = `https://image.pollinations.ai/prompt/${encodedPrompt}?seed=${seed}&width=768&height=960&nologo=true&model=flux`;
-      console.log(`[CarouselGenerator] Pollinations: loading image for slide ${slideIndex}...`);
-
-      // Pollinations generates on-the-fly, the <img> request will hang until ready (10-30s)
-      // We try loading it directly as an image, then canvas-convert to base64
+      console.log(`[CarouselGenerator] Hub IA - Pollinations: Iniciando para slide ${slideIndex}`);
       try {
         const dataUrl = await urlToDataUrl(pollinationsUrl);
-        console.log(`[CarouselGenerator] Pollinations: success for slide ${slideIndex}`);
         return dataUrl;
       } catch (err) {
-        console.warn(`[CarouselGenerator] Pollinations canvas failed (CORS), returning raw URL`);
-        // Fallback: return the raw URL — it'll work in background-image
+        console.warn(`[CarouselGenerator] Pollinations canvas failed (CORS), retornando URL direta`);
         return pollinationsUrl;
       }
     }
 
-    // ── Leonardo AI: calls go through our server-side endpoint ──
+    // ── 2. Leonardo AI: Túnel via Servidor ──
     if (imageEngine === 'leonardo') {
       const apiKey = customApiKey;
       if (!apiKey) throw new Error('Chave da API Leonardo AI é obrigatória.');
-
-      console.log(`[CarouselGenerator] Leonardo: starting server-side generation for slide ${slideIndex}`);
+      console.log(`[CarouselGenerator] Hub IA - Leonardo: Iniciando para slide ${slideIndex}`);
       const res = await fetch('/api/leonardo-generate', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ prompt, apiKey, width: 768, height: 960 }),
       });
-
       const data = await res.json();
-
-      if (!res.ok) {
-        console.error(`[CarouselGenerator] Leonardo server error:`, data);
-        throw new Error(data.error || `Leonardo falhou: HTTP ${res.status}`);
-      }
-
-      if (data.dataUrl) {
-        console.log(`[CarouselGenerator] Leonardo: got base64 image for slide ${slideIndex}`);
-        return data.dataUrl;
-      }
-
-      if (data.url) {
-        console.log(`[CarouselGenerator] Leonardo: got URL, converting via canvas...`);
-        try {
-          return await urlToDataUrl(data.url);
-        } catch {
-          return data.url;
-        }
-      }
-
-      throw new Error('Leonardo não retornou imagem.');
+      if (!res.ok) throw new Error(data.error || `Leonardo falhou: HTTP ${res.status}`);
+      return data.dataUrl || data.url || null;
     }
 
-    // ── Default: Gemini (SDK, returns base64 inline) ──
+    // ── 3. Gemini: Modelo Imagen 3 (O modelo correto para fotos) ──
     const apiKey = customApiKey || process.env.NEXT_PUBLIC_GEMINI_API_KEY;
     if (!apiKey) throw new Error('Chave da API Gemini não encontrada.');
-    const ai = new GoogleGenAI(apiKey);
+    const ai = new GoogleGenAI({ apiKey });
 
     try {
-      // Usando Gemini Pro Vision/Flash que pode gerar imagens se a conta permitir, 
-      // ou o modelo específico de imagem se estiver habilitado na chave
-      const model = ai.getGenerativeModel({ model: 'gemini-1.5-pro' });
-      const result = await model.generateContent(prompt);
-      const response = await result.response;
+      console.log(`[CarouselGenerator] Hub IA - Gemini Imagen: Iniciando para slide ${slideIndex}`);
+      // IMPORTANTE: Aqui usamos o modelo de imagem (imagen-3), não os modelos de texto (Flash/Pro)
+      const response = await ai.models.generateContent({
+        model: 'imagen-3',
+        contents: prompt,
+      });
 
       for (const part of response.candidates?.[0]?.content?.parts || []) {
         if (part.inlineData) {
-          console.log(`[CarouselGenerator] Gemini received image data (${part.inlineData.mimeType})`);
+          console.log(`[CarouselGenerator] Gemini Imagen: Sucesso no slide ${slideIndex}`);
           return `data:${part.inlineData.mimeType || 'image/png'};base64,${part.inlineData.data}`;
         }
       }
     } catch (err) {
-      console.error("[CarouselGenerator] Gemini Image Error:", err);
+      console.error("[CarouselGenerator] Gemini Imagen Erro:", err);
       throw err;
     }
 
     return null;
   };
+
 
   const regenerateImageForSlide = async (index: number) => {
     const slide = parsedSlides[index];

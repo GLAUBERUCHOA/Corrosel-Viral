@@ -218,6 +218,7 @@ export default function CarouselGenerator({ onLogout }: { onLogout: () => void }
   const [brandLogo, setBrandLogo] = useState<string | null>(null);
   const [brandHandle, setBrandHandle] = useState<string>('');
   const [editingSlideIndex, setEditingSlideIndex] = useState<number | null>(null);
+  const [openSlideIndex, setOpenSlideIndex] = useState<number | null>(null);
   const [editTitle, setEditTitle] = useState('');
   const [editSubtitle, setEditSubtitle] = useState('');
   const [customColor, setCustomColor] = useState('#6366f1');
@@ -1572,7 +1573,9 @@ export default function CarouselGenerator({ onLogout }: { onLogout: () => void }
 
                   if (slide.isCta) {
                     return (
-                      <div key={index} className={`relative shrink-0 snap-center flex items-center group/slide-wrapper ${getSlideDimensions()}`}>
+                      <div key={index} className={`relative shrink-0 snap-center flex items-center group/slide-wrapper ${getSlideDimensions()}`}
+                        onClick={() => { if (openSlideIndex !== index) setOpenSlideIndex(index); }}
+                      >
                         <div className="relative group/slide w-full h-full rounded-2xl overflow-hidden shadow-2xl transition-transform hover:-translate-y-2 duration-300">
                           <div
                             ref={(el) => { slideRefs.current[index] = el; }}
@@ -1609,7 +1612,10 @@ export default function CarouselGenerator({ onLogout }: { onLogout: () => void }
                             </div>
                           </div>
 
-                          <div data-slide-overlay tabIndex={0} onClick={(e) => { e.currentTarget.blur(); }} className="absolute inset-0 bg-black/80 opacity-0 group-hover/slide:opacity-100 focus:opacity-100 focus-within:opacity-100 transition-opacity flex flex-col items-center justify-center p-6 backdrop-blur-[4px] z-[60] cursor-pointer outline-none overflow-hidden">
+                          <div
+                            className={`absolute inset-0 bg-black/80 transition-opacity flex flex-col items-center justify-center p-6 backdrop-blur-[4px] z-[60] cursor-pointer outline-none overflow-hidden ${openSlideIndex === index ? 'opacity-100' : 'opacity-0 pointer-events-none'}`}
+                            onClick={(e) => { if (e.target === e.currentTarget) setOpenSlideIndex(null); }}
+                          >
                             <div className="flex w-full h-full gap-2 sm:gap-4 items-center justify-center pointer-events-none">
                               <button
                                 onClick={(e) => { e.stopPropagation(); handleDownloadSingle(index); }}
@@ -1631,7 +1637,9 @@ export default function CarouselGenerator({ onLogout }: { onLogout: () => void }
                     : (index === 0 ? 'pt-3 pb-10 justify-end' : 'pt-3 pb-4 justify-end');
 
                   return (
-                    <div key={index} className={`relative shrink-0 snap-center flex items-center group/slide-wrapper ${getSlideDimensions()}`}>
+                    <div key={index} className={`relative shrink-0 snap-center flex items-center group/slide-wrapper ${getSlideDimensions()}`}
+                      onClick={() => { if (openSlideIndex !== index) setOpenSlideIndex(index); }}
+                    >
                       <div className="relative group/slide w-full h-full rounded-2xl overflow-hidden shadow-2xl transition-transform hover:-translate-y-2 duration-300">
                         {totalLength > 250 && !isIuryMode && (
                           <div className="absolute top-4 left-0 right-0 z-[100] flex justify-center pointer-events-none">
@@ -1685,7 +1693,10 @@ export default function CarouselGenerator({ onLogout }: { onLogout: () => void }
                             )}
                           </div>
                         </div>
-                        <div data-slide-overlay tabIndex={0} onClick={(e) => { e.currentTarget.blur(); }} className="absolute inset-0 bg-black/80 opacity-0 group-hover/slide:opacity-100 focus:opacity-100 focus-within:opacity-100 transition-opacity flex flex-col items-center justify-center p-6 backdrop-blur-[4px] z-[60] cursor-pointer outline-none overflow-hidden">
+                        <div
+                          className={`absolute inset-0 bg-black/80 transition-opacity flex flex-col items-center justify-center p-6 backdrop-blur-[4px] z-[60] cursor-pointer outline-none overflow-hidden ${openSlideIndex === index ? 'opacity-100' : 'opacity-0 pointer-events-none'}`}
+                          onClick={(e) => { if (e.target === e.currentTarget) setOpenSlideIndex(null); }}
+                        >
                           <div className="flex w-full h-full gap-2 sm:gap-4 items-center justify-center pointer-events-none">
                             <div className="flex flex-col gap-2 w-1/2 max-w-[160px] pointer-events-none">
                               <span className="text-[10px] text-white/50 font-bold uppercase tracking-wider mb-1">Conteúdo</span>
@@ -1733,14 +1744,14 @@ export default function CarouselGenerator({ onLogout }: { onLogout: () => void }
                           </div>
                         </div>
                       </div>
-                      <div className="absolute top-auto bottom-8 right-6 lg:bottom-auto lg:top-1/2 lg:-translate-y-1/2 lg:left-full lg:right-auto lg:ml-4 max-lg:opacity-100 opacity-0 group-hover/slide-wrapper:opacity-100 group-hover/slide:opacity-100 focus-within:opacity-100 transition-opacity z-[999] pointer-events-auto">
+                      <div className="absolute top-auto bottom-8 right-6 lg:bottom-auto lg:top-1/2 lg:-translate-y-1/2 lg:left-full lg:right-auto lg:ml-4 max-lg:opacity-100 opacity-0 group-hover/slide-wrapper:opacity-100 transition-opacity z-[999] pointer-events-auto">
                         <button
                           onMouseDown={(e) => handleImgDragStart(e, index)}
                           onTouchStart={(e) => {
-                            // Close any open slide overlay before dragging
-                            document.querySelectorAll<HTMLElement>('[data-slide-overlay]').forEach(el => el.blur());
+                            setOpenSlideIndex(null);
                             handleImgDragStart(e, index);
                           }}
+                          onClick={(e) => e.stopPropagation()}
                           className="bg-white/90 backdrop-blur-md p-2 rounded-full cursor-ns-resize shadow-[0_0_15px_rgba(0,0,0,0.5)] border border-white/40 hover:bg-white transition-colors flex items-center justify-center text-slate-900 hover:text-primary touch-none"
                           title="Arraste para ajustar"
                         >

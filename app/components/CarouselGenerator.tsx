@@ -201,6 +201,11 @@ export default function CarouselGenerator({ onLogout }: { onLogout: () => void }
   const [activeMobileTab, setActiveMobileTab] = useState<'config' | 'preview'>('config');
   const [saveDefaults, setSaveDefaults] = useState(true);
 
+  // Typography Advanced Settings
+  const [coverTitleSize, setCoverTitleSize] = useState(100);
+  const [slideTitleSize, setSlideTitleSize] = useState(100);
+  const [subtitleSize, setSubtitleSize] = useState(100);
+
   const [addCtaSlide, setAddCtaSlide] = useState(false);
   const [ctaContent, setCtaContent] = useState('O que você achou? Deixe nos comentários e salve este post para não esquecer!');
   const [ctaImage, setCtaImage] = useState<string | null>(null);
@@ -306,6 +311,11 @@ export default function CarouselGenerator({ onLogout }: { onLogout: () => void }
         if (prefs.parsedSlides && Array.isArray(prefs.parsedSlides) && prefs.parsedSlides.length > 0) {
           setParsedSlides(prefs.parsedSlides);
         }
+
+        // Advanced Typography
+        if (prefs.coverTitleSize !== undefined) setCoverTitleSize(prefs.coverTitleSize);
+        if (prefs.slideTitleSize !== undefined) setSlideTitleSize(prefs.slideTitleSize);
+        if (prefs.subtitleSize !== undefined) setSubtitleSize(prefs.subtitleSize);
       } catch (e) {
         console.error("Failed to parse saved preferences", e);
       }
@@ -368,7 +378,10 @@ export default function CarouselGenerator({ onLogout }: { onLogout: () => void }
         addCtaSlide,
         ctaContent,
         ctaImage,
-        toneMode
+        toneMode,
+        coverTitleSize,
+        slideTitleSize,
+        subtitleSize
       };
 
       if (saveDefaults) {
@@ -396,7 +409,7 @@ export default function CarouselGenerator({ onLogout }: { onLogout: () => void }
         localStorage.setItem('carousel_preferences', JSON.stringify(prefs));
       }
     }
-  }, [brandHandle, brandLogo, styleModel, customColor, aspectRatio, content, parsedSlides, saveDefaults, toneMode, fontFamily, textAlign, addCtaSlide, ctaContent, ctaImage]);
+  }, [brandHandle, brandLogo, styleModel, customColor, aspectRatio, content, parsedSlides, saveDefaults, toneMode, fontFamily, textAlign, addCtaSlide, ctaContent, ctaImage, coverTitleSize, slideTitleSize, subtitleSize]);
 
   // Clipboard Paste Support (Ctrl+V) para Imagens
   useEffect(() => {
@@ -1201,35 +1214,88 @@ export default function CarouselGenerator({ onLogout }: { onLogout: () => void }
               )}
 
               <div className="space-y-4 pt-4 border-t border-slate-100 dark:border-border-dark">
-                <div className="grid grid-cols-2 gap-4">
+                <div className="grid grid-cols-1 gap-4">
                   <div className="space-y-2">
-                    <label className="text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Tipografia</label>
-                    <select
-                      value={fontFamily}
-                      onChange={(e) => setFontFamily(e.target.value)}
-                      className="w-full bg-slate-50 dark:bg-surface-darker text-slate-900 dark:text-white border border-slate-200 dark:border-border-dark rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-primary outline-none cursor-pointer"
-                    >
-                      <option value="var(--font-poppins), sans-serif">Padrão (Poppins)</option>
-                      <option value="'Playfair Display', serif">Clássica (Playfair)</option>
-                      <option value="'Inter', sans-serif">Clean (Inter)</option>
-                      <option value="'Montserrat', sans-serif">Impacto (Montserrat)</option>
-                      <option value="'Courier New', monospace">Código (Monospace)</option>
-                    </select>
+                    <label className="text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest flex items-center gap-1.5">
+                      <span className="material-symbols-outlined text-[14px]">font_download</span> Tipografia Principal
+                    </label>
+                    <div className="relative group">
+                      <select
+                        value={fontFamily}
+                        onChange={(e) => setFontFamily(e.target.value)}
+                        className="w-full bg-slate-50 dark:bg-surface-darker text-slate-900 dark:text-white border border-slate-200 dark:border-border-dark rounded-xl px-4 py-2.5 text-sm focus:ring-2 focus:ring-primary outline-none cursor-pointer appearance-none pr-10 font-medium transition-all hover:border-primary/30"
+                      >
+                        <option value="var(--font-poppins), sans-serif">Padrão (Poppins)</option>
+                        <option value="'Inter', sans-serif">Clean (Inter)</option>
+                        <option value="'Oswald', sans-serif">Moderno (Oswald)</option>
+                        <option value="'Bebas Neue', sans-serif">Impacto (Bebas Neue)</option>
+                        <option value="'Playfair Display', serif">Clássica (Playfair)</option>
+                        <option value="'Archivo Black', sans-serif">Ultra Bold (Archivo)</option>
+                        <option value="'Montserrat', sans-serif">Elegante (Montserrat)</option>
+                        <option value="'Courier New', monospace">Código (Monospace)</option>
+                      </select>
+                      <span className="material-symbols-outlined absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none group-hover:text-primary transition-colors">unfold_more</span>
+                    </div>
                   </div>
+
                   <div className="space-y-2">
-                    <label className="text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Alinhamento</label>
-                    <div className="flex bg-slate-50 dark:bg-surface-darker border border-slate-200 dark:border-border-dark rounded-lg h-[38px] overflow-hidden">
-                      <button onClick={(e) => { e.preventDefault(); setTextAlign('text-left'); }} className={`flex-1 flex items-center justify-center transition-colors ${textAlign === 'text-left' ? 'bg-primary text-white' : 'text-slate-500 hover:bg-slate-200 dark:hover:bg-slate-800'}`}>
-                        <span className="material-symbols-outlined text-[18px]">format_align_left</span>
+                    <label className="text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest flex items-center gap-1.5">
+                      <span className="material-symbols-outlined text-[14px]">format_align_center</span> Alinhamento do Texto
+                    </label>
+                    <div className="flex bg-slate-100 dark:bg-surface-darker border border-slate-200 dark:border-border-dark rounded-xl p-1 gap-1">
+                      <button onClick={(e) => { e.preventDefault(); setTextAlign('text-left'); }} className={`flex-1 flex items-center justify-center py-2 rounded-lg transition-all ${textAlign === 'text-left' ? 'bg-white dark:bg-surface-dark text-primary shadow-sm ring-1 ring-black/5' : 'text-slate-500 hover:text-slate-700 dark:hover:text-slate-300'}`}>
+                        <span className="material-symbols-outlined text-[20px]">format_align_left</span>
                       </button>
-                      <div className="w-px bg-slate-200 dark:bg-border-dark"></div>
-                      <button onClick={(e) => { e.preventDefault(); setTextAlign('text-center'); }} className={`flex-1 flex items-center justify-center transition-colors ${textAlign === 'text-center' ? 'bg-primary text-white' : 'text-slate-500 hover:bg-slate-200 dark:hover:bg-slate-800'}`}>
-                        <span className="material-symbols-outlined text-[18px]">format_align_center</span>
+                      <button onClick={(e) => { e.preventDefault(); setTextAlign('text-center'); }} className={`flex-1 flex items-center justify-center py-2 rounded-lg transition-all ${textAlign === 'text-center' ? 'bg-white dark:bg-surface-dark text-primary shadow-sm ring-1 ring-black/5' : 'text-slate-500 hover:text-slate-700 dark:hover:text-slate-300'}`}>
+                        <span className="material-symbols-outlined text-[20px]">format_align_center</span>
                       </button>
-                      <div className="w-px bg-slate-200 dark:bg-border-dark"></div>
-                      <button onClick={(e) => { e.preventDefault(); setTextAlign('text-right'); }} className={`flex-1 flex items-center justify-center transition-colors ${textAlign === 'text-right' ? 'bg-primary text-white' : 'text-slate-500 hover:bg-slate-200 dark:hover:bg-slate-800'}`}>
-                        <span className="material-symbols-outlined text-[18px]">format_align_right</span>
+                      <button onClick={(e) => { e.preventDefault(); setTextAlign('text-right'); }} className={`flex-1 flex items-center justify-center py-2 rounded-lg transition-all ${textAlign === 'text-right' ? 'bg-white dark:bg-surface-dark text-primary shadow-sm ring-1 ring-black/5' : 'text-slate-500 hover:text-slate-700 dark:hover:text-slate-300'}`}>
+                        <span className="material-symbols-outlined text-[20px]">format_align_right</span>
                       </button>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="space-y-4 pt-3 mt-1 bg-slate-50 dark:bg-surface-darker p-3 rounded-xl border border-slate-100 dark:border-border-dark">
+                  <div className="flex items-center gap-1.5 text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1">
+                    <span className="material-symbols-outlined text-[14px]">format_size</span> Ajustes Finos de Tamanho
+                  </div>
+
+                  <div className="space-y-3">
+                    <div className="space-y-1.5">
+                      <div className="flex justify-between items-center text-[11px] font-medium text-slate-600 dark:text-slate-300">
+                        <span>Título da Capa</span>
+                        <span className="text-primary font-bold">{coverTitleSize}%</span>
+                      </div>
+                      <input
+                        type="range" min="50" max="180" value={coverTitleSize}
+                        onChange={(e) => setCoverTitleSize(parseInt(e.target.value))}
+                        className="w-full accent-primary h-1.5 bg-slate-200 dark:bg-slate-700 rounded-lg appearance-none cursor-pointer"
+                      />
+                    </div>
+
+                    <div className="space-y-1.5">
+                      <div className="flex justify-between items-center text-[11px] font-medium text-slate-600 dark:text-slate-300">
+                        <span>Títulos dos Slides</span>
+                        <span className="text-primary font-bold">{slideTitleSize}%</span>
+                      </div>
+                      <input
+                        type="range" min="50" max="180" value={slideTitleSize}
+                        onChange={(e) => setSlideTitleSize(parseInt(e.target.value))}
+                        className="w-full accent-primary h-1.5 bg-slate-200 dark:bg-slate-700 rounded-lg appearance-none cursor-pointer"
+                      />
+                    </div>
+
+                    <div className="space-y-1.5">
+                      <div className="flex justify-between items-center text-[11px] font-medium text-slate-600 dark:text-slate-300">
+                        <span>Subtítulos</span>
+                        <span className="text-primary font-bold">{subtitleSize}%</span>
+                      </div>
+                      <input
+                        type="range" min="50" max="180" value={subtitleSize}
+                        onChange={(e) => setSubtitleSize(parseInt(e.target.value))}
+                        className="w-full accent-primary h-1.5 bg-slate-200 dark:bg-slate-700 rounded-lg appearance-none cursor-pointer"
+                      />
                     </div>
                   </div>
                 </div>
@@ -1741,8 +1807,19 @@ export default function CarouselGenerator({ onLogout }: { onLogout: () => void }
                             )}
 
                             <div className={`w-full flex-1 flex flex-col items-center p-8 shrink-0 z-20 relative ${ctaImage ? 'justify-start' : 'justify-center'} ${theme.textClass}`} style={{ fontFamily }}>
-                              {slide.title && <h2 className={`font-extrabold text-2xl sm:text-3xl leading-tight uppercase mb-4`}>{slide.title}</h2>}
-                              <div className={`text-base sm:text-lg ${theme.subtextClass} font-medium leading-relaxed whitespace-pre-wrap [&_span]:!bg-transparent focus:outline-none w-[90%] mx-auto`} dangerouslySetInnerHTML={{ __html: slide.subtitle }}></div>
+                              {slide.title && (
+                                <h2
+                                  className={`font-extrabold text-2xl sm:text-3xl leading-tight uppercase mb-4`}
+                                  style={{ fontSize: `${slideTitleSize}%` }}
+                                >
+                                  {slide.title}
+                                </h2>
+                              )}
+                              <div
+                                className={`text-base sm:text-lg ${theme.subtextClass} font-medium leading-relaxed whitespace-pre-wrap [&_span]:!bg-transparent focus:outline-none w-[90%] mx-auto`}
+                                style={{ fontSize: `${subtitleSize}%` }}
+                                dangerouslySetInnerHTML={{ __html: slide.subtitle }}
+                              ></div>
                             </div>
                           </div>
 
@@ -1820,8 +1897,22 @@ export default function CarouselGenerator({ onLogout }: { onLogout: () => void }
 
                           <div className={`w-full px-8 flex flex-col shrink-0 z-20 relative pt-6 ${index === 0 ? 'pb-16' : 'pb-6'} ${textAlign}`} style={{ fontFamily }}>
                             <div className={`flex flex-col gap-2 ${textAlign === 'text-center' ? 'items-center text-center' : textAlign === 'text-right' ? 'items-end text-right' : 'items-start text-left'}`}>
-                              {slide.title && <h2 className={titleClass}>{slide.title}</h2>}
-                              {slide.subtitle && <p className={subtitleClass}>{slide.subtitle}</p>}
+                              {slide.title && (
+                                <h2
+                                  className={titleClass}
+                                  style={{ fontSize: `${index === 0 ? coverTitleSize : slideTitleSize}%` }}
+                                >
+                                  {slide.title}
+                                </h2>
+                              )}
+                              {slide.subtitle && (
+                                <p
+                                  className={subtitleClass}
+                                  style={{ fontSize: `${subtitleSize}%` }}
+                                >
+                                  {slide.subtitle}
+                                </p>
+                              )}
                             </div>
                             {index === 0 && (
                               <div className={`absolute bottom-3 right-5 flex items-center gap-2.5 px-3.5 py-1.5 rounded-full bg-black/20 backdrop-blur-md border border-white/10 ${theme.textClass} shadow-xl group/swipe select-none`}>

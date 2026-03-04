@@ -209,14 +209,7 @@ export default function CarouselGenerator({ onLogout }: { onLogout: () => void }
     { title: '', subtitle: '', isCta: false }
   ]);
 
-  const slideCount = React.useMemo(() => {
-    if (!content.trim()) return Math.max(1, parsedSlides.length);
-    let blocks = content.split(/\n\s*\n/).filter(b => b.trim());
-    if (blocks.length === 1) {
-      blocks = content.split('\n').filter(b => b.trim());
-    }
-    return Math.max(1, blocks.length);
-  }, [content, parsedSlides.length]);
+  const slideCount = parsedSlides.length;
 
   const [uploadedImages, setUploadedImages] = useState<(string | null)[]>(Array(6).fill(null));
   const [draggedIndex, setDraggedIndex] = useState<number | null>(null);
@@ -1739,11 +1732,11 @@ export default function CarouselGenerator({ onLogout }: { onLogout: () => void }
                           </div>
                         </div>
                       </div>
-                      <div className="absolute top-1/2 -translate-y-1/2 left-full ml-2 sm:ml-4 opacity-0 group-hover/slide-wrapper:opacity-100 transition-opacity z-50">
+                      <div className="absolute top-1/2 -translate-y-1/2 lg:left-full right-4 lg:right-auto lg:ml-4 max-lg:opacity-100 opacity-0 group-hover/slide-wrapper:opacity-100 group-hover/slide:opacity-100 focus-within:opacity-100 transition-opacity z-50 pointer-events-auto">
                         <button
                           onMouseDown={(e) => handleImgDragStart(e, index)}
                           onTouchStart={(e) => handleImgDragStart(e, index)}
-                          className="bg-white/50 backdrop-blur-md p-2 rounded-full cursor-ns-resize shadow-xl border border-white/40 hover:bg-white transition-colors flex items-center justify-center text-slate-700 hover:text-primary"
+                          className="bg-white/90 backdrop-blur-md p-2 rounded-full cursor-ns-resize shadow-2xl border border-white/40 hover:bg-white transition-colors flex items-center justify-center text-slate-700 hover:text-primary touch-none"
                           title="Arraste para ajustar"
                         >
                           <span className="material-symbols-outlined text-[20px] sm:text-[24px]">swap_vert</span>

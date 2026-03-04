@@ -733,7 +733,7 @@ export default function CarouselGenerator({ onLogout }: { onLogout: () => void }
       const ai = new GoogleGenAI({ apiKey });
       const response = await ai.models.generateContent({
         model: 'gemini-1.5-flash',
-        contents: [{ role: 'user', parts: [{ text: `${getIuryPrompt(toneMode, dbPrompts)}\n\nRASCUNHO DO USUÁRIO:\n${content}` }] }],
+        contents: `${getIuryPrompt(toneMode, dbPrompts)}\n\nRASCUNHO DO USUÁRIO:\n${content}`,
       });
 
       const generatedText = response.text || '';
@@ -742,7 +742,8 @@ export default function CarouselGenerator({ onLogout }: { onLogout: () => void }
       setHasNewPreview(true);
     } catch (error) {
       console.error("Erro ao gerar Modo Iury:", error);
-      alert("Ocorreu um erro ao processar o texto pelo Iury. Tente novamente.");
+      const msg = error instanceof Error ? error.message : 'Erro desconhecido';
+      alert(`Ocorreu um erro ao processar o texto pelo Iury: ${msg}\nVerifique sua chave de API e conexão.`);
     } finally {
       setIsGeneratingText(false);
     }
@@ -845,7 +846,7 @@ export default function CarouselGenerator({ onLogout }: { onLogout: () => void }
     const ai = new GoogleGenAI({ apiKey });
     const response = await ai.models.generateContent({
       model: 'gemini-1.5-flash',
-      contents: [{ role: 'user', parts: [{ text: prompt }] }],
+      contents: prompt,
       config: { imageConfig: { aspectRatio: aspectRatio === '9:16' ? '9:16' : '3:4' } }
     });
     for (const part of response.candidates?.[0]?.content?.parts || []) {

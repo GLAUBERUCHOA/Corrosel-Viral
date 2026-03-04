@@ -398,6 +398,77 @@ export default function CarouselGenerator({ onLogout }: { onLogout: () => void }
     }
   }, [brandHandle, brandLogo, styleModel, customColor, aspectRatio, content, parsedSlides, saveDefaults, toneMode, fontFamily, textAlign, addCtaSlide, ctaContent, ctaImage]);
 
+  // Clipboard Paste Support (Ctrl+V) para Imagens
+  useEffect(() => {
+    const handlePaste = (e: ClipboardEvent) => {
+      // Evita interceptar o paste se o usuário estiver digitando em campos de texto
+      const activeEl = document.activeElement;
+      if (activeEl instanceof HTMLInputElement ||
+        activeEl instanceof HTMLTextAreaElement ||
+        activeEl?.getAttribute('contenteditable') === 'true' ||
+        editingSlideIndex !== null) {
+        return;
+      }
+
+      const items = e.clipboardData?.items;
+      if (!items) return;
+
+      for (let i = 0; i < items.length; i++) {
+        if (items[i].type.indexOf('image') !== -1) {
+          const file = items[i].getAsFile();
+          if (!file) continue;
+
+          const reader = new FileReader();
+          reader.onload = (event) => {
+            const dataUrl = event.target?.result as string;
+            if (!dataUrl) return;
+
+            setUploadedImages(prev => {
+              const updated = [...prev];
+              // Garantir que o array acompanhe a contagem de slides
+              while (updated.length < slideCount) updated.push(null);
+
+              // 1. Alvo: Slide aberto/selecionado (se houver)
+              if (openSlideIndex !== null) {
+                updated[openSlideIndex] = dataUrl;
+                return updated;
+              }
+
+              // 2. Alvo: Index específico de upload (se o usuário clicou no botão mas resolveu colar)
+              if (targetUploadIndex !== null) {
+                updated[targetUploadIndex] = dataUrl;
+                setTargetUploadIndex(null);
+                return updated;
+              }
+
+              // 3. Alvo: Primeiro slot vazio encontrado nos slides atuais
+              let slotFound = false;
+              for (let j = 0; j < slideCount; j++) {
+                if (!updated[j]) {
+                  updated[j] = dataUrl;
+                  slotFound = true;
+                  break;
+                }
+              }
+
+              // 4. Se não houver slot vazio, adiciona ao final (pode gerar novo slide dependendo da lógica do app)
+              if (!slotFound) {
+                updated.push(dataUrl);
+              }
+
+              return updated;
+            });
+          };
+          reader.readAsDataURL(file);
+          break; // Processa apenas a primeira imagem colada
+        }
+      }
+    };
+
+    window.addEventListener('paste', handlePaste);
+    return () => window.removeEventListener('paste', handlePaste);
+  }, [openSlideIndex, targetUploadIndex, slideCount, editingSlideIndex]);
+
   const handleApiKeyChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const val = e.target.value;
     setCustomApiKey(val);

@@ -1588,14 +1588,14 @@ export default function CarouselGenerator({ onLogout }: { onLogout: () => void }
 
                             {(brandHandle || brandLogo) && (
                               <div className={`w-full h-0 shrink-0 relative z-[60] flex items-center justify-center ${!ctaImage ? 'mb-10 mt-2' : ''}`}>
-                                <div className="flex items-center gap-[6px] pr-3 pl-[1px] py-1.5 rounded-full absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 mt-1 drop-shadow-[0_4px_10px_rgba(0,0,0,0.9)]" style={{ minWidth: 'fit-content' }}>
+                                <div className="flex items-center gap-[4px] pr-2 pl-[1px] py-1 rounded-full absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 drop-shadow-[0_4px_10px_rgba(0,0,0,0.9)]" style={{ minWidth: 'fit-content' }}>
                                   {brandLogo && (
-                                    <div className={`size-[28px] sm:size-[32px] rounded-full overflow-hidden shrink-0 shadow-2xl bg-white border-2 border-white/50`}>
+                                    <div className={`size-[22px] sm:size-[26px] rounded-full overflow-hidden shrink-0 shadow-2xl bg-white border-2 border-white/50`}>
                                       <img src={brandLogo} alt="Logo" className="w-full h-full object-cover" />
                                     </div>
                                   )}
                                   {brandHandle && (
-                                    <div className={`flex items-center text-[12px] sm:text-[15px] font-black tracking-widest text-white pb-[0.5px]`}>
+                                    <div className={`flex items-center text-[10px] sm:text-[12px] font-black tracking-widest text-white pb-[0.5px]`}>
                                       <span className="ml-[2px]">{brandHandle}</span>
                                     </div>
                                   )}
@@ -1609,10 +1609,10 @@ export default function CarouselGenerator({ onLogout }: { onLogout: () => void }
                             </div>
                           </div>
 
-                          <div tabIndex={0} onClick={(e) => { e.currentTarget.blur(); }} className="absolute inset-0 bg-black/80 opacity-0 group-hover/slide:opacity-100 focus:opacity-100 focus-within:opacity-100 transition-opacity flex flex-col items-center justify-center p-6 backdrop-blur-[4px] z-[60] cursor-pointer outline-none">
-                            <div className="flex w-full h-full gap-2 sm:gap-4 items-center justify-center">
+                          <div tabIndex={0} onClick={(e) => { e.currentTarget.blur(); }} className="absolute inset-0 bg-black/80 opacity-0 group-hover/slide:opacity-100 focus:opacity-100 focus-within:opacity-100 transition-opacity flex flex-col items-center justify-center p-6 backdrop-blur-[4px] z-[60] cursor-pointer outline-none overflow-hidden">
+                            <div className="flex w-full h-full gap-2 sm:gap-4 items-center justify-center pointer-events-none">
                               <button
-                                onClick={() => handleDownloadSingle(index)}
+                                onClick={(e) => { e.stopPropagation(); handleDownloadSingle(index); }}
                                 className="pointer-events-auto flex items-center justify-start gap-3 bg-white/10 text-white hover:bg-white/20 px-4 py-2.5 rounded-xl text-xs font-bold transition-all border border-white/10">
                                 <span className="material-symbols-outlined text-[16px]">download</span> Baixar
                               </button>
@@ -1657,14 +1657,14 @@ export default function CarouselGenerator({ onLogout }: { onLogout: () => void }
 
                           <div className="w-full h-0 shrink-0 relative z-[60] flex items-center justify-center">
                             {(brandHandle || brandLogo) && (
-                              <div className="flex items-center gap-[6px] pr-3 pl-[1px] py-1.5 rounded-full absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 mt-1 drop-shadow-[0_4px_10px_rgba(0,0,0,0.9)]" style={{ minWidth: 'fit-content' }}>
+                              <div className="flex items-center gap-[4px] pr-2 pl-[1px] py-1 rounded-full absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 drop-shadow-[0_4px_10px_rgba(0,0,0,0.9)]" style={{ minWidth: 'fit-content' }}>
                                 {brandLogo && (
-                                  <div className={`size-[28px] sm:size-[32px] rounded-full overflow-hidden shrink-0 shadow-2xl bg-white border-2 border-white/50`}>
+                                  <div className={`size-[22px] sm:size-[26px] rounded-full overflow-hidden shrink-0 shadow-2xl bg-white border-2 border-white/50`}>
                                     <img src={brandLogo} alt="Logo" className="w-full h-full object-cover" />
                                   </div>
                                 )}
                                 {brandHandle && (
-                                  <div className={`flex items-center text-[12px] sm:text-[15px] font-black tracking-widest text-white pb-[0.5px]`}>
+                                  <div className={`flex items-center text-[10px] sm:text-[12px] font-black tracking-widest text-white pb-[0.5px]`}>
                                     <span className="ml-[2px]">{brandHandle}</span>
                                   </div>
                                 )}
@@ -1685,22 +1685,22 @@ export default function CarouselGenerator({ onLogout }: { onLogout: () => void }
                             )}
                           </div>
                         </div>
-                        <div tabIndex={0} onClick={(e) => { e.currentTarget.blur(); }} className="absolute inset-0 bg-black/80 opacity-0 group-hover/slide:opacity-100 focus:opacity-100 focus-within:opacity-100 transition-opacity flex flex-col items-center justify-center p-6 backdrop-blur-[4px] z-[60] cursor-pointer outline-none">
-                          <div className="flex w-full h-full gap-2 sm:gap-4 items-center justify-center">
-                            <div className="flex flex-col gap-2 w-1/2 max-w-[160px]">
+                        <div tabIndex={0} onClick={(e) => { e.currentTarget.blur(); }} className="absolute inset-0 bg-black/80 opacity-0 group-hover/slide:opacity-100 focus:opacity-100 focus-within:opacity-100 transition-opacity flex flex-col items-center justify-center p-6 backdrop-blur-[4px] z-[60] cursor-pointer outline-none overflow-hidden">
+                          <div className="flex w-full h-full gap-2 sm:gap-4 items-center justify-center pointer-events-none">
+                            <div className="flex flex-col gap-2 w-1/2 max-w-[160px] pointer-events-none">
                               <span className="text-[10px] text-white/50 font-bold uppercase tracking-wider mb-1">Conteúdo</span>
                               <button
-                                onClick={() => handleEditClick(index)}
+                                onClick={(e) => { e.stopPropagation(); handleEditClick(index); }}
                                 className="pointer-events-auto flex items-center justify-start gap-3 bg-white/10 text-white hover:bg-white/20 px-4 py-2.5 rounded-xl text-xs font-bold transition-all border border-white/10">
                                 <span className="material-symbols-outlined text-[16px]">edit</span> Editar Texto
                               </button>
                               <button
-                                onClick={() => handleDownloadSingle(index)}
+                                onClick={(e) => { e.stopPropagation(); handleDownloadSingle(index); }}
                                 className="pointer-events-auto flex items-center justify-start gap-3 bg-white/10 text-white hover:bg-white/20 px-4 py-2.5 rounded-xl text-xs font-bold transition-all border border-white/10">
                                 <span className="material-symbols-outlined text-[16px]">download</span> Baixar
                               </button>
                               {imageSrc && (
-                                <a href={imageSrc} target="_blank" rel="noopener noreferrer" className="pointer-events-auto flex items-center justify-start gap-3 bg-white/10 text-white hover:bg-white/20 px-4 py-2.5 rounded-xl text-xs font-bold transition-all border border-white/10">
+                                <a href={imageSrc} target="_blank" rel="noopener noreferrer" onClick={(e) => e.stopPropagation()} className="pointer-events-auto flex items-center justify-start gap-3 bg-white/10 text-white hover:bg-white/20 px-4 py-2.5 rounded-xl text-xs font-bold transition-all border border-white/10">
                                   <span className="material-symbols-outlined text-[16px]">open_in_new</span> Expandir
                                 </a>
                               )}
@@ -1708,10 +1708,10 @@ export default function CarouselGenerator({ onLogout }: { onLogout: () => void }
 
                             <div className="w-px h-[80%] bg-white/10 shrink-0"></div>
 
-                            <div className="flex flex-col gap-2 w-1/2 max-w-[160px]">
+                            <div className="flex flex-col gap-2 w-1/2 max-w-[160px] pointer-events-none">
                               <span className="text-[10px] text-white/50 font-bold uppercase tracking-wider mb-1">Mídia</span>
                               <button
-                                onClick={() => regenerateImageForSlide(index)}
+                                onClick={(e) => { e.stopPropagation(); regenerateImageForSlide(index); }}
                                 disabled={generatingImages[index]}
                                 className="pointer-events-auto flex items-center justify-start gap-3 bg-indigo-600/90 text-white hover:bg-indigo-500 px-4 py-2.5 rounded-xl text-xs font-bold transition-all border border-indigo-500/30 disabled:opacity-50">
                                 <span className={`material-symbols-outlined text-[16px] ${generatingImages[index] ? 'animate-spin' : ''}`}>
@@ -1719,13 +1719,13 @@ export default function CarouselGenerator({ onLogout }: { onLogout: () => void }
                                 </span> Regerar IA
                               </button>
                               <button
-                                onClick={() => handleIndividualUploadAction(index)}
+                                onClick={(e) => { e.stopPropagation(); handleIndividualUploadAction(index); }}
                                 className="pointer-events-auto flex items-center justify-start gap-3 bg-white/10 text-white hover:bg-white/20 px-4 py-2.5 rounded-xl text-xs font-bold transition-all border border-white/10">
                                 <span className="material-symbols-outlined text-[16px]">cloud_upload</span> Upload
                               </button>
 
                               <button
-                                onClick={(e) => handleRemoveImage(index, e)}
+                                onClick={(e) => { e.stopPropagation(); handleRemoveImage(index, e); }}
                                 className="pointer-events-auto flex items-center justify-start gap-3 bg-red-500/20 text-red-100 hover:bg-red-500/40 px-4 py-2.5 rounded-xl text-xs font-bold transition-all border border-red-500/30">
                                 <span className="material-symbols-outlined text-[16px]">delete</span> Remover
                               </button>

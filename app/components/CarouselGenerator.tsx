@@ -347,8 +347,11 @@ export default function CarouselGenerator({ onLogout }: { onLogout: () => void }
     };
     fetchSettings();
 
+    const isMob = window.innerWidth < 768;
+    setIsMobile(isMob);
+    if (isMob) setViewMode('carousel');
+
     const checkMobile = () => setIsMobile(window.innerWidth < 768);
-    checkMobile();
     window.addEventListener('resize', checkMobile);
     return () => window.removeEventListener('resize', checkMobile);
   }, []);
@@ -1505,8 +1508,8 @@ export default function CarouselGenerator({ onLogout }: { onLogout: () => void }
             <div
               className="origin-top-left transition-transform duration-200"
               style={{
-                transform: `scale(${(isMobile ? 0.65 : 1) * (zoom / 100)})`,
-                width: `${100 / ((isMobile ? 0.65 : 1) * (zoom / 100))}%`,
+                transform: `scale(${zoom / 100})`,
+                width: `${100 / (zoom / 100)}%`,
               }}
             >
               <div className={`flex ${viewMode === 'grid' ? 'flex-wrap' : 'flex-nowrap snap-x snap-mandatory'} justify-start gap-12 sm:gap-16 pb-24 max-w-[2300px]`}>
@@ -1732,11 +1735,11 @@ export default function CarouselGenerator({ onLogout }: { onLogout: () => void }
                           </div>
                         </div>
                       </div>
-                      <div className="absolute top-1/2 -translate-y-1/2 lg:left-full right-4 lg:right-auto lg:ml-4 max-lg:opacity-100 opacity-0 group-hover/slide-wrapper:opacity-100 group-hover/slide:opacity-100 focus-within:opacity-100 transition-opacity z-50 pointer-events-auto">
+                      <div className="absolute top-1/2 -translate-y-1/2 left-[calc(100%+8px)] sm:left-[calc(100%+16px)] max-lg:opacity-100 opacity-0 group-hover/slide-wrapper:opacity-100 group-hover/slide:opacity-100 focus-within:opacity-100 transition-opacity z-[999] pointer-events-auto">
                         <button
                           onMouseDown={(e) => handleImgDragStart(e, index)}
                           onTouchStart={(e) => handleImgDragStart(e, index)}
-                          className="bg-white/90 backdrop-blur-md p-2 rounded-full cursor-ns-resize shadow-2xl border border-white/40 hover:bg-white transition-colors flex items-center justify-center text-slate-700 hover:text-primary touch-none"
+                          className="bg-white/90 backdrop-blur-md p-2 sm:p-3 rounded-full cursor-ns-resize shadow-2xl border border-white/40 hover:bg-white transition-colors flex items-center justify-center text-slate-700 hover:text-primary touch-none"
                           title="Arraste para ajustar"
                         >
                           <span className="material-symbols-outlined text-[20px] sm:text-[24px]">swap_vert</span>

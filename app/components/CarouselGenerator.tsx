@@ -196,6 +196,8 @@ export default function CarouselGenerator({ onLogout }: { onLogout: () => void }
   const [imageEngine, setImageEngine] = useState<'gemini' | 'leonardo' | 'pollinations'>('gemini');
   const [hasNewPreview, setHasNewPreview] = useState(false);
   const [toneMode, setToneMode] = useState('PROVOCATIVO');
+  const [textModel, setTextModel] = useState<'gemini-1.5-flash' | 'gemini-1.5-pro'>('gemini-1.5-flash');
+
   const [content, setContent] = useState('');
   const [zoom, setZoom] = useState(100);
   const [activeMobileTab, setActiveMobileTab] = useState<'config' | 'preview'>('config');
@@ -742,13 +744,12 @@ export default function CarouselGenerator({ onLogout }: { onLogout: () => void }
 
     setIsGeneratingText(true);
     try {
-      const ai = new GoogleGenAI({ apiKey });
-      const response = await ai.models.generateContent({
-        model: 'gemini-1.5-flash',
-        contents: `${getIuryPrompt(toneMode, dbPrompts)}\n\nRASCUNHO DO USUÁRIO:\n${content}`,
-      });
+      const ai = new GoogleGenAI(apiKey);
+      const model = ai.getGenerativeModel({ model: textModel });
+      const result = await model.generateContent(`${getIuryPrompt(toneMode, dbPrompts)}\n\nRASCUNHO DO USUÁRIO:\n${content}`);
+      const response = await result.response;
+      const generatedText = response.text();
 
-      const generatedText = response.text || '';
       setContent(generatedText); // Sobrescreve a caixa
       processTextIntoSlides(generatedText, addCtaSlide, ctaContent); // Processa imediatamente
       setHasNewPreview(true);
@@ -855,30 +856,23 @@ export default function CarouselGenerator({ onLogout }: { onLogout: () => void }
     // ── Default: Gemini (SDK, returns base64 inline) ──
     const apiKey = customApiKey || process.env.NEXT_PUBLIC_GEMINI_API_KEY;
     if (!apiKey) throw new Error('Chave da API Gemini não encontrada.');
-    const ai = new GoogleGenAI({ apiKey });
+    const ai = new GoogleGenAI(apiKey);
 
     try {
-      // Usando 'imagen-3' que é o ID mais comum no Google AI Studio público
-      const response = await ai.models.generateContent({
-        model: 'imagen-3',
-        contents: prompt,
-      });
-
+      // Usando Gemini Pro Vision/Flash que pode gerar imagens se a conta permitir, 
+      // ou o modelo específico de imagem se estiver habilitado na chave
+      const model = ai.getGenerativeModel({ model: 'gemini-1.5-pro' });
+      const result = await model.generateContent(prompt);
+      const response = await result.response;
 
       for (const part of response.candidates?.[0]?.content?.parts || []) {
         if (part.inlineData) {
-          console.log(`[CarouselGenerator] Gemini Imagen: image received (${part.inlineData.mimeType})`);
+          console.log(`[CarouselGenerator] Gemini received image data (${part.inlineData.mimeType})`);
           return `data:${part.inlineData.mimeType || 'image/png'};base64,${part.inlineData.data}`;
         }
       }
-
-      // Fallback logic if Imagen fails or returns no data
-      console.warn('[CarouselGenerator] Gemini Imagen: no base64 returned, trying text response fallback');
-      if (response.text) {
-        console.log("[CarouselGenerator] Gemini response text (expecting base64 but got text):", response.text);
-      }
     } catch (err) {
-      console.error("[CarouselGenerator] Gemini Imagen actual error:", err);
+      console.error("[CarouselGenerator] Gemini Image Error:", err);
       throw err;
     }
 
@@ -1223,6 +1217,27 @@ export default function CarouselGenerator({ onLogout }: { onLogout: () => void }
                   <p className="text-[10px] text-slate-500 dark:text-slate-400 leading-tight">
                     Para usar o <strong>Modo Iury</strong> e <strong>Imagens IA</strong>, você precisa de uma chave gratuita da Google.
                   </p>
+
+                  <div className="pt-2 border-t border-indigo-100 dark:border-indigo-900/10 space-y-2">
+                    <label className="text-[10px] font-bold text-indigo-900/60 dark:text-indigo-400 uppercase tracking-widest flex items-center gap-1">
+                      <span className="material-symbols-outlined text-[14px]">psychology</span> Motor de Texto
+                    </label>
+                    <div className="flex bg-white dark:bg-surface-dark border border-indigo-200 dark:border-indigo-800 rounded-lg p-1 gap-1">
+                      <button
+                        onClick={() => setTextModel('gemini-1.5-flash')}
+                        className={`flex-1 py-1 text-[10px] font-bold rounded-md transition-all ${textModel === 'gemini-1.5-flash' ? 'bg-primary text-white shadow-sm' : 'text-slate-500 hover:bg-slate-50'}`}
+                      >
+                        1.5 FLASH
+                      </button>
+                      <button
+                        onClick={() => setTextModel('gemini-1.5-pro')}
+                        className={`flex-1 py-1 text-[10px] font-bold rounded-md transition-all ${textModel === 'gemini-1.5-pro' ? 'bg-primary text-white shadow-sm' : 'text-slate-500 hover:bg-slate-50'}`}
+                      >
+                        1.5 PRO
+                      </button>
+                    </div>
+                  </div>
+
                   <div className="flex justify-end pt-1">
                     <a
                       href="https://aistudio.google.com/app/apikey"

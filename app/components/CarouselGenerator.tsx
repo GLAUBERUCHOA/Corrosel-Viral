@@ -1554,11 +1554,54 @@ export default function CarouselGenerator({ onLogout }: { onLogout: () => void }
 
               </div>
             </div>
+
             <div className="space-y-4 pt-4 border-t border-slate-100 dark:border-border-dark">
-              <div className="flex items-center justify-between">
+              <div className="flex items-center gap-2 mb-1">
+                <span className="material-symbols-outlined text-primary text-[20px]">smart_toy</span>
+                <h3 className="text-slate-900 dark:text-white font-bold text-lg">Configurações de IA</h3>
+              </div>
+
+              <div className="space-y-2 p-3 bg-indigo-50/50 dark:bg-indigo-900/10 rounded-xl border border-indigo-100 dark:border-indigo-900/30">
+                <div className="flex items-center justify-between mb-1">
+                  <label className="text-[10px] font-bold text-indigo-900/60 dark:text-indigo-400 uppercase tracking-widest">
+                    Chave da API Gemini
+                  </label>
+                  {customApiKey ? (
+                    <span className="text-[10px] text-emerald-600 font-bold flex items-center gap-1 bg-emerald-50 dark:bg-emerald-900/20 px-2 py-0.5 rounded-full">
+                      <span className="material-symbols-outlined text-[12px]">check_circle</span> Ativa
+                    </span>
+                  ) : (
+                    <span className="text-[10px] text-amber-600 font-bold flex items-center gap-1 bg-amber-50 dark:bg-amber-900/20 px-2 py-0.5 rounded-full">
+                      <span className="material-symbols-outlined text-[12px]">warning</span> Necessária
+                    </span>
+                  )}
+                </div>
+                <input
+                  type="password"
+                  value={customApiKey}
+                  onChange={handleApiKeyChange}
+                  placeholder="Cole sua chave AIzaSy... aqui"
+                  className="w-full bg-white dark:bg-surface-dark border border-indigo-200 dark:border-indigo-800 rounded-lg px-3 py-2 text-xs text-slate-700 dark:text-slate-300 focus:ring-2 focus:ring-primary focus:border-transparent outline-none transition-all shadow-sm"
+                />
+                <p className="text-[10px] text-slate-500 dark:text-slate-400 leading-tight">
+                  Para usar o <strong>Modo Iury</strong> e <strong>Imagens IA</strong>, você precisa de uma chave. Ela fica salva apenas no seu navegador.
+                </p>
+                <div className="flex justify-end pt-1">
+                  <a
+                    href="https://aistudio.google.com/app/apikey"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-[10px] font-bold text-primary hover:underline flex items-center gap-1"
+                  >
+                    Pegar minha chave gratuita <span className="material-symbols-outlined text-[10px]">open_in_new</span>
+                  </a>
+                </div>
+              </div>
+
+              <div className="flex items-center justify-between pt-2">
                 <div className="flex flex-col">
                   <span className="text-sm font-semibold text-slate-900 dark:text-white">Gerar imagens com IA</span>
-                  <span className="text-xs text-slate-500 dark:text-slate-400">Usa o modelo Gemini 2.5 Flash</span>
+                  <span className="text-[10px] text-slate-500 dark:text-slate-400">Motor Gemini 1.5 Flash</span>
                 </div>
                 <label className="relative inline-flex items-center cursor-pointer">
                   <input
@@ -1571,39 +1614,6 @@ export default function CarouselGenerator({ onLogout }: { onLogout: () => void }
                 </label>
               </div>
 
-              {generateWithAI && (
-                <>
-                  {/* API KEY FIELD — simplified for Gemini only */}
-                  <div className="space-y-2 mt-4 p-3 bg-slate-50 dark:bg-surface-darker rounded-lg border border-slate-200 dark:border-border-dark">
-                    <div className="flex items-center justify-between">
-                      <label className="text-xs font-semibold text-slate-700 dark:text-slate-300">
-                        Sua Chave da API Gemini <span className="text-slate-400 font-normal ml-1">(Opcional)</span>
-                      </label>
-                      {customApiKey && <span className="text-[10px] text-emerald-600 font-bold flex items-center gap-1"><span className="material-symbols-outlined text-[12px]">lock</span> Salva</span>}
-                    </div>
-                    <p className="text-[10px] text-slate-500 dark:text-slate-400 leading-tight">
-                      Insira sua chave para uso ilimitado. Ela é <strong>criptografada e salva apenas no seu navegador</strong>.
-                    </p>
-                    <input
-                      type="password"
-                      value={customApiKey}
-                      onChange={handleApiKeyChange}
-                      placeholder="Cole sua chave AIzaSy... aqui"
-                      className="w-full bg-white dark:bg-surface-dark border border-slate-200 dark:border-border-dark rounded-md px-3 py-2 text-xs text-slate-700 dark:text-slate-300 focus:ring-2 focus:ring-primary focus:border-transparent"
-                    />
-                    <div className="flex justify-end">
-                      <a
-                        href="https://aistudio.google.com/app/apikey"
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="text-[10px] text-primary hover:underline flex items-center gap-1"
-                      >
-                        Pegar minha chave gratuita <span className="material-symbols-outlined text-[10px]">open_in_new</span>
-                      </a>
-                    </div>
-                  </div>
-                </>
-              )}
 
               <div className={`${generateWithAI ? 'opacity-50 pointer-events-none filter grayscale mt-4' : 'mt-4'} transition-all duration-300`}>
                 <div className="flex justify-between items-center mb-4">

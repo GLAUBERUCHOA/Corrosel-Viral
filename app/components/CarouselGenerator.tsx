@@ -858,10 +858,12 @@ export default function CarouselGenerator({ onLogout }: { onLogout: () => void }
     const ai = new GoogleGenAI({ apiKey });
 
     try {
+      // Usando 'imagen-3' que é o ID mais comum no Google AI Studio público
       const response = await ai.models.generateContent({
-        model: 'imagen-3.0-generate-001',
+        model: 'imagen-3',
         contents: prompt,
       });
+
 
       for (const part of response.candidates?.[0]?.content?.parts || []) {
         if (part.inlineData) {
@@ -1138,7 +1140,7 @@ export default function CarouselGenerator({ onLogout }: { onLogout: () => void }
               <span className="hidden sm:inline">Sair</span>
             </button>
             <div className="w-px h-6 bg-slate-200 dark:bg-border-dark"></div>
-            <div className="bg-center bg-no-repeat bg-cover rounded-full size-9 ring-2 ring-slate-100 dark:ring-border-dark cursor-pointer" data-alt="User profile picture" style={{ backgroundImage: 'url("https://lh3.googleusercontent.com/aida-public/AB6AXuDq8gwC2gYGw_ekJwtNXfCb7lnyQKPM_v5edKwjUZbSvOHK3eYZUrn0j9Zsp7DnI1y5irWu2M9jQ8s27oX9C8VS53cOb9lolxw7slhfmMAVnMrVv7AoCeW5zlCoAc6K89RUNfLyHiuWD2nCP-hNqvC-N3TSMzM6wY_FpkfrN3zKZ4yMFoV73t4WFlcggVqWO74G61RtArjXqmpvvCjTcciK-vFVCqOgWfn7BHR7aqjPLuP0MvRVXmzESNUpycuKFMtYIohCwRulGoY")' }}></div>
+            <div className="bg-center bg-no-repeat bg-cover rounded-full size-9 ring-2 ring-slate-100 dark:ring-border-dark cursor-pointer" data-alt="User profile picture" style={{ backgroundImage: 'url("https://lh3.googleusercontent.com/aida-public/AB6AXuDq8gwC2gYGw_ekJwtNXfCb7lnyQKPM_v5edKwjUZbSvOHK3eYZUrn0j9Zsp7DnI1y5irWu2M9jQ8s27oX9C8VS53cOb9lolxw7slhfmMAVnMrVv7AoCeW5zlCoAc6K89RUNfLyHiuWD2nCP-hNqvC-N3TSMzM6wY_FpkfrN3zKZ4yMFoV73t4WFlcggVqOgWfn7BHR7aqjPLuP0MvRVXmzESNUpycuKFMtYIohCwRulGoY")' }}></div>
           </div>
         </header>
 
@@ -1865,9 +1867,10 @@ export default function CarouselGenerator({ onLogout }: { onLogout: () => void }
                           </div>
 
                           <div
-                            className={`absolute inset-0 bg-black/80 transition-opacity flex flex-col items-center justify-center p-6 backdrop-blur-[4px] z-[60] cursor-pointer outline-none overflow-hidden ${openSlideIndex === index ? 'opacity-100' : 'opacity-0 pointer-events-none'}`}
+                            className={`absolute inset-0 bg-black/80 flex flex-col items-center justify-center p-6 backdrop-blur-[4px] z-[60] cursor-pointer outline-none overflow-hidden transition-opacity duration-300 ${openSlideIndex === index ? 'opacity-100' : 'opacity-0 pointer-events-none group-hover/slide-wrapper:opacity-100 group-hover/slide-wrapper:pointer-events-auto'}`}
                             onClick={(e) => { if (e.target === e.currentTarget) setOpenSlideIndex(null); }}
                           >
+
                             <div className="flex w-full h-full gap-2 sm:gap-4 items-center justify-center pointer-events-none">
                               <button
                                 onClick={(e) => { e.stopPropagation(); handleDownloadSingle(index); }}
@@ -1965,7 +1968,7 @@ export default function CarouselGenerator({ onLogout }: { onLogout: () => void }
                           </div>
                         </div>
                         <div
-                          className={`absolute inset-0 bg-black/80 transition-opacity flex flex-col items-center justify-center p-6 backdrop-blur-[4px] z-[60] cursor-pointer outline-none overflow-hidden ${openSlideIndex === index ? 'opacity-100' : 'opacity-0 pointer-events-none'}`}
+                          className={`absolute inset-0 bg-black/80 transition-opacity flex flex-col items-center justify-center p-6 backdrop-blur-[4px] z-[60] cursor-pointer outline-none overflow-hidden ${openSlideIndex === index ? 'opacity-100' : 'opacity-0 pointer-events-none group-hover/slide-wrapper:opacity-100 group-hover/slide-wrapper:pointer-events-auto'}`}
                           onClick={(e) => { if (e.target === e.currentTarget) setOpenSlideIndex(null); }}
                         >
                           <div className="flex w-full h-full gap-2 sm:gap-4 items-center justify-center pointer-events-none">

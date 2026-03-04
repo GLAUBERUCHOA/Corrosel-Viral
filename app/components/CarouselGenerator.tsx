@@ -1797,22 +1797,36 @@ export default function CarouselGenerator({ onLogout }: { onLogout: () => void }
                             </div>
                           </div>
 
-                          <div className={`absolute left-6 z-[60] flex items-center gap-2 pointer-events-none max-w-[33%] ${index === 0 || !isImageBottom ? 'top-6' : 'bottom-6'}`}>
-                            <div className="flex items-center gap-1.5 min-w-0">
-                              {brandHandle && (
-                                <span className="text-[10px] sm:text-[11px] font-black tracking-widest uppercase text-white truncate drop-shadow-md"
+                          <div className={`absolute left-6 z-[60] flex items-center pointer-events-none w-[30%] ${index === 0 || !isImageBottom ? 'top-6' : 'bottom-6'}`}>
+                            {brandHandle && (
+                              <svg
+                                viewBox={`0 0 ${brandHandle.length * 11 + 35} 30`}
+                                className="w-full h-auto drop-shadow-md select-none"
+                                preserveAspectRatio="xMinYCenter meet"
+                              >
+                                <text
+                                  x="0"
+                                  y="20"
+                                  className="font-black uppercase tracking-widest fill-white"
                                   style={{
-                                    WebkitTextStroke: '0.8px rgba(0,0,0,0.8)',
-                                  }}>
+                                    fontSize: '18px',
+                                    paintOrder: 'stroke',
+                                    stroke: 'rgba(0,0,0,0.8)',
+                                    strokeWidth: '3px',
+                                    strokeLinejoin: 'round'
+                                  }}
+                                >
                                   {brandHandle}
-                                </span>
-                              )}
-                              <div className="shrink-0">
-                                <svg viewBox="0 0 24 24" className="size-3.5 sm:size-4 fill-blue-500 drop-shadow-[0_1px_1px_rgba(0,0,0,0.5)]">
-                                  <path d="M22.5 12.5c0-1.58-.88-2.97-2.18-3.72.26-1.54-.23-3.15-1.35-4.27-1.13-1.12-2.73-1.6-4.27-1.35-.75-1.3-2.14-2.18-3.72-2.18s-2.97.88-3.72 2.18c-1.54-.25-3.15.23-4.27 1.35C1.87 5.65 1.39 7.25 1.64 8.78 0.34 9.53-0.54 10.92-0.54 12.5s0.88 2.97 2.18 3.72c-0.26 1.54 0.23 3.15 1.35 4.27 1.13 1.12 2.73 1.6 4.27 1.35 0.75 1.3 2.14 2.18 3.72 2.18s2.97-.88 3.72-2.18c1.54 0.25 3.15-0.23 4.27-1.35 1.12-1.13 1.6-2.73 1.35-4.27 1.3-0.75 2.18-2.14 2.18-3.72zM10.69 17.03l-3.5-3.56 1.27-1.27 2.23 2.22 5.63-5.64 1.27 1.27-6.9 6.98z" />
-                                </svg>
-                              </div>
-                            </div>
+                                </text>
+                                <g transform={`translate(${brandHandle.length * 11 + 5}, 4)`} className="fill-blue-500">
+                                  <path
+                                    transform="scale(0.8)"
+                                    style={{ filter: 'drop-shadow(0 1px 1px rgba(0,0,0,0.5))' }}
+                                    d="M22.5 12.5c0-1.58-.88-2.97-2.18-3.72.26-1.54-.23-3.15-1.35-4.27-1.13-1.12-2.73-1.6-4.27-1.35-.75-1.3-2.14-2.18-3.72-2.18s-2.97.88-3.72 2.18c-1.54-.25-3.15.23-4.27 1.35C1.87 5.65 1.39 7.25 1.64 8.78 0.34 9.53-0.54 10.92-0.54 12.5s0.88 2.97 2.18 3.72c-0.26 1.54 0.23 3.15 1.35 4.27 1.13 1.12 2.73 1.6 4.27 1.35 0.75 1.3 2.14 2.18 3.72 2.18s2.97-.88 3.72-2.18c1.54 0.25 3.15-0.23 4.27-1.35 1.12-1.13 1.6-2.73 1.35-4.27 1.3-0.75 2.18-2.14 2.18-3.72zM10.69 17.03l-3.5-3.56 1.27-1.27 2.23 2.22 5.63-5.64 1.27 1.27-6.9 6.98z"
+                                  />
+                                </g>
+                              </svg>
+                            )}
                           </div>
 
                           <div className={`w-full px-8 flex flex-col shrink-0 z-20 relative pt-6 ${index === 0 ? 'pb-16' : 'pb-6'} ${textAlign}`} style={{ fontFamily }}>

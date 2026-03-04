@@ -1588,16 +1588,15 @@ export default function CarouselGenerator({ onLogout }: { onLogout: () => void }
 
                             {(brandHandle || brandLogo) && (
                               <div className={`w-full h-0 shrink-0 relative z-[60] flex items-center justify-center ${!ctaImage ? 'mb-10 mt-2' : ''}`}>
-                                <div className="flex items-center gap-[2px] pr-1 pl-[1px] py-[1.5px] rounded-full absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 mt-0.5 drop-shadow-[0_2px_4px_rgba(0,0,0,0.6)]" style={{ minWidth: 'fit-content' }}>
+                                <div className="flex items-center gap-[6px] pr-3 pl-[1px] py-1.5 rounded-full absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 mt-1 drop-shadow-[0_4px_10px_rgba(0,0,0,0.9)]" style={{ minWidth: 'fit-content' }}>
                                   {brandLogo && (
-                                    <div className={`size-[12px] sm:size-[14px] rounded-full overflow-hidden shrink-0 shadow-md bg-white border border-white/20`}>
+                                    <div className={`size-[28px] sm:size-[32px] rounded-full overflow-hidden shrink-0 shadow-2xl bg-white border-2 border-white/50`}>
                                       <img src={brandLogo} alt="Logo" className="w-full h-full object-cover" />
                                     </div>
                                   )}
                                   {brandHandle && (
-                                    <div className={`flex items-center gap-[1px] text-[5px] sm:text-[7px] font-bold tracking-wider text-white pb-[0.5px]`}>
-                                      <span className="ml-[0.5px]">{brandHandle}</span>
-                                      <span className="material-symbols-outlined text-[5px] sm:text-[6px] text-blue-500 fill" style={{ fontVariationSettings: "'FILL' 1" }}>verified</span>
+                                    <div className={`flex items-center text-[12px] sm:text-[15px] font-black tracking-widest text-white pb-[0.5px]`}>
+                                      <span className="ml-[2px]">{brandHandle}</span>
                                     </div>
                                   )}
                                 </div>
@@ -1610,7 +1609,7 @@ export default function CarouselGenerator({ onLogout }: { onLogout: () => void }
                             </div>
                           </div>
 
-                          <div tabIndex={0} onClick={(e) => { if (e.target === e.currentTarget) e.currentTarget.blur() }} className="absolute inset-0 bg-black/80 opacity-0 group-hover/slide:opacity-100 focus:opacity-100 focus-within:opacity-100 transition-opacity flex flex-col items-center justify-center p-6 backdrop-blur-[4px] z-[60] cursor-pointer outline-none">
+                          <div tabIndex={0} onClick={(e) => { e.currentTarget.blur(); }} className="absolute inset-0 bg-black/80 opacity-0 group-hover/slide:opacity-100 focus:opacity-100 focus-within:opacity-100 transition-opacity flex flex-col items-center justify-center p-6 backdrop-blur-[4px] z-[60] cursor-pointer outline-none">
                             <div className="flex w-full h-full gap-2 sm:gap-4 items-center justify-center">
                               <button
                                 onClick={() => handleDownloadSingle(index)}
@@ -1658,16 +1657,15 @@ export default function CarouselGenerator({ onLogout }: { onLogout: () => void }
 
                           <div className="w-full h-0 shrink-0 relative z-[60] flex items-center justify-center">
                             {(brandHandle || brandLogo) && (
-                              <div className="flex items-center gap-[2px] pr-1 pl-[1px] py-[1.5px] rounded-full absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 mt-0.5 drop-shadow-[0_2px_4px_rgba(0,0,0,0.6)]" style={{ minWidth: 'fit-content' }}>
+                              <div className="flex items-center gap-[6px] pr-3 pl-[1px] py-1.5 rounded-full absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 mt-1 drop-shadow-[0_4px_10px_rgba(0,0,0,0.9)]" style={{ minWidth: 'fit-content' }}>
                                 {brandLogo && (
-                                  <div className={`size-[12px] sm:size-[14px] rounded-full overflow-hidden shrink-0 shadow-md bg-white border border-white/20`}>
+                                  <div className={`size-[28px] sm:size-[32px] rounded-full overflow-hidden shrink-0 shadow-2xl bg-white border-2 border-white/50`}>
                                     <img src={brandLogo} alt="Logo" className="w-full h-full object-cover" />
                                   </div>
                                 )}
                                 {brandHandle && (
-                                  <div className={`flex items-center gap-[1px] text-[5px] sm:text-[7px] font-bold tracking-wider text-white pb-[0.5px]`}>
-                                    <span className="ml-[0.5px]">{brandHandle}</span>
-                                    <span className="material-symbols-outlined text-[5px] sm:text-[6px] text-blue-500 fill" style={{ fontVariationSettings: "'FILL' 1" }}>verified</span>
+                                  <div className={`flex items-center text-[12px] sm:text-[15px] font-black tracking-widest text-white pb-[0.5px]`}>
+                                    <span className="ml-[2px]">{brandHandle}</span>
                                   </div>
                                 )}
                               </div>
@@ -1687,7 +1685,7 @@ export default function CarouselGenerator({ onLogout }: { onLogout: () => void }
                             )}
                           </div>
                         </div>
-                        <div tabIndex={0} onClick={(e) => { if (e.target === e.currentTarget) e.currentTarget.blur() }} className="absolute inset-0 bg-black/80 opacity-0 group-hover/slide:opacity-100 focus:opacity-100 focus-within:opacity-100 transition-opacity flex flex-col items-center justify-center p-6 backdrop-blur-[4px] z-[60] cursor-pointer outline-none">
+                        <div tabIndex={0} onClick={(e) => { e.currentTarget.blur(); }} className="absolute inset-0 bg-black/80 opacity-0 group-hover/slide:opacity-100 focus:opacity-100 focus-within:opacity-100 transition-opacity flex flex-col items-center justify-center p-6 backdrop-blur-[4px] z-[60] cursor-pointer outline-none">
                           <div className="flex w-full h-full gap-2 sm:gap-4 items-center justify-center">
                             <div className="flex flex-col gap-2 w-1/2 max-w-[160px]">
                               <span className="text-[10px] text-white/50 font-bold uppercase tracking-wider mb-1">Conteúdo</span>

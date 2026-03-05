@@ -1658,8 +1658,8 @@ export default function CarouselGenerator({ onLogout }: { onLogout: () => void }
                   const isImageBottom = index === 0 ? false : randomPattern[index % randomPattern.length];
                   const contentOrder = isImageBottom ? 'flex-col-reverse' : 'flex-col';
                   const textAlignmentPadding = isImageBottom
-                    ? 'pt-12 pb-6 justify-center'
-                    : (index === 0 ? 'pt-3 pb-10 justify-end' : 'pt-3 pb-4 justify-end');
+                    ? 'pt-12 pb-10 justify-center'
+                    : (index === 0 ? 'pt-6 pb-14 justify-end' : 'pt-6 pb-8 justify-end');
 
                   return (
                     <div key={index} className={`relative shrink-0 snap-center flex items-center group/slide-wrapper ${getSlideDimensions()}`}
@@ -1711,7 +1711,7 @@ export default function CarouselGenerator({ onLogout }: { onLogout: () => void }
                             )}
                           </div>
 
-                          <div className={`w-full px-8 flex flex-col shrink-0 z-20 relative pt-6 pb-6 ${textAlign}`} style={{ fontFamily }}>
+                          <div className={`w-full px-8 flex flex-col shrink-0 z-20 relative ${textAlignmentPadding} ${textAlign}`} style={{ fontFamily }}>
                             <div className={`flex flex-col gap-2 ${textAlign === 'text-center' ? 'items-center text-center' : textAlign === 'text-right' ? 'items-end text-right' : 'items-start text-left'}`}>
                               {slide.title && <h2 className={`${titleClass} uppercase`}>{slide.title}</h2>}
                               {slide.subtitle && <p className={subtitleClass}>{slide.subtitle}</p>}

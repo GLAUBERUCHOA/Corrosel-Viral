@@ -934,11 +934,21 @@ export default function CarouselGenerator({ onLogout }: { onLogout: () => void }
     if (!slideElement) return;
 
     try {
+      const filter = (node: HTMLElement) => {
+        const exclusionClasses = ['animate-pulse', 'invisible'];
+        return !exclusionClasses.some(classname => node.classList && node.classList.contains && node.classList.contains(classname));
+      };
+
       const dataUrl = await htmlToImage.toPng(slideElement, {
         quality: 1,
-        pixelRatio: 5,
+        pixelRatio: 6, // 4-6x de downsampling ratio
         skipFonts: false,
-        cacheBust: true, // Evita problemas de renderização de imagens cacheadas
+        cacheBust: true,
+        style: {
+          transform: 'scale(1)',
+          transformOrigin: 'top left',
+        },
+        filter: filter
       });
 
       saveAs(dataUrl, `slide-${index + 1}.png`);
@@ -959,11 +969,21 @@ export default function CarouselGenerator({ onLogout }: { onLogout: () => void }
           const slideElement = slideRefs.current[index];
           if (!slideElement) continue;
 
+          const filter = (node: HTMLElement) => {
+            const exclusionClasses = ['animate-pulse', 'invisible'];
+            return !exclusionClasses.some(classname => node.classList && node.classList.contains && node.classList.contains(classname));
+          };
+
           const dataUrl = await htmlToImage.toPng(slideElement, {
             quality: 1,
-            pixelRatio: 5,
+            pixelRatio: 6,
             skipFonts: false,
             cacheBust: true,
+            style: {
+              transform: 'scale(1)',
+              transformOrigin: 'top left',
+            },
+            filter: filter
           });
 
           saveAs(dataUrl, `slide-${index + 1}.png`);

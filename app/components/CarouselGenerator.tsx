@@ -982,12 +982,15 @@ export default function CarouselGenerator({ onLogout }: { onLogout: () => void }
 
     try {
       if (isMobile) {
-        // No celular, baixa as imagens uma a uma (estilo Canva) para evitar o ZIP
+        // No celular, renderiza TODAS as imagens antes de acionar qualquer download ou prompt.
+        // O prompt trava o navegador que faria o htmlToImage causar "error" na próxima foto.
+        const gerados: { url: string, name: string }[] = [];
+
         for (let index = 0; index < parsedSlides.length; index++) {
           const slideElement = slideRefs.current[index];
           if (!slideElement) continue;
 
-          // Crucial para mobile: Rolar a div para a tela antes do html-to-image renderizar
+          // Rolar a div para a tela antes de renderizar (Força a texturização de camadas pesadas no celular)
           slideElement.scrollIntoView({ behavior: 'instant', block: 'center', inline: 'center' });
           await new Promise(resolve => setTimeout(resolve, 600));
 
@@ -1012,13 +1015,40 @@ export default function CarouselGenerator({ onLogout }: { onLogout: () => void }
             filter: filter
           });
 
-          saveAs(dataUrl, `slide-${index + 1}.png`);
+          gerados.push({ url: dataUrl, name: `slide-${index + 1}.png` });
+        }
 
-          // Pequeno delay entre downloads para o navegador mobile processar corretamente
-          if (index < parsedSlides.length - 1) {
-            await new Promise(resolve => setTimeout(resolve, 800));
+        // Nativo para Celulares: Tenta compartilhar/salvar as imagens de uma vez através da nativa Sheets (Muito menos propenso a falhas)
+        try {
+          if (navigator.canShare && navigator.share) {
+            const filesArray = await Promise.all(gerados.map(async (img) => {
+              const res = await fetch(img.url);
+              const blob = await res.blob();
+              return new File([blob], img.name, { type: 'image/png' });
+            }));
+
+            if (navigator.canShare({ files: filesArray })) {
+              await navigator.share({
+                files: filesArray,
+                title: 'Meu Carrossel Viral',
+              });
+              setIsDownloading(false);
+              return; // Sucesso com share
+            }
+          }
+        } catch (e) {
+          console.warn("Share API fallhou ou usuário fechou a aba:", e);
+        }
+
+        // Fallback: Dispara os downloads do cache pré gerado. O erro do dom não vai ocorrer pois o canvas já foi desenhado.
+        for (let i = 0; i < gerados.length; i++) {
+          saveAs(gerados[i].url, gerados[i].name);
+          if (i < gerados.length - 1) {
+            // Um delay alto aqui de segurança pois cada Prompt de confirmação pode acumular no celular
+            await new Promise(resolve => setTimeout(resolve, 1500));
           }
         }
+
       } else {
         const zip = new JSZip();
         const promises = parsedSlides.map(async (_, index) => {

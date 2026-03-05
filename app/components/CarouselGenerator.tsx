@@ -1590,16 +1590,17 @@ export default function CarouselGenerator({ onLogout }: { onLogout: () => void }
                             )}
 
                             {(brandHandle || brandLogo) && (
-                              <div className={`w-full h-0 shrink-0 relative z-[60] flex items-center justify-center ${!ctaImage ? 'mb-10 mt-2' : ''}`}>
-                                <div className="flex items-center gap-[4px] pr-2 pl-[1px] py-1 rounded-full absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2" style={{ minWidth: 'fit-content', filter: 'drop-shadow(0 3px 8px rgba(0,0,0,0.95)) drop-shadow(0 1px 3px rgba(0,0,0,0.8))' }}>
+                              <div className="absolute top-3 left-3 z-[60]" style={{ opacity: 0.7 }}>
+                                <div className="flex items-center gap-[5px] px-2 py-1">
                                   {brandLogo && (
-                                    <div className={`size-[22px] sm:size-[26px] rounded-full overflow-hidden shrink-0 bg-white border-2 border-white/50`} style={{ boxShadow: '0 0 0 2px rgba(0,0,0,0.4), 0 4px 12px rgba(0,0,0,0.7)' }}>
+                                    <div className="size-[20px] sm:size-[22px] rounded-full overflow-hidden shrink-0 bg-white/20 border border-white/30">
                                       <img src={brandLogo} alt="Logo" className="w-full h-full object-cover" />
                                     </div>
                                   )}
                                   {brandHandle && (
-                                    <div className={`flex items-center text-[10px] sm:text-[12px] font-black tracking-widest text-white pb-[0.5px]`} style={{ textShadow: '0 1px 4px rgba(0,0,0,1), 0 0 12px rgba(0,0,0,0.8)' }}>
-                                      <span className="ml-[2px]">{brandHandle}</span>
+                                    <div className="flex items-center gap-1 text-[10px] sm:text-[11px] font-black tracking-wider text-white uppercase">
+                                      <span>{brandHandle}</span>
+                                      <svg className="w-[14px] h-[14px] text-blue-400 shrink-0" viewBox="0 0 24 24" fill="currentColor"><path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41L9 16.17z" /></svg>
                                     </div>
                                   )}
                                 </div>
@@ -1663,17 +1664,18 @@ export default function CarouselGenerator({ onLogout }: { onLogout: () => void }
                             </div>
                           </div>
 
-                          <div className="w-full h-0 shrink-0 relative z-[60] flex items-center justify-center">
+                          <div className="absolute top-3 left-3 z-[60]" style={{ opacity: 0.7 }}>
                             {(brandHandle || brandLogo) && (
-                              <div className="flex items-center gap-[4px] pr-2 pl-[1px] py-1 rounded-full absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2" style={{ minWidth: 'fit-content', filter: 'drop-shadow(0 3px 8px rgba(0,0,0,0.95)) drop-shadow(0 1px 3px rgba(0,0,0,0.8))' }}>
+                              <div className="flex items-center gap-[5px] px-2 py-1">
                                 {brandLogo && (
-                                  <div className={`size-[22px] sm:size-[26px] rounded-full overflow-hidden shrink-0 bg-white border-2 border-white/50`} style={{ boxShadow: '0 0 0 2px rgba(0,0,0,0.4), 0 4px 12px rgba(0,0,0,0.7)' }}>
+                                  <div className="size-[20px] sm:size-[22px] rounded-full overflow-hidden shrink-0 bg-white/20 border border-white/30">
                                     <img src={brandLogo} alt="Logo" className="w-full h-full object-cover" />
                                   </div>
                                 )}
                                 {brandHandle && (
-                                  <div className={`flex items-center text-[10px] sm:text-[12px] font-black tracking-widest text-white pb-[0.5px]`} style={{ textShadow: '0 1px 4px rgba(0,0,0,1), 0 0 12px rgba(0,0,0,0.8)' }}>
-                                    <span className="ml-[2px]">{brandHandle}</span>
+                                  <div className="flex items-center gap-1 text-[10px] sm:text-[11px] font-black tracking-wider text-white uppercase">
+                                    <span>{brandHandle}</span>
+                                    <svg className="w-[14px] h-[14px] text-blue-400 shrink-0" viewBox="0 0 24 24" fill="currentColor"><path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41L9 16.17z" /></svg>
                                   </div>
                                 )}
                               </div>
@@ -1682,13 +1684,15 @@ export default function CarouselGenerator({ onLogout }: { onLogout: () => void }
 
                           <div className={`w-full px-8 flex flex-col shrink-0 z-20 relative pt-6 pb-6 ${textAlign}`} style={{ fontFamily }}>
                             <div className={`flex flex-col gap-2 ${textAlign === 'text-center' ? 'items-center text-center' : textAlign === 'text-right' ? 'items-end text-right' : 'items-start text-left'}`}>
-                              {slide.title && <h2 className={titleClass}>{slide.title}</h2>}
+                              {slide.title && <h2 className={`${titleClass} uppercase`}>{slide.title}</h2>}
                               {slide.subtitle && <p className={subtitleClass}>{slide.subtitle}</p>}
                             </div>
                             {index === 0 && (
-                              <div className={`absolute bottom-5 left-8 right-6 flex items-center justify-end gap-1 ${theme.textClass} opacity-50`}>
-                                <span className="text-[8px] font-bold uppercase tracking-wider">Deslize para ver mais</span>
-                                <span className="material-symbols-outlined text-[14px]">arrow_forward</span>
+                              <div className="absolute bottom-4 right-5 z-30">
+                                <div className="flex items-center gap-1.5 bg-white/10 backdrop-blur-sm border border-white/10 rounded-full px-3 py-1.5">
+                                  <span className={`text-[9px] font-semibold tracking-wide ${theme.textClass} opacity-70`}>Arraste para o lado</span>
+                                  <span className={`text-[11px] ${theme.textClass} opacity-70`}>&gt;</span>
+                                </div>
                               </div>
                             )}
                           </div>

@@ -1833,8 +1833,8 @@ export default function CarouselGenerator({ onLogout }: { onLogout: () => void }
 
                           <div className={`w-full px-8 flex flex-col shrink-0 z-20 relative ${textAlignmentPadding} ${textAlign}`} style={{ fontFamily }}>
                             <div className={`flex flex-col gap-2 ${textAlign === 'text-center' ? 'items-center text-center' : textAlign === 'text-right' ? 'items-end text-right' : 'items-start text-left'}`}>
-                              {slide.title && <h2 className={`${titleClass} uppercase`}>{slide.title}</h2>}
-                              {slide.subtitle && <p className={subtitleClass}>{slide.subtitle}</p>}
+                              {slide.title && <h2 className={`${titleClass} uppercase [&>div]:inline`} dangerouslySetInnerHTML={{ __html: slide.title }} />}
+                              {slide.subtitle && <p className={`${subtitleClass} [&>div]:inline`} dangerouslySetInnerHTML={{ __html: slide.subtitle }} />}
                             </div>
                             {index === 0 && (
                               <div className="absolute bottom-3 right-3 z-30">
@@ -1983,20 +1983,16 @@ export default function CarouselGenerator({ onLogout }: { onLogout: () => void }
               <div className="p-6 space-y-4">
                 <div className="space-y-2">
                   <label className="text-sm font-semibold text-slate-700 dark:text-slate-300">Título</label>
-                  <textarea
+                  <RichTextEditor
                     value={editTitle}
-                    onChange={(e) => setEditTitle(e.target.value)}
-                    className="w-full bg-slate-50 dark:bg-surface-darker border border-slate-200 dark:border-border-dark rounded-xl p-3 text-sm text-slate-900 dark:text-white focus:ring-2 focus:ring-primary focus:border-transparent resize-none h-24"
-                    placeholder="Digite o título do slide..."
+                    onChange={setEditTitle}
                   />
                 </div>
                 <div className="space-y-2">
                   <label className="text-sm font-semibold text-slate-700 dark:text-slate-300">Subtítulo / Texto de Apoio</label>
-                  <textarea
+                  <RichTextEditor
                     value={editSubtitle}
-                    onChange={(e) => setEditSubtitle(e.target.value)}
-                    className="w-full bg-slate-50 dark:bg-surface-darker border border-slate-200 dark:border-border-dark rounded-xl p-3 text-sm text-slate-900 dark:text-white focus:ring-2 focus:ring-primary focus:border-transparent resize-none h-32"
-                    placeholder="Digite o texto de apoio (opcional)..."
+                    onChange={setEditSubtitle}
                   />
                 </div>
               </div>

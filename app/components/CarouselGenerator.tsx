@@ -1983,14 +1983,14 @@ export default function CarouselGenerator({ onLogout }: { onLogout: () => void }
               <div className="p-6 space-y-4">
                 <div className="space-y-2">
                   <label className="text-sm font-semibold text-slate-700 dark:text-slate-300">Título</label>
-                  <RichTextEditor
+                  <SimpleRichTextEditor
                     value={editTitle}
                     onChange={setEditTitle}
                   />
                 </div>
                 <div className="space-y-2">
                   <label className="text-sm font-semibold text-slate-700 dark:text-slate-300">Subtítulo / Texto de Apoio</label>
-                  <RichTextEditor
+                  <SimpleRichTextEditor
                     value={editSubtitle}
                     onChange={setEditSubtitle}
                   />

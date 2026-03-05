@@ -82,22 +82,36 @@ const SimpleRichTextEditor = ({ value, onChange, placeholder }: { value: string,
   const editorRef = useRef<HTMLDivElement>(null);
   const [savedSelection, setSavedSelection] = useState<Range | null>(null);
 
+  const lastHtmlRef = useRef(value);
+
   useEffect(() => {
-    if (editorRef.current && editorRef.current.innerHTML !== value && document.activeElement !== editorRef.current) {
-      editorRef.current.innerHTML = value;
+    if (editorRef.current && value !== lastHtmlRef.current) {
+      editorRef.current.innerHTML = value || '';
+      lastHtmlRef.current = value;
     }
   }, [value]);
 
+  const emitChange = () => {
+    if (editorRef.current) {
+      const html = editorRef.current.innerHTML;
+      lastHtmlRef.current = html;
+      onChange(html);
+    }
+  };
+
   const exec = (command: string, val?: string) => {
     document.execCommand(command, false, val);
-    if (editorRef.current) onChange(editorRef.current.innerHTML);
+    emitChange();
     editorRef.current?.focus();
   };
 
   const saveSelection = () => {
     const sel = window.getSelection();
     if (sel && sel.rangeCount > 0) {
-      setSavedSelection(sel.getRangeAt(0).cloneRange());
+      const range = sel.getRangeAt(0);
+      if (editorRef.current && editorRef.current.contains(range.commonAncestorContainer)) {
+        setSavedSelection(range.cloneRange());
+      }
     }
   };
 
@@ -108,7 +122,7 @@ const SimpleRichTextEditor = ({ value, onChange, placeholder }: { value: string,
       sel?.addRange(savedSelection);
     }
     document.execCommand(command, false, color);
-    if (editorRef.current) onChange(editorRef.current.innerHTML);
+    emitChange();
   };
 
   const fgColors = ['#ffffff', '#000000', '#ef4444', '#f59e0b', '#22c55e', '#3b82f6', '#ec4899'];
@@ -168,8 +182,9 @@ const SimpleRichTextEditor = ({ value, onChange, placeholder }: { value: string,
         contentEditable
         onMouseUp={saveSelection}
         onKeyUp={saveSelection}
-        onInput={(e) => { saveSelection(); onChange(e.currentTarget.innerHTML); }}
-        onBlur={(e) => { saveSelection(); onChange(e.currentTarget.innerHTML); }}
+        onMouseLeave={saveSelection}
+        onInput={(e) => { saveSelection(); emitChange(); }}
+        onBlur={() => { emitChange(); }}
         dangerouslySetInnerHTML={{ __html: value }}
       />
     </div>

@@ -1915,7 +1915,40 @@ export default function CarouselGenerator({ onLogout }: { onLogout: () => void }
                   );
                 })}
 
-                <button className={`w-[100px] ${aspectRatio === '9:16' ? 'h-[560px]' : 'h-[500px]'} shrink-0 rounded-2xl border-2 border-dashed border-slate-300 dark:border-border-dark flex flex-col items-center justify-center gap-3 text-slate-400 dark:text-slate-500 hover:border-primary hover:text-primary hover:bg-primary/5 transition-all group`}>
+                <button
+                  onClick={() => {
+                    const normalSlidesCount = parsedSlides.filter(s => !s.isCta).length;
+                    const nextSlideNum = normalSlidesCount + 1;
+                    const newSlideData = { title: 'Novo Título', subtitle: 'Novo texto do slide aqui...', isCta: false };
+
+                    if (isIuryMode) {
+                      setParsedSlides(prev => {
+                        const newArr = [...prev];
+                        if (addCtaSlide && newArr.length > 0 && newArr[newArr.length - 1].isCta) {
+                          newArr.splice(newArr.length - 1, 0, newSlideData);
+                        } else {
+                          newArr.push(newSlideData);
+                        }
+                        return newArr;
+                      });
+                      setUploadedImages(prev => {
+                        const newArr = [...prev];
+                        if (addCtaSlide && parsedSlides.length > 0 && parsedSlides[parsedSlides.length - 1].isCta) {
+                          newArr.splice(newArr.length - 1, 0, null);
+                        } else {
+                          newArr.push(null);
+                        }
+                        return newArr;
+                      });
+                    } else {
+                      const newText = `\n\nSLIDE 0${nextSlideNum}:\n[TÍTULO]: Novo Título\n[SUBTÍTULO]: Novo texto do slide aqui...`;
+                      const newContent = content + newText;
+                      setContent(newContent);
+                      processTextIntoSlides(newContent, addCtaSlide, ctaContent);
+                    }
+                  }}
+                  className={`w-[100px] ${aspectRatio === '9:16' ? 'h-[560px]' : 'h-[500px]'} shrink-0 rounded-2xl border-2 border-dashed border-slate-300 dark:border-border-dark flex flex-col items-center justify-center gap-3 text-slate-400 dark:text-slate-500 hover:border-primary hover:text-primary hover:bg-primary/5 transition-all group`}
+                >
                   <div className="size-12 rounded-full bg-slate-200 dark:bg-surface-darker group-hover:bg-primary group-hover:text-white flex items-center justify-center transition-colors">
                     <span className="material-symbols-outlined text-[24px]">add</span>
                   </div>

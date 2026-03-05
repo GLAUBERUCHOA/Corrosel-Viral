@@ -987,6 +987,10 @@ export default function CarouselGenerator({ onLogout }: { onLogout: () => void }
           const slideElement = slideRefs.current[index];
           if (!slideElement) continue;
 
+          // Crucial para mobile: Rolar a div para a tela antes do html-to-image renderizar
+          slideElement.scrollIntoView({ behavior: 'instant', block: 'center', inline: 'center' });
+          await new Promise(resolve => setTimeout(resolve, 600));
+
           const filter = (node: HTMLElement) => {
             const exclusionClasses = ['animate-pulse', 'invisible'];
             return !exclusionClasses.some(classname => node.classList && node.classList.contains && node.classList.contains(classname));

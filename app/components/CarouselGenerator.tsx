@@ -126,8 +126,6 @@ const SimpleRichTextEditor = ({ value, onChange, placeholder }: { value: string,
         <span className="text-[10px] text-slate-500 font-bold uppercase ml-1">Letra:</span>
         <input
           type="color"
-          onMouseDown={saveSelection}
-          onClick={saveSelection}
           onInput={(e) => { execWithColor('foreColor', e.currentTarget.value); }}
           className="size-6 cursor-pointer border-0 p-0 bg-transparent rounded-full shadow-sm"
           title="Cor da Letra"
@@ -141,8 +139,6 @@ const SimpleRichTextEditor = ({ value, onChange, placeholder }: { value: string,
           </button>
           <input
             type="color"
-            onMouseDown={saveSelection}
-            onClick={saveSelection}
             onInput={(e) => { execWithColor('hiliteColor', e.currentTarget.value); }}
             className="size-4 cursor-pointer border-0 p-0 bg-transparent"
             title="Cor de Fundo"
@@ -170,8 +166,10 @@ const SimpleRichTextEditor = ({ value, onChange, placeholder }: { value: string,
           emptyCells: 'show'
         }}
         contentEditable
-        onInput={(e) => onChange(e.currentTarget.innerHTML)}
-        onBlur={(e) => onChange(e.currentTarget.innerHTML)}
+        onMouseUp={saveSelection}
+        onKeyUp={saveSelection}
+        onInput={(e) => { saveSelection(); onChange(e.currentTarget.innerHTML); }}
+        onBlur={(e) => { saveSelection(); onChange(e.currentTarget.innerHTML); }}
         dangerouslySetInnerHTML={{ __html: value }}
       />
     </div>
@@ -1986,6 +1984,7 @@ export default function CarouselGenerator({ onLogout }: { onLogout: () => void }
                   <SimpleRichTextEditor
                     value={editTitle}
                     onChange={setEditTitle}
+                    placeholder="Digite o título do slide..."
                   />
                 </div>
                 <div className="space-y-2">
@@ -1993,6 +1992,7 @@ export default function CarouselGenerator({ onLogout }: { onLogout: () => void }
                   <SimpleRichTextEditor
                     value={editSubtitle}
                     onChange={setEditSubtitle}
+                    placeholder="Digite o texto de apoio (opcional)..."
                   />
                 </div>
               </div>

@@ -939,14 +939,18 @@ export default function CarouselGenerator({ onLogout }: { onLogout: () => void }
         return !exclusionClasses.some(classname => node.classList && node.classList.contains && node.classList.contains(classname));
       };
 
+      const scale = 5;
       const dataUrl = await htmlToImage.toPng(slideElement, {
         quality: 1,
-        pixelRatio: 6, // 4-6x de downsampling ratio
+        pixelRatio: 1,
         skipFonts: false,
-        cacheBust: true,
+        width: slideElement.offsetWidth * scale,
+        height: slideElement.offsetHeight * scale,
         style: {
-          transform: 'scale(1)',
+          transform: `scale(${scale})`,
           transformOrigin: 'top left',
+          width: `${slideElement.offsetWidth}px`,
+          height: `${slideElement.offsetHeight}px`
         },
         filter: filter
       });
@@ -974,14 +978,18 @@ export default function CarouselGenerator({ onLogout }: { onLogout: () => void }
             return !exclusionClasses.some(classname => node.classList && node.classList.contains && node.classList.contains(classname));
           };
 
+          const scale = 5;
           const dataUrl = await htmlToImage.toPng(slideElement, {
             quality: 1,
-            pixelRatio: 6,
+            pixelRatio: 1,
             skipFonts: false,
-            cacheBust: true,
+            width: slideElement.offsetWidth * scale,
+            height: slideElement.offsetHeight * scale,
             style: {
-              transform: 'scale(1)',
+              transform: `scale(${scale})`,
               transformOrigin: 'top left',
+              width: `${slideElement.offsetWidth}px`,
+              height: `${slideElement.offsetHeight}px`
             },
             filter: filter
           });
@@ -999,11 +1007,25 @@ export default function CarouselGenerator({ onLogout }: { onLogout: () => void }
           const slideElement = slideRefs.current[index];
           if (!slideElement) return null;
 
+          const filter = (node: HTMLElement) => {
+            const exclusionClasses = ['animate-pulse', 'invisible'];
+            return !exclusionClasses.some(classname => node.classList && node.classList.contains && node.classList.contains(classname));
+          };
+
+          const scale = 5;
           const dataUrl = await htmlToImage.toPng(slideElement, {
             quality: 1,
-            pixelRatio: 5,
+            pixelRatio: 1,
             skipFonts: false,
-            cacheBust: true,
+            width: slideElement.offsetWidth * scale,
+            height: slideElement.offsetHeight * scale,
+            style: {
+              transform: `scale(${scale})`,
+              transformOrigin: 'top left',
+              width: `${slideElement.offsetWidth}px`,
+              height: `${slideElement.offsetHeight}px`
+            },
+            filter: filter
           });
 
           const base64Data = dataUrl.replace(/^data:image\/(png|jpg);base64,/, "");

@@ -1687,9 +1687,9 @@ export default function CarouselGenerator({ onLogout }: { onLogout: () => void }
                   let subtitleClass = `${theme.subtextClass} leading-relaxed whitespace-pre-wrap `;
 
                   if (isFirst) {
-                    if (titleLength > 100) titleClass += "text-xl";
-                    else if (titleLength > 60) titleClass += "text-xl";
-                    else if (titleLength > 30) titleClass += "text-2xl";
+                    if (titleLength > 80) titleClass += "text-lg";
+                    else if (titleLength > 50) titleClass += "text-xl";
+                    else if (titleLength > 25) titleClass += "text-2xl";
                     else titleClass += "text-3xl";
                     subtitleClass += "text-base line-clamp-6";
                   } else {
@@ -1786,7 +1786,7 @@ export default function CarouselGenerator({ onLogout }: { onLogout: () => void }
                   const contentOrder = isImageBottom ? 'flex-col-reverse' : 'flex-col';
                   const textAlignmentPadding = isImageBottom
                     ? 'pt-8 pb-4'
-                    : (index === 0 ? 'pt-4 pb-14' : 'pt-4 pb-8');
+                    : (index === 0 ? 'pt-4 pb-10' : 'pt-4 pb-8');
 
                   return (
                     <div key={index} data-slide-index={index} className={`relative shrink-0 snap-center flex items-center group/slide-wrapper ${getSlideDimensions()}`}

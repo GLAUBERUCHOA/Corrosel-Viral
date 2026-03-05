@@ -292,6 +292,9 @@ export default function CarouselGenerator({ onLogout }: { onLogout: () => void }
     const savedKey = localStorage.getItem('gemini_api_key');
     if (savedKey) {
       setCustomApiKey(savedKey);
+      setImageEngine('gemini');
+    } else {
+      setImageEngine('pollinations');
     }
 
     const savedPrefs = localStorage.getItem('carousel_preferences');
@@ -501,8 +504,10 @@ export default function CarouselGenerator({ onLogout }: { onLogout: () => void }
     setCustomApiKey(val);
     if (val) {
       localStorage.setItem('gemini_api_key', val);
+      setImageEngine('gemini');
     } else {
       localStorage.removeItem('gemini_api_key');
+      setImageEngine('pollinations');
     }
   };
 
@@ -1208,28 +1213,8 @@ export default function CarouselGenerator({ onLogout }: { onLogout: () => void }
                     className="w-full bg-white dark:bg-surface-dark border border-indigo-200 dark:border-indigo-800 rounded-lg px-3 py-2 text-xs text-slate-700 dark:text-slate-300 focus:ring-2 focus:ring-primary focus:border-transparent outline-none transition-all shadow-sm"
                   />
                   <p className="text-[10px] text-slate-500 dark:text-slate-400 leading-tight">
-                    Para usar o <strong>Modo Iury</strong> e <strong>Imagens IA</strong>, você precisa de uma chave gratuita da Google.
+                    Para usar o <strong>Modo Iury</strong> e <strong>Imagens IA (Imagen 4)</strong>, cole sua chave gratuita da Google.
                   </p>
-
-                  <div className="pt-2 border-t border-indigo-100 dark:border-indigo-900/10 space-y-2">
-                    <label className="text-[10px] font-bold text-indigo-900/60 dark:text-indigo-400 uppercase tracking-widest flex items-center gap-1">
-                      <span className="material-symbols-outlined text-[14px]">psychology</span> Motor de Texto
-                    </label>
-                    <div className="flex bg-white dark:bg-surface-dark border border-indigo-200 dark:border-indigo-800 rounded-lg p-1 gap-1">
-                      <button
-                        onClick={() => setTextModel('gemini-1.5-flash')}
-                        className={`flex-1 py-1 text-[10px] font-bold rounded-md transition-all ${textModel === 'gemini-1.5-flash' ? 'bg-primary text-white shadow-sm' : 'text-slate-500 hover:bg-slate-50'}`}
-                      >
-                        1.5 FLASH
-                      </button>
-                      <button
-                        onClick={() => setTextModel('gemini-1.5-pro')}
-                        className={`flex-1 py-1 text-[10px] font-bold rounded-md transition-all ${textModel === 'gemini-1.5-pro' ? 'bg-primary text-white shadow-sm' : 'text-slate-500 hover:bg-slate-50'}`}
-                      >
-                        1.5 PRO
-                      </button>
-                    </div>
-                  </div>
 
                   <div className="flex justify-end pt-1">
                     <a
@@ -1240,26 +1225,6 @@ export default function CarouselGenerator({ onLogout }: { onLogout: () => void }
                     >
                       Pegar minha chave gratuita <span className="material-symbols-outlined text-[10px]">open_in_new</span>
                     </a>
-                  </div>
-
-                  <div className="pt-2 mt-2 border-t border-indigo-100 dark:border-indigo-900/30 space-y-2">
-                    <label className="text-[10px] font-bold text-indigo-900/60 dark:text-indigo-400 uppercase tracking-widest flex items-center gap-1">
-                      <span className="material-symbols-outlined text-[14px]">image_search</span> Motor de Imagem IA
-                    </label>
-                    <select
-                      value={imageEngine}
-                      onChange={(e) => setImageEngine(e.target.value as any)}
-                      className="w-full bg-white dark:bg-surface-dark border border-indigo-200 dark:border-indigo-800 rounded-lg px-3 py-2 text-xs text-slate-700 dark:text-slate-300 focus:ring-2 focus:ring-primary outline-none cursor-pointer"
-                    >
-                      <option value="pollinations">Pollinations (Grátis & Rápido)</option>
-                      <option value="gemini">Gemini Imagen 4 (Via sua Chave)</option>
-                      <option value="leonardo">Leonardo AI (Chave Própria)</option>
-                    </select>
-                    <p className="text-[9px] text-slate-500 leading-tight">
-                      {imageEngine === 'pollinations' ? '✨ Recomendado: Não precisa de chave e é muito veloz.' :
-                        imageEngine === 'gemini' ? '💎 Imagen 4: Alta qualidade. Requer sua chave Gemini acima.' :
-                          '🎨 Profissional: Requer configuração no código/env.'}
-                    </p>
                   </div>
                 </div>
 
@@ -1598,9 +1563,8 @@ export default function CarouselGenerator({ onLogout }: { onLogout: () => void }
                     <span className="material-symbols-outlined text-[18px]">auto_awesome</span> Gerar imagens com IA
                   </span>
                   <span className="text-[10px] text-slate-500">
-                    Usando: {imageEngine === 'pollinations' ? 'Pollinations (Grátis)' : imageEngine === 'gemini' ? 'Gemini Imagen 3' : 'Leonardo AI'}
+                    {customApiKey ? '💎 Imagen 4 (Gemini)' : '✨ Pollinations (Grátis)'}
                   </span>
-
                 </div>
                 <label className="relative inline-flex items-center cursor-pointer">
                   <input type="checkbox" className="sr-only peer" checked={generateWithAI} onChange={(e) => setGenerateWithAI(e.target.checked)} />

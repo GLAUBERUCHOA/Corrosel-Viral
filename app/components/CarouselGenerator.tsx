@@ -1619,7 +1619,12 @@ export default function CarouselGenerator({ onLogout }: { onLogout: () => void }
                                   {brandHandle && (
                                     <div className="flex items-center gap-1 text-[10px] sm:text-[11px] font-black tracking-wider text-white uppercase">
                                       <span>{brandHandle}</span>
-                                      <svg className="w-[14px] h-[14px] text-blue-400 shrink-0" viewBox="0 0 24 24" fill="currentColor"><path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41L9 16.17z" /></svg>
+                                      <svg className="w-[14px] h-[14px] shrink-0" viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                        <circle cx="20" cy="20" r="12" fill="#3897f0" />
+                                        <path d="M17.5 21.5L15 19L13.5 20.5L17.5 24.5L26.5 15.5L25 14L17.5 21.5Z" fill="white" />
+                                        <path d="M20 0L24.5 3.5L30 2.5L31 8L36 11L34.5 16.5L37.5 21.5L33.5 25.5L33.5 31.5L28 32L24 36.5L19.5 33L14 35.5L11 30.5L5.5 29L6 23.5L2 19.5L5.5 15L5 9.5L10.5 8L14 3.5L20 0Z" fill="#3897f0" />
+                                        <path d="M17 21L14.5 18.5L13 20L17 24L27 14L25.5 12.5L17 21Z" fill="white" />
+                                      </svg>
                                     </div>
                                   )}
                                 </div>
@@ -1683,7 +1688,7 @@ export default function CarouselGenerator({ onLogout }: { onLogout: () => void }
                             </div>
                           </div>
 
-                          <div className="absolute top-3 left-3 z-[60]" style={{ opacity: 0.7 }}>
+                          <div className={`absolute ${isImageBottom ? 'bottom-3' : 'top-3'} left-3 z-[60]`} style={{ opacity: 0.7 }}>
                             {(brandHandle || brandLogo) && (
                               <div className="flex items-center gap-[5px] px-2 py-1">
                                 {brandLogo && (
@@ -1694,7 +1699,12 @@ export default function CarouselGenerator({ onLogout }: { onLogout: () => void }
                                 {brandHandle && (
                                   <div className="flex items-center gap-1 text-[10px] sm:text-[11px] font-black tracking-wider text-white uppercase">
                                     <span>{brandHandle}</span>
-                                    <svg className="w-[14px] h-[14px] text-blue-400 shrink-0" viewBox="0 0 24 24" fill="currentColor"><path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41L9 16.17z" /></svg>
+                                    <svg className="w-[14px] h-[14px] shrink-0" viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                      <circle cx="20" cy="20" r="12" fill="#3897f0" />
+                                      <path d="M17.5 21.5L15 19L13.5 20.5L17.5 24.5L26.5 15.5L25 14L17.5 21.5Z" fill="white" />
+                                      <path d="M20 0L24.5 3.5L30 2.5L31 8L36 11L34.5 16.5L37.5 21.5L33.5 25.5L33.5 31.5L28 32L24 36.5L19.5 33L14 35.5L11 30.5L5.5 29L6 23.5L2 19.5L5.5 15L5 9.5L10.5 8L14 3.5L20 0Z" fill="#3897f0" />
+                                      <path d="M17 21L14.5 18.5L13 20L17 24L27 14L25.5 12.5L17 21Z" fill="white" />
+                                    </svg>
                                   </div>
                                 )}
                               </div>

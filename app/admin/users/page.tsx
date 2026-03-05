@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
+import Sidebar from '../components/Sidebar';
 
 type User = { id: string, name: string, email: string, role: string, createdAt: string };
 
@@ -18,6 +19,7 @@ export default function UsersPage() {
     const [password, setPassword] = useState('');
     const [role, setRole] = useState('ADMIN');
     const [isSaving, setIsSaving] = useState(false);
+    const [showPassword, setShowPassword] = useState(false);
 
     const loadUsers = async () => {
         setIsLoading(true);
@@ -44,6 +46,7 @@ export default function UsersPage() {
         setEmail('');
         setPassword('');
         setRole('ADMIN');
+        setShowPassword(false);
         setIsModalOpen(true);
     };
 
@@ -53,6 +56,7 @@ export default function UsersPage() {
         setEmail(user.email);
         setPassword(''); // Password reset is optional on edit
         setRole(user.role);
+        setShowPassword(false);
         setIsModalOpen(true);
     };
 
@@ -108,29 +112,7 @@ export default function UsersPage() {
 
     return (
         <div className="flex h-screen overflow-hidden">
-            {/* Sidebar - Duplicada por simplicidade, ideal seria componente separado logo */}
-            <aside className="w-64 bg-slate-900 text-slate-300 flex flex-col hidden md:flex">
-                <div className="p-6 border-b border-slate-800">
-                    <Link href="/admin" className="text-white font-bold text-xl flex items-center gap-2">
-                        <span className="material-symbols-outlined text-primary">admin_panel_settings</span>
-                        Lab Admin
-                    </Link>
-                </div>
-                <nav className="flex-1 p-4 flex flex-col gap-2">
-                    <Link href="/admin" className="flex items-center gap-3 px-4 py-3 rounded-lg hover:bg-slate-800 hover:text-white transition-colors">
-                        <span className="material-symbols-outlined text-[20px]">dashboard</span>
-                        Dashboard
-                    </Link>
-                    <Link href="/admin/users" className="flex items-center gap-3 px-4 py-3 rounded-lg bg-primary/20 text-white font-medium">
-                        <span className="material-symbols-outlined text-[20px]">people</span>
-                        Usuários
-                    </Link>
-                    <Link href="/admin/settings" className="flex items-center gap-3 px-4 py-3 rounded-lg hover:bg-slate-800 hover:text-white transition-colors">
-                        <span className="material-symbols-outlined text-[20px]">tune</span>
-                        Modos do Iury
-                    </Link>
-                </nav>
-            </aside>
+            <Sidebar />
 
             <main className="flex-1 overflow-auto bg-slate-50 dark:bg-background-dark p-8 relative">
                 <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-8 gap-4">
@@ -233,10 +215,24 @@ export default function UsersPage() {
                                 </div>
                                 <div>
                                     <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Senha {editingUser && <span className="text-xs text-slate-400 font-normal">(Deixe em branco para não alterar)</span>}</label>
-                                    <input
-                                        type="password" required={!editingUser} value={password} onChange={(e) => setPassword(e.target.value)}
-                                        className="w-full px-3 py-2 border border-slate-300 dark:border-slate-600 rounded-lg bg-transparent focus:ring-2 focus:ring-primary outline-none"
-                                    />
+                                    <div className="relative">
+                                        <input
+                                            type={showPassword ? "text" : "password"}
+                                            required={!editingUser}
+                                            value={password}
+                                            onChange={(e) => setPassword(e.target.value)}
+                                            className="w-full px-3 py-2 border border-slate-300 dark:border-slate-600 rounded-lg bg-transparent focus:ring-2 focus:ring-primary outline-none pr-10"
+                                        />
+                                        <button
+                                            type="button"
+                                            onClick={() => setShowPassword(!showPassword)}
+                                            className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200"
+                                        >
+                                            <span className="material-symbols-outlined text-[20px]">
+                                                {showPassword ? 'visibility_off' : 'visibility'}
+                                            </span>
+                                        </button>
+                                    </div>
                                 </div>
                                 <div className="pt-4 flex justify-end gap-3">
                                     <button

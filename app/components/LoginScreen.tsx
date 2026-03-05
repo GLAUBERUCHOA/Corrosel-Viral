@@ -3,21 +3,41 @@ import React, { useState } from 'react';
 
 export default function LoginScreen({ onLogin }: { onLogin: (email: string) => void }) {
   const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
+  const [isFirstAccess, setIsFirstAccess] = useState(false);
   const [error, setError] = useState('');
+  const [successMsg, setSuccessMsg] = useState('');
   const [isLoading, setIsLoading] = useState(false);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     const cleanEmail = email.toLowerCase().trim();
-    
+
     // Always allow the admin email for testing/fallback
     if (cleanEmail === 'drglauberabreu@gmail.com') {
       onLogin(cleanEmail);
       return;
     }
 
+    if (!email) {
+      setError('O e-mail é obrigatório.');
+      return;
+    }
+
+    if (!password && cleanEmail !== 'drglauberabreu@gmail.com') {
+      setError('A senha é obrigatória.');
+      return;
+    }
+
+    if (isFirstAccess && password !== confirmPassword) {
+      setError('As senhas não coincidem. Verifique e digite novamente.');
+      return;
+    }
+
     setIsLoading(true);
     setError('');
+    setSuccessMsg('');
 
     try {
       const response = await fetch('/api/auth/login', {
@@ -25,15 +45,30 @@ export default function LoginScreen({ onLogin }: { onLogin: (email: string) => v
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ email: cleanEmail }),
+        body: JSON.stringify({
+          email: cleanEmail,
+          password,
+          isSettingPassword: isFirstAccess
+        }),
       });
 
       const data = await response.json();
 
       if (response.ok && data.success) {
-        onLogin(cleanEmail);
+        if (isFirstAccess) {
+          setSuccessMsg('Conta ativada com sucesso! Redirecionando...');
+          // Optional short delay so user sees success message
+          setTimeout(() => onLogin(cleanEmail), 1500);
+        } else {
+          onLogin(cleanEmail);
+        }
       } else {
-        setError(data.error || 'E-mail não autorizado. Verifique e tente novamente.');
+        if (data.error === 'FIRST_ACCESS') {
+          setIsFirstAccess(true);
+          setError('Este é o seu primeiro acesso. Crie uma senha para continuar.');
+        } else {
+          setError(data.error || 'Erro ao realizar login. Tente novamente.');
+        }
       }
     } catch (err) {
       setError('Erro ao conectar com o servidor. Tente novamente mais tarde.');
@@ -55,14 +90,14 @@ export default function LoginScreen({ onLogin }: { onLogin: (email: string) => v
               <span className="material-symbols-outlined text-4xl">view_carousel</span>
             </div>
           </div>
-          
+
           <h2 className="text-3xl font-extrabold text-center text-slate-900 dark:text-white mb-2 tracking-tight">
             Bem-vindo de volta
           </h2>
           <p className="text-center text-slate-500 dark:text-slate-400 mb-10 text-sm font-medium">
             Faça login para acessar o Carrossel Viral Lab
           </p>
-          
+
           <form onSubmit={handleSubmit} className="space-y-6">
             <div className="space-y-2">
               <label htmlFor="email" className="block text-sm font-semibold text-slate-700 dark:text-slate-300">
@@ -76,19 +111,74 @@ export default function LoginScreen({ onLogin }: { onLogin: (email: string) => v
                   id="email"
                   type="email"
                   value={email}
+                  disabled={isFirstAccess}
                   onChange={(e) => { setEmail(e.target.value); setError(''); }}
                   placeholder="seu@email.com"
-                  className={`w-full pl-11 pr-4 py-3.5 rounded-xl border ${error ? 'border-red-300 dark:border-red-500/50 bg-red-50 dark:bg-red-500/10' : 'border-slate-200 dark:border-border-dark bg-slate-50 dark:bg-surface-darker'} text-slate-900 dark:text-white focus:ring-2 focus:ring-primary focus:border-transparent transition-all outline-none font-medium`}
+                  className={`w-full pl-11 pr-4 py-3.5 rounded-xl border ${error && !password ? 'border-red-300 dark:border-red-500/50 bg-red-50 dark:bg-red-500/10' : 'border-slate-200 dark:border-border-dark bg-slate-50 dark:bg-surface-darker'} text-slate-900 dark:text-white focus:ring-2 focus:ring-primary focus:border-transparent transition-all outline-none font-medium disabled:opacity-50`}
                   required
                 />
               </div>
-              {error && (
-                <p className="mt-2 text-xs font-semibold text-red-500 flex items-center gap-1 animate-in fade-in slide-in-from-top-1">
-                  <span className="material-symbols-outlined text-[14px]">error</span> {error}
-                </p>
-              )}
             </div>
-            
+
+            <div className="space-y-2 relative animate-in fade-in slide-in-from-top-2">
+              <label htmlFor="password" className="block text-sm font-semibold text-slate-700 dark:text-slate-300">
+                {isFirstAccess ? 'Crie sua Senha' : 'Senha'}
+              </label>
+              <div className="relative">
+                <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
+                  <span className="material-symbols-outlined text-slate-400 text-[20px]">lock</span>
+                </div>
+                <input
+                  id="password"
+                  type="password"
+                  value={password}
+                  onChange={(e) => { setPassword(e.target.value); setError(''); }}
+                  placeholder="Sua senha"
+                  className={`w-full pl-11 pr-4 py-3.5 rounded-xl border ${error && password ? 'border-red-300 dark:border-red-500/50 bg-red-50 dark:bg-red-500/10' : 'border-slate-200 dark:border-border-dark bg-slate-50 dark:bg-surface-darker'} text-slate-900 dark:text-white focus:ring-2 focus:ring-primary focus:border-transparent transition-all outline-none font-medium`}
+                  required
+                  autoFocus={isFirstAccess}
+                />
+              </div>
+            </div>
+
+            {isFirstAccess && (
+              <div className="space-y-2 relative animate-in fade-in slide-in-from-top-2">
+                <label htmlFor="confirmPassword" className="block text-sm font-semibold text-slate-700 dark:text-slate-300">
+                  Confirmar Senha
+                </label>
+                <div className="relative">
+                  <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
+                    <span className="material-symbols-outlined text-slate-400 text-[20px]">lock</span>
+                  </div>
+                  <input
+                    id="confirmPassword"
+                    type="password"
+                    value={confirmPassword}
+                    onChange={(e) => { setConfirmPassword(e.target.value); setError(''); }}
+                    placeholder="Repita sua senha"
+                    className={`w-full pl-11 pr-4 py-3.5 rounded-xl border ${error && confirmPassword ? 'border-red-300 dark:border-red-500/50 bg-red-50 dark:bg-red-500/10' : 'border-slate-200 dark:border-border-dark bg-slate-50 dark:bg-surface-darker'} text-slate-900 dark:text-white focus:ring-2 focus:ring-primary focus:border-transparent transition-all outline-none font-medium`}
+                    required={isFirstAccess}
+                  />
+                </div>
+              </div>
+            )}
+
+            {error && (
+              <div className="p-3 bg-red-50 dark:bg-red-500/10 border border-red-200 dark:border-red-500/20 rounded-lg animate-in fade-in slide-in-from-top-1">
+                <p className="text-sm font-medium text-red-600 dark:text-red-400 flex items-start gap-2">
+                  <span className="material-symbols-outlined text-[18px] translate-y-0.5">error</span> {error}
+                </p>
+              </div>
+            )}
+
+            {successMsg && (
+              <div className="p-3 bg-emerald-50 dark:bg-emerald-500/10 border border-emerald-200 dark:border-emerald-500/20 rounded-lg animate-in fade-in slide-in-from-top-1">
+                <p className="text-sm font-medium text-emerald-600 dark:text-emerald-400 flex items-start gap-2">
+                  <span className="material-symbols-outlined text-[18px] translate-y-0.5">check_circle</span> {successMsg}
+                </p>
+              </div>
+            )}
+
             <button
               type="submit"
               disabled={isLoading}
@@ -106,7 +196,7 @@ export default function LoginScreen({ onLogin }: { onLogin: (email: string) => v
               )}
             </button>
           </form>
-          
+
           <div className="mt-8 text-center">
             <p className="text-xs text-slate-400 dark:text-slate-500">
               Acesso restrito a usuários autorizados.

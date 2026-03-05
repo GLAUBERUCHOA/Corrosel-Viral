@@ -835,17 +835,21 @@ export default function CarouselGenerator({ onLogout }: { onLogout: () => void }
 
     try {
       console.log(`[CarouselGenerator] Hub IA - Gemini Imagen: Iniciando para slide ${slideIndex}`);
-      // IMPORTANTE: Aqui usamos o modelo de imagem (imagen-3), não os modelos de texto (Flash/Pro)
-      const response = await ai.models.generateContent({
-        model: 'imagen-3',
-        contents: prompt,
+      // Usamos o método correto generateImages() e o ID 'imagen-3.0-generate-001'
+      const response = await ai.models.generateImages({
+        model: 'imagen-3.0-generate-001',
+        prompt: prompt,
+        config: {
+          numberOfImages: 1,
+          outputMimeType: 'image/jpeg',
+          aspectRatio: aspectRatio === '4:5' ? '3:4' : '9:16'
+        }
       });
 
-      for (const part of response.candidates?.[0]?.content?.parts || []) {
-        if (part.inlineData) {
-          console.log(`[CarouselGenerator] Gemini Imagen: Sucesso no slide ${slideIndex}`);
-          return `data:${part.inlineData.mimeType || 'image/png'};base64,${part.inlineData.data}`;
-        }
+      const imageBytes = response.generatedImages?.[0]?.image?.imageBytes;
+      if (imageBytes) {
+        console.log(`[CarouselGenerator] Gemini Imagen: Sucesso no slide ${slideIndex}`);
+        return `data:image/jpeg;base64,${imageBytes}`;
       }
     } catch (err) {
       console.error("[CarouselGenerator] Gemini Imagen Erro:", err);

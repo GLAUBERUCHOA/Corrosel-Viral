@@ -199,6 +199,7 @@ export default function CarouselGenerator({ onLogout }: { onLogout: () => void }
   const [zoom, setZoom] = useState(100);
   const [activeMobileTab, setActiveMobileTab] = useState<'config' | 'preview'>('config');
   const [saveDefaults, setSaveDefaults] = useState(true);
+  const [currentSlideIndex, setCurrentSlideIndex] = useState(0);
 
   const [addCtaSlide, setAddCtaSlide] = useState(false);
   const [ctaContent, setCtaContent] = useState('O que você achou? Deixe nos comentários e salve este post para não esquecer!');
@@ -254,6 +255,70 @@ export default function CarouselGenerator({ onLogout }: { onLogout: () => void }
       window.removeEventListener('touchend', handleUp);
     };
   }, []);
+
+  // Monitorar slide visível e colar imagens
+  useEffect(() => {
+    const handlePaste = (e: ClipboardEvent) => {
+      const items = e.clipboardData?.items;
+      if (!items) return;
+
+      for (let i = 0; i < items.length; i++) {
+        if (items[i].type.indexOf('image') !== -1) {
+          const blob = items[i].getAsFile();
+          if (!blob) continue;
+
+          const reader = new FileReader();
+          reader.onload = (event) => {
+            const result = event.target?.result as string;
+            // Alvo prioritário: Slide aberto (menu ativo)
+            // Alvo secundário: Slide visível no centro
+            const targetIndex = openSlideIndex !== null ? openSlideIndex : currentSlideIndex;
+
+            if (targetIndex < parsedSlides.length) {
+              setUploadedImages(prev => {
+                const updated = [...prev];
+                while (updated.length <= targetIndex) updated.push(null);
+                updated[targetIndex] = result;
+                return updated;
+              });
+              // Feedback visual (opcional/implícito pela atualização da imagem)
+            }
+          };
+          reader.readAsDataURL(blob);
+          break; // Apenas a primeira imagem se houver múltiplas
+        }
+      }
+    };
+
+    window.addEventListener('paste', handlePaste);
+
+    // Setup do IntersectionObserver para saber qual slide está no centro
+    const observerOptions = {
+      root: null, // viewport
+      rootMargin: '0px',
+      threshold: 0.6 // 60% visível para ser considerado o "atual"
+    };
+
+    const observer = new IntersectionObserver((entries) => {
+      entries.forEach(entry => {
+        if (entry.isIntersecting) {
+          const idx = entry.target.getAttribute('data-slide-index');
+          if (idx !== null) setCurrentSlideIndex(parseInt(idx));
+        }
+      });
+    }, observerOptions);
+
+    // Observar todos os slides atuais
+    const currentRefs = slideRefs.current;
+    currentRefs.forEach(ref => {
+      if (ref) observer.observe(ref.parentElement?.parentElement || ref); // Mirar no wrapper do slide
+    });
+
+    return () => {
+      window.removeEventListener('paste', handlePaste);
+      observer.disconnect();
+    };
+  }, [openSlideIndex, currentSlideIndex, parsedSlides.length, viewMode]);
 
   const handleImgDragStart = (e: React.MouseEvent | React.TouchEvent, index: number) => {
     if (e.cancelable) e.preventDefault();
@@ -1592,7 +1657,7 @@ export default function CarouselGenerator({ onLogout }: { onLogout: () => void }
 
                   if (slide.isCta) {
                     return (
-                      <div key={index} className={`relative shrink-0 snap-center flex items-center group/slide-wrapper ${getSlideDimensions()}`}
+                      <div key={index} data-slide-index={index} className={`relative shrink-0 snap-center flex items-center group/slide-wrapper ${getSlideDimensions()}`}
                         onClick={() => { if (openSlideIndex !== index) setOpenSlideIndex(index); }}
                       >
                         <div className="relative group/slide w-full h-full rounded-2xl overflow-hidden shadow-2xl transition-transform hover:-translate-y-2 duration-300">
@@ -1662,7 +1727,7 @@ export default function CarouselGenerator({ onLogout }: { onLogout: () => void }
                     : (index === 0 ? 'pt-6 pb-14 justify-end' : 'pt-6 pb-8 justify-end');
 
                   return (
-                    <div key={index} className={`relative shrink-0 snap-center flex items-center group/slide-wrapper ${getSlideDimensions()}`}
+                    <div key={index} data-slide-index={index} className={`relative shrink-0 snap-center flex items-center group/slide-wrapper ${getSlideDimensions()}`}
                       onClick={() => { if (openSlideIndex !== index) setOpenSlideIndex(index); }}
                     >
                       <div className="relative group/slide w-full h-full rounded-2xl overflow-hidden shadow-2xl transition-transform hover:-translate-y-2 duration-300">
@@ -1807,7 +1872,7 @@ export default function CarouselGenerator({ onLogout }: { onLogout: () => void }
           <div className="absolute bottom-6 left-1/2 -translate-x-1/2 flex items-center gap-2 sm:gap-4 bg-white/90 dark:bg-surface-dark/90 backdrop-blur-md border border-slate-200 dark:border-border-dark rounded-full px-3 sm:px-4 py-2 shadow-xl z-10 w-max max-w-[95vw]">
             <button className="text-slate-500 hover:text-primary"><span className="material-symbols-outlined text-[18px] sm:text-[24px]">first_page</span></button>
             <button className="text-slate-500 hover:text-primary"><span className="material-symbols-outlined text-[18px] sm:text-[24px]">chevron_left</span></button>
-            <span className="text-[10px] sm:text-xs font-mono text-slate-900 dark:text-white font-medium whitespace-nowrap">Slide 1 / {slideCount}</span>
+            <span className="text-[10px] sm:text-xs font-mono text-slate-900 dark:text-white font-medium whitespace-nowrap">Slide {currentSlideIndex + 1} / {slideCount}</span>
             <button className="text-slate-500 hover:text-primary"><span className="material-symbols-outlined text-[18px] sm:text-[24px]">chevron_right</span></button>
             <button className="text-slate-500 hover:text-primary"><span className="material-symbols-outlined text-[18px] sm:text-[24px]">last_page</span></button>
           </div>

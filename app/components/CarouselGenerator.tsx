@@ -936,8 +936,9 @@ export default function CarouselGenerator({ onLogout }: { onLogout: () => void }
     try {
       const dataUrl = await htmlToImage.toPng(slideElement, {
         quality: 1,
-        pixelRatio: 5, // Aumento para ultra-resolução (2000px+ no 4:5 e 9:16)
+        pixelRatio: 5,
         skipFonts: false,
+        cacheBust: true, // Evita problemas de renderização de imagens cacheadas
       });
 
       saveAs(dataUrl, `slide-${index + 1}.png`);
@@ -961,6 +962,8 @@ export default function CarouselGenerator({ onLogout }: { onLogout: () => void }
           const dataUrl = await htmlToImage.toPng(slideElement, {
             quality: 1,
             pixelRatio: 5,
+            skipFonts: false,
+            cacheBust: true,
           });
 
           saveAs(dataUrl, `slide-${index + 1}.png`);
@@ -979,6 +982,8 @@ export default function CarouselGenerator({ onLogout }: { onLogout: () => void }
           const dataUrl = await htmlToImage.toPng(slideElement, {
             quality: 1,
             pixelRatio: 5,
+            skipFonts: false,
+            cacheBust: true,
           });
 
           const base64Data = dataUrl.replace(/^data:image\/(png|jpg);base64,/, "");
@@ -1750,7 +1755,14 @@ export default function CarouselGenerator({ onLogout }: { onLogout: () => void }
                             <div
                               className="block h-full w-full relative z-30 pointer-events-none"
                             >
-                              <div className="absolute inset-0 bg-cover transition-transform duration-500 pointer-events-none" style={{ backgroundImage: `url('${imageSrc}')`, backgroundPosition: `center ${imagePosMap[index] ?? 50}%`, imageRendering: '-webkit-optimize-contrast' }}></div>
+                              <img
+                                src={imageSrc}
+                                alt={`Slide ${index}`}
+                                className="absolute inset-0 w-full h-full object-cover transition-transform duration-500"
+                                style={{
+                                  objectPosition: `center ${imagePosMap[index] ?? 50}%`,
+                                }}
+                              />
                             </div>
                           </div>
 

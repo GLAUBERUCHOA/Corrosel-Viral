@@ -828,32 +828,44 @@ export default function CarouselGenerator({ onLogout }: { onLogout: () => void }
       return data.dataUrl || data.url || null;
     }
 
-    // ── 3. Gemini: Modelo Imagen 3 (O modelo correto para fotos) ──
+    // ── 3. Gemini: Modelo Imagen 4 (Imagen 3 foi descontinuado pelo Google) ──
     const apiKey = customApiKey || process.env.NEXT_PUBLIC_GEMINI_API_KEY;
     if (!apiKey) throw new Error('Chave da API Gemini não encontrada.');
     const ai = new GoogleGenAI({ apiKey });
 
-    try {
-      console.log(`[CarouselGenerator] Hub IA - Gemini Imagen: Iniciando para slide ${slideIndex}`);
-      // Usamos o método correto generateImages() e o ID 'imagen-3.0-generate-001'
-      const response = await ai.models.generateImages({
-        model: 'imagen-3.0-generate-001',
-        prompt: prompt,
-        config: {
-          numberOfImages: 1,
-          outputMimeType: 'image/jpeg',
-          aspectRatio: aspectRatio === '4:5' ? '3:4' : '9:16'
-        }
-      });
+    // Cadeia de modelos: tenta o principal, depois o fast como fallback
+    const imagenModels = ['imagen-4.0-generate-001', 'imagen-4.0-fast-generate-001'];
+    let lastError: unknown = null;
 
-      const imageBytes = response.generatedImages?.[0]?.image?.imageBytes;
-      if (imageBytes) {
-        console.log(`[CarouselGenerator] Gemini Imagen: Sucesso no slide ${slideIndex}`);
-        return `data:image/jpeg;base64,${imageBytes}`;
+    for (const modelId of imagenModels) {
+      try {
+        console.log(`[CarouselGenerator] Hub IA - Gemini Imagen: Tentando modelo ${modelId} para slide ${slideIndex}`);
+        const response = await ai.models.generateImages({
+          model: modelId,
+          prompt: prompt,
+          config: {
+            numberOfImages: 1,
+            outputMimeType: 'image/jpeg',
+            aspectRatio: aspectRatio === '4:5' ? '3:4' : '9:16'
+          }
+        });
+
+        const imageBytes = response.generatedImages?.[0]?.image?.imageBytes;
+        if (imageBytes) {
+          console.log(`[CarouselGenerator] Gemini Imagen (${modelId}): Sucesso no slide ${slideIndex}`);
+          return `data:image/jpeg;base64,${imageBytes}`;
+        }
+      } catch (err) {
+        console.warn(`[CarouselGenerator] Gemini Imagen (${modelId}) falhou:`, err);
+        lastError = err;
+        // Continua para o próximo modelo na cadeia
       }
-    } catch (err) {
-      console.error("[CarouselGenerator] Gemini Imagen Erro:", err);
-      throw err;
+    }
+
+    // Se todos os modelos falharam, lança o último erro
+    if (lastError) {
+      console.error("[CarouselGenerator] Todos os modelos Imagen falharam.");
+      throw lastError;
     }
 
     return null;
@@ -1240,12 +1252,12 @@ export default function CarouselGenerator({ onLogout }: { onLogout: () => void }
                       className="w-full bg-white dark:bg-surface-dark border border-indigo-200 dark:border-indigo-800 rounded-lg px-3 py-2 text-xs text-slate-700 dark:text-slate-300 focus:ring-2 focus:ring-primary outline-none cursor-pointer"
                     >
                       <option value="pollinations">Pollinations (Grátis & Rápido)</option>
-                      <option value="gemini">Gemini Imagen 3 (Via sua Chave)</option>
+                      <option value="gemini">Gemini Imagen 4 (Via sua Chave)</option>
                       <option value="leonardo">Leonardo AI (Chave Própria)</option>
                     </select>
                     <p className="text-[9px] text-slate-500 leading-tight">
                       {imageEngine === 'pollinations' ? '✨ Recomendado: Não precisa de chave e é muito veloz.' :
-                        imageEngine === 'gemini' ? '💎 Alta Qualidade: Requer sua chave Gemini acima.' :
+                        imageEngine === 'gemini' ? '💎 Imagen 4: Alta qualidade. Requer sua chave Gemini acima.' :
                           '🎨 Profissional: Requer configuração no código/env.'}
                     </p>
                   </div>

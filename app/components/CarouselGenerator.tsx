@@ -193,32 +193,12 @@ export default function CarouselGenerator({ onLogout }: { onLogout: () => void }
   const [generatingImages, setGeneratingImages] = useState<boolean[]>([]);
   const [isIuryMode, setIsIuryMode] = useState(false);
   const [isGeneratingText, setIsGeneratingText] = useState(false);
-  const [imageEngine, setImageEngine] = useState<'gemini' | 'leonardo' | 'pollinations'>('gemini');
   const [hasNewPreview, setHasNewPreview] = useState(false);
   const [toneMode, setToneMode] = useState('PROVOCATIVO');
-  const [textModel, setTextModel] = useState<'gemini-1.5-flash' | 'gemini-1.5-pro'>('gemini-1.5-flash');
-
   const [content, setContent] = useState('');
   const [zoom, setZoom] = useState(100);
   const [activeMobileTab, setActiveMobileTab] = useState<'config' | 'preview'>('config');
   const [saveDefaults, setSaveDefaults] = useState(true);
-
-  // Typography Advanced Settings
-  const [coverTitleSize, setCoverTitleSize] = useState(100);
-  const [slideTitleSize, setSlideTitleSize] = useState(100);
-  const [subtitleSize, setSubtitleSize] = useState(100);
-
-  // Sidebar Sections Collapsible State
-  const [expandedSections, setExpandedSections] = useState<Record<string, boolean>>({
-    ai: false,
-    branding: false,
-    typography: false,
-    config: false,
-  });
-
-  const toggleSection = (section: string) => {
-    setExpandedSections(prev => ({ ...prev, [section]: !prev[section] }));
-  };
 
   const [addCtaSlide, setAddCtaSlide] = useState(false);
   const [ctaContent, setCtaContent] = useState('O que você achou? Deixe nos comentários e salve este post para não esquecer!');
@@ -292,9 +272,6 @@ export default function CarouselGenerator({ onLogout }: { onLogout: () => void }
     const savedKey = localStorage.getItem('gemini_api_key');
     if (savedKey) {
       setCustomApiKey(savedKey);
-      setImageEngine('gemini');
-    } else {
-      setImageEngine('pollinations');
     }
 
     const savedPrefs = localStorage.getItem('carousel_preferences');
@@ -328,11 +305,6 @@ export default function CarouselGenerator({ onLogout }: { onLogout: () => void }
         if (prefs.parsedSlides && Array.isArray(prefs.parsedSlides) && prefs.parsedSlides.length > 0) {
           setParsedSlides(prefs.parsedSlides);
         }
-
-        // Advanced Typography
-        if (prefs.coverTitleSize !== undefined) setCoverTitleSize(prefs.coverTitleSize);
-        if (prefs.slideTitleSize !== undefined) setSlideTitleSize(prefs.slideTitleSize);
-        if (prefs.subtitleSize !== undefined) setSubtitleSize(prefs.subtitleSize);
       } catch (e) {
         console.error("Failed to parse saved preferences", e);
       }
@@ -395,10 +367,7 @@ export default function CarouselGenerator({ onLogout }: { onLogout: () => void }
         addCtaSlide,
         ctaContent,
         ctaImage,
-        toneMode,
-        coverTitleSize,
-        slideTitleSize,
-        subtitleSize
+        toneMode
       };
 
       if (saveDefaults) {
@@ -426,88 +395,15 @@ export default function CarouselGenerator({ onLogout }: { onLogout: () => void }
         localStorage.setItem('carousel_preferences', JSON.stringify(prefs));
       }
     }
-  }, [brandHandle, brandLogo, styleModel, customColor, aspectRatio, content, parsedSlides, saveDefaults, toneMode, fontFamily, textAlign, addCtaSlide, ctaContent, ctaImage, coverTitleSize, slideTitleSize, subtitleSize]);
-
-  // Clipboard Paste Support (Ctrl+V) para Imagens
-  useEffect(() => {
-    const handlePaste = (e: ClipboardEvent) => {
-      // Evita interceptar o paste se o usuário estiver digitando em campos de texto
-      const activeEl = document.activeElement;
-      if (activeEl instanceof HTMLInputElement ||
-        activeEl instanceof HTMLTextAreaElement ||
-        activeEl?.getAttribute('contenteditable') === 'true' ||
-        editingSlideIndex !== null) {
-        return;
-      }
-
-      const items = e.clipboardData?.items;
-      if (!items) return;
-
-      for (let i = 0; i < items.length; i++) {
-        if (items[i].type.indexOf('image') !== -1) {
-          const file = items[i].getAsFile();
-          if (!file) continue;
-
-          const reader = new FileReader();
-          reader.onload = (event) => {
-            const dataUrl = event.target?.result as string;
-            if (!dataUrl) return;
-
-            setUploadedImages(prev => {
-              const updated = [...prev];
-              // Garantir que o array acompanhe a contagem de slides
-              while (updated.length < slideCount) updated.push(null);
-
-              // 1. Alvo: Slide aberto/selecionado (se houver)
-              if (openSlideIndex !== null) {
-                updated[openSlideIndex] = dataUrl;
-                return updated;
-              }
-
-              // 2. Alvo: Index específico de upload (se o usuário clicou no botão mas resolveu colar)
-              if (targetUploadIndex !== null) {
-                updated[targetUploadIndex] = dataUrl;
-                setTargetUploadIndex(null);
-                return updated;
-              }
-
-              // 3. Alvo: Primeiro slot vazio encontrado nos slides atuais
-              let slotFound = false;
-              for (let j = 0; j < slideCount; j++) {
-                if (!updated[j]) {
-                  updated[j] = dataUrl;
-                  slotFound = true;
-                  break;
-                }
-              }
-
-              // 4. Se não houver slot vazio, adiciona ao final (pode gerar novo slide dependendo da lógica do app)
-              if (!slotFound) {
-                updated.push(dataUrl);
-              }
-
-              return updated;
-            });
-          };
-          reader.readAsDataURL(file);
-          break; // Processa apenas a primeira imagem colada
-        }
-      }
-    };
-
-    window.addEventListener('paste', handlePaste);
-    return () => window.removeEventListener('paste', handlePaste);
-  }, [openSlideIndex, targetUploadIndex, slideCount, editingSlideIndex]);
+  }, [brandHandle, brandLogo, styleModel, customColor, aspectRatio, content, parsedSlides, saveDefaults, toneMode, fontFamily, textAlign, addCtaSlide, ctaContent, ctaImage]);
 
   const handleApiKeyChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const val = e.target.value;
     setCustomApiKey(val);
     if (val) {
       localStorage.setItem('gemini_api_key', val);
-      setImageEngine('gemini');
     } else {
       localStorage.removeItem('gemini_api_key');
-      setImageEngine('pollinations');
     }
   };
 
@@ -751,7 +647,7 @@ export default function CarouselGenerator({ onLogout }: { onLogout: () => void }
     try {
       const ai = new GoogleGenAI({ apiKey });
       const response = await ai.models.generateContent({
-        model: textModel,
+        model: 'gemini-2.5-flash',
         contents: `${getIuryPrompt(toneMode, dbPrompts)}\n\nRASCUNHO DO USUÁRIO:\n${content}`,
       });
 
@@ -760,151 +656,60 @@ export default function CarouselGenerator({ onLogout }: { onLogout: () => void }
       processTextIntoSlides(generatedText, addCtaSlide, ctaContent); // Processa imediatamente
       setHasNewPreview(true);
     } catch (error) {
-
       console.error("Erro ao gerar Modo Iury:", error);
-      const msg = error instanceof Error ? error.message : 'Erro desconhecido';
-      alert(`Ocorreu um erro ao processar o texto pelo Iury: ${msg}\nVerifique sua chave de API e conexão.`);
+      alert("Ocorreu um erro ao processar o texto pelo Iury. Tente novamente.");
     } finally {
       setIsGeneratingText(false);
     }
   };
 
-  // ── IMAGE ENGINE ROUTER ──────────────────────────────────────────────────
-
-  // Convert an external image URL to base64 data URL via hidden <img> + canvas
-  // This works because <img> tags bypass CORS/Cloudflare restrictions in the browser
-  const urlToDataUrl = (url: string): Promise<string> => {
-    return new Promise((resolve, reject) => {
-      const img = new Image();
-      img.crossOrigin = 'anonymous';
-      img.onload = () => {
-        try {
-          const canvas = document.createElement('canvas');
-          canvas.width = img.naturalWidth;
-          canvas.height = img.naturalHeight;
-          const ctx = canvas.getContext('2d');
-          if (!ctx) { reject(new Error('Canvas not supported')); return; }
-          ctx.drawImage(img, 0, 0);
-          const dataUrl = canvas.toDataURL('image/jpeg', 0.92);
-          console.log(`[CarouselGenerator] Canvas converted: ${img.naturalWidth}x${img.naturalHeight}`);
-          resolve(dataUrl);
-        } catch (e) {
-          reject(e);
-        }
-      };
-      img.onerror = () => reject(new Error('Failed to load image from URL'));
-      img.src = url;
-    });
-  };
-
-  const generateImageWithEngine = async (
-    prompt: string,
-    slideIndex: number,
-    _totalSlides: number
-  ): Promise<string | null> => {
-
-    // ── 1. Pollinations: Link + Canvas (Grátis & Rápido) ──
-    if (imageEngine === 'pollinations') {
-      const encodedPrompt = encodeURIComponent(prompt);
-      const seed = Date.now() + slideIndex;
-      const pollinationsUrl = `https://image.pollinations.ai/prompt/${encodedPrompt}?seed=${seed}&width=768&height=960&nologo=true&model=flux`;
-      console.log(`[CarouselGenerator] Hub IA - Pollinations: Iniciando para slide ${slideIndex}`);
-      try {
-        const dataUrl = await urlToDataUrl(pollinationsUrl);
-        return dataUrl;
-      } catch (err) {
-        console.warn(`[CarouselGenerator] Pollinations canvas failed (CORS), retornando URL direta`);
-        return pollinationsUrl;
-      }
-    }
-
-    // ── 2. Leonardo AI: Túnel via Servidor ──
-    if (imageEngine === 'leonardo') {
-      const apiKey = customApiKey;
-      if (!apiKey) throw new Error('Chave da API Leonardo AI é obrigatória.');
-      console.log(`[CarouselGenerator] Hub IA - Leonardo: Iniciando para slide ${slideIndex}`);
-      const res = await fetch('/api/leonardo-generate', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ prompt, apiKey, width: 768, height: 960 }),
-      });
-      const data = await res.json();
-      if (!res.ok) throw new Error(data.error || `Leonardo falhou: HTTP ${res.status}`);
-      return data.dataUrl || data.url || null;
-    }
-
-    // ── 3. Gemini: Modelo Imagen 4 (Imagen 3 foi descontinuado pelo Google) ──
-    const apiKey = customApiKey || process.env.NEXT_PUBLIC_GEMINI_API_KEY;
-    if (!apiKey) throw new Error('Chave da API Gemini não encontrada.');
-    const ai = new GoogleGenAI({ apiKey });
-
-    // Cadeia de modelos: tenta o principal, depois o fast como fallback
-    const imagenModels = ['imagen-4.0-generate-001', 'imagen-4.0-fast-generate-001'];
-    let lastError: unknown = null;
-
-    for (const modelId of imagenModels) {
-      try {
-        console.log(`[CarouselGenerator] Hub IA - Gemini Imagen: Tentando modelo ${modelId} para slide ${slideIndex}`);
-        const response = await ai.models.generateImages({
-          model: modelId,
-          prompt: prompt,
-          config: {
-            numberOfImages: 1,
-            outputMimeType: 'image/jpeg',
-            aspectRatio: aspectRatio === '4:5' ? '3:4' : '9:16'
-          }
-        });
-
-        const imageBytes = response.generatedImages?.[0]?.image?.imageBytes;
-        if (imageBytes) {
-          console.log(`[CarouselGenerator] Gemini Imagen (${modelId}): Sucesso no slide ${slideIndex}`);
-          return `data:image/jpeg;base64,${imageBytes}`;
-        }
-      } catch (err) {
-        console.warn(`[CarouselGenerator] Gemini Imagen (${modelId}) falhou:`, err);
-        lastError = err;
-        // Continua para o próximo modelo na cadeia
-      }
-    }
-
-    // Se todos os modelos falharam, lança o último erro
-    if (lastError) {
-      console.error("[CarouselGenerator] Todos os modelos Imagen falharam.");
-      throw lastError;
-    }
-
-    return null;
-  };
-
-
   const regenerateImageForSlide = async (index: number) => {
     const slide = parsedSlides[index];
     if (!slide) return;
-    if (imageEngine !== 'pollinations' && !customApiKey && !process.env.NEXT_PUBLIC_GEMINI_API_KEY) {
-      alert('Por favor, insira sua chave da API para regerar a imagem.');
+
+    const apiKey = customApiKey || process.env.NEXT_PUBLIC_GEMINI_API_KEY;
+    if (!apiKey) {
+      alert("Chave da API Gemini não encontrada. Insira sua chave nas configurações para regerar imagens com IA.");
       return;
     }
+
     setGeneratingImages(prev => {
       const updated = [...prev];
       while (updated.length <= index) updated.push(false);
       updated[index] = true;
       return updated;
     });
+
     try {
+      const ai = new GoogleGenAI({ apiKey });
       const prompt = getImagePrompt(imageNiche, dbImagePrompts, slide.title, slide.subtitle);
-      const imageUrl = await generateImageWithEngine(prompt, index, parsedSlides.length);
-      if (imageUrl) {
-        setUploadedImages(prev => {
-          const updated = [...prev];
-          while (updated.length <= index) updated.push(null);
-          updated[index] = imageUrl;
-          return updated;
-        });
+
+      const response = await ai.models.generateContent({
+        model: 'gemini-2.5-flash-image',
+        contents: prompt,
+        config: {
+          imageConfig: {
+            aspectRatio: aspectRatio === '9:16' ? '9:16' : '3:4',
+          }
+        }
+      });
+
+      for (const part of response.candidates?.[0]?.content?.parts || []) {
+        if (part.inlineData) {
+          const base64 = part.inlineData.data;
+          const imageUrl = `data:${part.inlineData.mimeType || 'image/png'};base64,${base64}`;
+          setUploadedImages(prev => {
+            const updated = [...prev];
+            while (updated.length <= index) updated.push(null);
+            updated[index] = imageUrl;
+            return updated;
+          });
+          break;
+        }
       }
     } catch (error) {
-      const msg = error instanceof Error ? error.message : 'Erro desconhecido';
-      console.error('Erro ao regerar imagem:', msg, error);
-      alert(`❌ Falha ao gerar imagem (${imageEngine === 'pollinations' ? 'Pollinations' : imageEngine === 'leonardo' ? 'Leonardo AI' : 'Gemini'}): ${msg}`);
+      console.error("Erro ao regerar imagem:", error);
+      alert("Falha ao regerar a imagem. Tente novamente.");
     } finally {
       setGeneratingImages(prev => {
         const updated = [...prev];
@@ -921,33 +726,49 @@ export default function CarouselGenerator({ onLogout }: { onLogout: () => void }
     setHasNewPreview(true);
 
     if (generateWithAI) {
-      if (imageEngine !== 'pollinations') {
-        const apiKey = customApiKey || (imageEngine === 'gemini' ? process.env.NEXT_PUBLIC_GEMINI_API_KEY : null);
-        if (!apiKey) {
-          alert(`Chave da API ${imageEngine === 'leonardo' ? 'Leonardo AI' : 'Gemini'} não encontrada. Por favor, insira sua chave.`);
-          return;
-        }
+      const apiKey = customApiKey || process.env.NEXT_PUBLIC_GEMINI_API_KEY;
+      if (!apiKey) {
+        alert("Chave da API Gemini não encontrada. Por favor, insira sua chave nas configurações.");
+        console.error("Gemini API key is missing");
+        return;
       }
 
+      const ai = new GoogleGenAI({ apiKey });
       const newGenerating = Array(newSlides.length).fill(true);
       setGeneratingImages(newGenerating);
+
+      const newImages = [...uploadedImages];
+      while (newImages.length < newSlides.length) newImages.push(null);
 
       for (let i = 0; i < newSlides.length; i++) {
         try {
           const prompt = getImagePrompt(imageNiche, dbImagePrompts, newSlides[i].title, newSlides[i].subtitle);
-          const imageUrl = await generateImageWithEngine(prompt, i, newSlides.length);
-          if (imageUrl) {
-            setUploadedImages(prev => {
-              const updated = [...prev];
-              while (updated.length < newSlides.length) updated.push(null);
-              updated[i] = imageUrl;
-              return updated;
-            });
+
+          const response = await ai.models.generateContent({
+            model: 'gemini-2.5-flash-image',
+            contents: prompt,
+            config: {
+              imageConfig: {
+                aspectRatio: aspectRatio === '9:16' ? '9:16' : '3:4',
+              }
+            }
+          });
+
+          for (const part of response.candidates?.[0]?.content?.parts || []) {
+            if (part.inlineData) {
+              const base64 = part.inlineData.data;
+              const imageUrl = `data:${part.inlineData.mimeType || 'image/png'};base64,${base64}`;
+              setUploadedImages(prev => {
+                const updated = [...prev];
+                while (updated.length < newSlides.length) updated.push(null);
+                updated[i] = imageUrl;
+                return updated;
+              });
+              break;
+            }
           }
         } catch (error) {
-          const msg = error instanceof Error ? error.message : 'Erro desconhecido';
-          console.error(`Error generating image for slide ${i}:`, msg, error);
-          alert(`⚠️ Slide ${i + 1}: falha ao gerar imagem (${imageEngine === 'pollinations' ? 'Pollinations' : imageEngine === 'leonardo' ? 'Leonardo AI' : 'Gemini'}). ${msg}`);
+          console.error(`Error generating image for slide ${i}:`, error);
         } finally {
           setGeneratingImages(prev => {
             const updated = [...prev];
@@ -1065,47 +886,28 @@ export default function CarouselGenerator({ onLogout }: { onLogout: () => void }
     setIsDownloading(true);
 
     try {
-      if (isMobile) {
-        // No celular, baixa as imagens uma a uma (estilo Canva) para evitar o ZIP
-        for (let index = 0; index < parsedSlides.length; index++) {
-          const slideElement = slideRefs.current[index];
-          if (!slideElement) continue;
+      const zip = new JSZip();
+      const promises = parsedSlides.map(async (_, index) => {
+        const slideElement = slideRefs.current[index];
+        if (!slideElement) return null;
 
-          const dataUrl = await htmlToImage.toPng(slideElement, {
-            quality: 1,
-            pixelRatio: 3,
-          });
-
-          saveAs(dataUrl, `slide-${index + 1}.png`);
-
-          // Pequeno delay entre downloads para o navegador mobile processar corretamente
-          if (index < parsedSlides.length - 1) {
-            await new Promise(resolve => setTimeout(resolve, 800));
-          }
-        }
-      } else {
-        const zip = new JSZip();
-        const promises = parsedSlides.map(async (_, index) => {
-          const slideElement = slideRefs.current[index];
-          if (!slideElement) return null;
-
-          const dataUrl = await htmlToImage.toPng(slideElement, {
-            quality: 1,
-            pixelRatio: 3,
-          });
-
-          const base64Data = dataUrl.replace(/^data:image\/(png|jpg);base64,/, "");
-          zip.file(`slide-${index + 1}.png`, base64Data, { base64: true });
+        const dataUrl = await htmlToImage.toPng(slideElement, {
+          quality: 1,
+          pixelRatio: 3,
         });
 
-        await Promise.all(promises);
+        // Remove the data:image/png;base64, part
+        const base64Data = dataUrl.replace(/^data:image\/(png|jpg);base64,/, "");
+        zip.file(`slide-${index + 1}.png`, base64Data, { base64: true });
+      });
 
-        const zipContent = await zip.generateAsync({ type: "blob" });
-        saveAs(zipContent, "carrossel.zip");
-      }
+      await Promise.all(promises);
+
+      const zipContent = await zip.generateAsync({ type: "blob" });
+      saveAs(zipContent, "carrossel.zip");
     } catch (error) {
       console.error("Erro ao baixar todos os slides:", error);
-      alert(isMobile ? "Erro ao baixar as imagens." : "Ocorreu um erro ao gerar o arquivo ZIP.");
+      alert("Ocorreu um erro ao gerar o arquivo ZIP.");
     } finally {
       setIsDownloading(false);
     }
@@ -1132,7 +934,7 @@ export default function CarouselGenerator({ onLogout }: { onLogout: () => void }
               <span className="hidden sm:inline">Sair</span>
             </button>
             <div className="w-px h-6 bg-slate-200 dark:bg-border-dark"></div>
-            <div className="bg-center bg-no-repeat bg-cover rounded-full size-9 ring-2 ring-slate-100 dark:ring-border-dark cursor-pointer" data-alt="User profile picture" style={{ backgroundImage: 'url("https://lh3.googleusercontent.com/aida-public/AB6AXuDq8gwC2gYGw_ekJwtNXfCb7lnyQKPM_v5edKwjUZbSvOHK3eYZUrn0j9Zsp7DnI1y5irWu2M9jQ8s27oX9C8VS53cOb9lolxw7slhfmMAVnMrVv7AoCeW5zlCoAc6K89RUNfLyHiuWD2nCP-hNqvC-N3TSMzM6wY_FpkfrN3zKZ4yMFoV73t4WFlcggVqOgWfn7BHR7aqjPLuP0MvRVXmzESNUpycuKFMtYIohCwRulGoY")' }}></div>
+            <div className="bg-center bg-no-repeat bg-cover rounded-full size-9 ring-2 ring-slate-100 dark:ring-border-dark cursor-pointer" data-alt="User profile picture" style={{ backgroundImage: 'url("https://lh3.googleusercontent.com/aida-public/AB6AXuDq8gwC2gYGw_ekJwtNXfCb7lnyQKPM_v5edKwjUZbSvOHK3eYZUrn0j9Zsp7DnI1y5irWu2M9jQ8s27oX9C8VS53cOb9lolxw7slhfmMAVnMrVv7AoCeW5zlCoAc6K89RUNfLyHiuWD2nCP-hNqvC-N3TSMzM6wY_FpkfrN3zKZ4yMFoV73t4WFlcggVqWO74G61RtArjXqmpvvCjTcciK-vFVCqOgWfn7BHR7aqjPLuP0MvRVXmzESNUpycuKFMtYIohCwRulGoY")' }}></div>
           </div>
         </header>
 
@@ -1173,506 +975,490 @@ export default function CarouselGenerator({ onLogout }: { onLogout: () => void }
             onMouseDown={startResizing}
             className="absolute top-0 right-0 w-1.5 h-full cursor-col-resize hover:bg-primary/50 active:bg-primary z-50 transition-colors hidden md:block"
           />
-          <div className="p-6 space-y-6 flex-1">
-            {/* 1. Configuração de Inteligência Artificial (Retrátil) */}
+          <div className="p-6 space-y-8 flex-1">
             <div className="space-y-4">
-              <button
-                onClick={() => toggleSection('ai')}
-                className="w-full flex items-center justify-between group"
-              >
-                <div className="flex items-center gap-2">
-                  <div className="size-8 flex items-center justify-center bg-indigo-50 dark:bg-indigo-900/30 rounded-lg text-primary">
-                    <span className="material-symbols-outlined text-[20px]">smart_toy</span>
-                  </div>
-                  <h3 className="text-slate-900 dark:text-white font-bold text-base">Inteligência Artificial</h3>
-                </div>
-                <span className={`material-symbols-outlined text-slate-400 transition-transform duration-300 ${expandedSections.ai ? 'rotate-180' : ''}`}>expand_more</span>
-              </button>
-
-              {expandedSections.ai && (
-                <div className="space-y-3 p-4 bg-indigo-50/50 dark:bg-indigo-900/10 rounded-xl border border-indigo-100 dark:border-indigo-900/30 animate-in fade-in slide-in-from-top-2 duration-300">
-                  <div className="flex items-center justify-between mb-1">
-                    <label className="text-[10px] font-bold text-indigo-900/60 dark:text-indigo-400 uppercase tracking-widest">
-                      Chave da API Gemini
-                    </label>
-                    {customApiKey ? (
-                      <span className="text-[10px] text-emerald-600 font-bold flex items-center gap-1 bg-emerald-50 dark:bg-emerald-900/20 px-2 py-0.5 rounded-full">
-                        <span className="material-symbols-outlined text-[12px]">check_circle</span> Ativa
-                      </span>
-                    ) : (
-                      <span className="text-[10px] text-amber-600 font-bold flex items-center gap-1 bg-amber-50 dark:bg-amber-900/20 px-2 py-0.5 rounded-full">
-                        <span className="material-symbols-outlined text-[12px]">warning</span> Necessária
-                      </span>
-                    )}
-                  </div>
-                  <input
-                    type="password"
-                    value={customApiKey}
-                    onChange={handleApiKeyChange}
-                    placeholder="Cole sua chave AIzaSy... aqui"
-                    className="w-full bg-white dark:bg-surface-dark border border-indigo-200 dark:border-indigo-800 rounded-lg px-3 py-2 text-xs text-slate-700 dark:text-slate-300 focus:ring-2 focus:ring-primary focus:border-transparent outline-none transition-all shadow-sm"
-                  />
-                  <p className="text-[10px] text-slate-500 dark:text-slate-400 leading-tight">
-                    Para usar o <strong>Modo Iury</strong> e <strong>Imagens IA (Imagen 4)</strong>, cole sua chave gratuita da Google.
-                  </p>
-
-                  <div className="flex justify-end pt-1">
-                    <a
-                      href="https://aistudio.google.com/app/apikey"
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="text-[10px] font-bold text-primary hover:underline flex items-center gap-1"
-                    >
-                      Pegar minha chave gratuita <span className="material-symbols-outlined text-[10px]">open_in_new</span>
-                    </a>
-                  </div>
-                </div>
-
-              )}
-            </div>
-
-            {/* 2. Conteúdo (Sempre Visível) */}
-
-            <div className="flex bg-slate-100 dark:bg-surface-darker rounded-lg p-1.5 shrink-0 gap-1 border border-slate-200 dark:border-border-dark">
-              <button
-                onClick={() => setIsIuryMode(false)}
-                className={`flex-1 py-2 text-sm font-bold rounded-md transition-all flex items-center justify-center gap-2 ${!isIuryMode ? 'bg-white dark:bg-surface-dark text-slate-800 dark:text-white shadow-sm ring-1 ring-black/5 dark:ring-white/10' : 'text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-200'}`}>
-                <span className="material-symbols-outlined text-[16px]">edit_note</span>
-                Modo Manual
-              </button>
-              <button
-                onClick={() => setIsIuryMode(true)}
-                className={`flex-1 py-2 text-sm font-bold rounded-md transition-all flex items-center justify-center gap-2 ${isIuryMode ? 'bg-primary text-white shadow-md shadow-primary/20' : 'text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-200'}`}>
-                <span className="material-symbols-outlined text-[16px]">psychology</span>
-                Modo Iury
-              </button>
-            </div>
-
-            {isIuryMode && (
-              <div className="space-y-2 pt-1 pb-1">
-                <label className="text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider flex items-center gap-1">
-                  <span className="material-symbols-outlined text-[14px]">tune</span> Estratégia Narrativa
-                </label>
-                <select
-                  value={toneMode}
-                  onChange={(e) => setToneMode(e.target.value)}
-                  className="w-full bg-indigo-50 dark:bg-indigo-900/20 text-indigo-900 dark:text-indigo-200 border border-indigo-200 dark:border-indigo-800 rounded-lg px-3 py-2.5 text-sm focus:ring-2 focus:ring-indigo-500 outline-none cursor-pointer font-medium"
-                >
-                  {dbLabels.filter(label => label.key !== 'GLOBAL_INSTRUCTIONS').length > 0 ? (
-                    dbLabels.filter(label => label.key !== 'GLOBAL_INSTRUCTIONS').map(label => (
-                      <option key={label.key} value={label.key}>{label.label}</option>
-                    ))
-                  ) : (
-                    <>
-                      <option value="PROVOCATIVO">🥊 Provocativo (Quebra de Padrão e Ego)</option>
-                      <option value="ANALITICO">🧊 Analítico (Autoridade Fria e Dados)</option>
-                      <option value="STORYTELLING">📖 Storytelling (Jornada Histórica)</option>
-                      <option value="PRATICO">✅ Prático (Manual e Ação Imediata)</option>
-                    </>
-                  )}
-                </select>
-              </div>
-            )}
-
-            <div className="relative">
-              <textarea
-                className={`w-full h-48 border rounded-xl p-4 text-sm focus:ring-2 focus:ring-primary focus:border-transparent resize-none leading-relaxed font-sans transition-colors ${isIuryMode ? 'bg-primary/5 dark:bg-primary/10 border-primary/20 text-indigo-900 dark:text-indigo-100 placeholder:text-indigo-400 dark:placeholder:text-indigo-300' : 'bg-slate-50 dark:bg-surface-darker border-slate-200 dark:border-border-dark text-slate-700 dark:text-slate-300 placeholder:text-slate-400 dark:placeholder:text-slate-600'}`}
-                style={{ fontFamily: 'var(--font-poppins), sans-serif' }}
-                placeholder={isIuryMode ? 'Deixe o Iury fazer o trabalho. Escreva um tema, cole um rascunho completo, reclame de um nicho... e veja a mágica visceral acontecer.' : 'Modo manual ativado. Cole SEU TEXTO FORMATADO aqui e clique em gerar.\n\n⚠️ REGRA DE OURO:\nSeu slide não pode ter mais que 250 caracteres (linhas de texto demais vão sobrescrever sua foto principal!).\n\nUse este formato nativo para cada slide:\n\nSLIDE 01:\n[TÍTULO]: Título explosivo aqui\n[SUBTÍTULO]: Texto da narrativa curto aqui...\n\nSLIDE 02:\n[TÍTULO]: Segundo título...'}
-                value={content}
-                onChange={(e) => {
-                  setContent(e.target.value);
-                  if (!isIuryMode) {
-                    processTextIntoSlides(e.target.value, addCtaSlide, ctaContent);
-                  }
-                }}
-              ></textarea>
-              <div className="absolute bottom-3 right-3 text-xs text-slate-400 font-medium bg-slate-100 dark:bg-border-dark px-2 py-1 rounded">{content.length} caracteres</div>
-            </div>
-
-            {isIuryMode && (
-              <button
-                onClick={executarIury}
-                disabled={!content.trim() || isGeneratingText}
-                className="w-full flex items-center justify-center gap-2 rounded-xl h-11 text-white text-sm font-bold shadow-md transition-all disabled:opacity-70 disabled:hover:scale-100 disabled:cursor-not-allowed bg-indigo-600 hover:bg-indigo-700 shadow-indigo-600/25 mt-2"
-              >
-                {isGeneratingText ? (
-                  <span className="material-symbols-outlined animate-spin text-[18px]">progress_activity</span>
-                ) : (
-                  <span className="material-symbols-outlined text-[18px]">psychology</span>
-                )}
-                {isGeneratingText ? 'Pensando de Forma Visceral...' : 'Gerar Texto com Iury'}
-              </button>
-            )}
-
-            {/* 3. Tipografia Adançada (Retrátil) */}
-            <div className="space-y-4 pt-2 border-t border-slate-100 dark:border-border-dark">
-              <button
-                onClick={() => toggleSection('typography')}
-                className="w-full flex items-center justify-between group"
-              >
-                <div className="flex items-center gap-2">
-                  <div className="size-8 flex items-center justify-center bg-slate-50 dark:bg-slate-800 rounded-lg text-slate-600 dark:text-slate-400">
-                    <span className="material-symbols-outlined text-[20px]">format_size</span>
-                  </div>
-                  <h3 className="text-slate-900 dark:text-white font-bold text-base">Tipografia Avançada</h3>
-                </div>
-                <span className={`material-symbols-outlined text-slate-400 transition-transform duration-300 ${expandedSections.typography ? 'rotate-180' : ''}`}>expand_more</span>
-              </button>
-
-              {expandedSections.typography && (
-                <div className="space-y-4 animate-in fade-in slide-in-from-top-2 duration-300 mt-2">
-                  <div className="grid grid-cols-1 gap-4">
-                    <div className="space-y-2">
-                      <label className="text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest flex items-center gap-1.5">
-                        <span className="material-symbols-outlined text-[14px]">font_download</span> Tipografia Principal
-                      </label>
-                      <div className="relative group">
-                        <select
-                          value={fontFamily}
-                          onChange={(e) => setFontFamily(e.target.value)}
-                          className="w-full bg-slate-50 dark:bg-surface-darker text-slate-900 dark:text-white border border-slate-200 dark:border-border-dark rounded-xl px-4 py-2.5 text-sm focus:ring-2 focus:ring-primary outline-none cursor-pointer appearance-none pr-10 font-medium transition-all hover:border-primary/30"
-                        >
-                          <option value="var(--font-poppins), sans-serif">Padrão (Poppins)</option>
-                          <option value="'Inter', sans-serif">Clean (Inter)</option>
-                          <option value="'Oswald', sans-serif">Moderno (Oswald)</option>
-                          <option value="'Bebas Neue', sans-serif">Impacto (Bebas Neue)</option>
-                          <option value="'Playfair Display', serif">Clássica (Playfair)</option>
-                          <option value="'Archivo Black', sans-serif">Ultra Bold (Archivo)</option>
-                          <option value="'Montserrat', sans-serif">Elegante (Montserrat)</option>
-                          <option value="'Courier New', monospace">Código (Monospace)</option>
-                        </select>
-                        <span className="material-symbols-outlined absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none group-hover:text-primary transition-colors">unfold_more</span>
-                      </div>
-                    </div>
-
-                    <div className="space-y-2">
-                      <label className="text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest flex items-center gap-1.5">
-                        <span className="material-symbols-outlined text-[14px]">format_align_center</span> Alinhamento do Texto
-                      </label>
-                      <div className="flex bg-slate-100 dark:bg-surface-darker border border-slate-200 dark:border-border-dark rounded-xl p-1 gap-1">
-                        <button onClick={(e) => { e.preventDefault(); setTextAlign('text-left'); }} className={`flex-1 flex items-center justify-center py-2 rounded-lg transition-all ${textAlign === 'text-left' ? 'bg-white dark:bg-surface-dark text-primary shadow-sm ring-1 ring-black/5' : 'text-slate-500 hover:text-slate-700 dark:hover:text-slate-300'}`}>
-                          <span className="material-symbols-outlined text-[20px]">format_align_left</span>
-                        </button>
-                        <button onClick={(e) => { e.preventDefault(); setTextAlign('text-center'); }} className={`flex-1 flex items-center justify-center py-2 rounded-lg transition-all ${textAlign === 'text-center' ? 'bg-white dark:bg-surface-dark text-primary shadow-sm ring-1 ring-black/5' : 'text-slate-500 hover:text-slate-700 dark:hover:text-slate-300'}`}>
-                          <span className="material-symbols-outlined text-[20px]">format_align_center</span>
-                        </button>
-                        <button onClick={(e) => { e.preventDefault(); setTextAlign('text-right'); }} className={`flex-1 flex items-center justify-center py-2 rounded-lg transition-all ${textAlign === 'text-right' ? 'bg-white dark:bg-surface-dark text-primary shadow-sm ring-1 ring-black/5' : 'text-slate-500 hover:text-slate-700 dark:hover:text-slate-300'}`}>
-                          <span className="material-symbols-outlined text-[20px]">format_align_right</span>
-                        </button>
-                      </div>
-                    </div>
-                  </div>
-
-                  <div className="space-y-4 pt-3 mt-1 bg-slate-50 dark:bg-surface-darker p-3 rounded-xl border border-slate-100 dark:border-border-dark">
-                    <div className="flex items-center gap-1.5 text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1">
-                      <span className="material-symbols-outlined text-[14px]">format_size</span> Ajustes Finos de Tamanho
-                    </div>
-
-                    <div className="space-y-3">
-                      <div className="space-y-1.5">
-                        <div className="flex justify-between items-center text-[11px] font-medium text-slate-600 dark:text-slate-300">
-                          <span>Título da Capa</span>
-                          <span className="text-primary font-bold">{coverTitleSize}%</span>
-                        </div>
-                        <input
-                          type="range" min="50" max="180" value={coverTitleSize}
-                          onChange={(e) => setCoverTitleSize(parseInt(e.target.value))}
-                          className="w-full accent-primary h-1.5 bg-slate-200 dark:bg-slate-700 rounded-lg appearance-none cursor-pointer"
-                        />
-                      </div>
-
-                      <div className="space-y-1.5">
-                        <div className="flex justify-between items-center text-[11px] font-medium text-slate-600 dark:text-slate-300">
-                          <span>Títulos dos Slides</span>
-                          <span className="text-primary font-bold">{slideTitleSize}%</span>
-                        </div>
-                        <input
-                          type="range" min="50" max="180" value={slideTitleSize}
-                          onChange={(e) => setSlideTitleSize(parseInt(e.target.value))}
-                          className="w-full accent-primary h-1.5 bg-slate-200 dark:bg-slate-700 rounded-lg appearance-none cursor-pointer"
-                        />
-                      </div>
-
-                      <div className="space-y-1.5">
-                        <div className="flex justify-between items-center text-[11px] font-medium text-slate-600 dark:text-slate-300">
-                          <span>Subtítulos</span>
-                          <span className="text-primary font-bold">{subtitleSize}%</span>
-                        </div>
-                        <input
-                          type="range" min="50" max="180" value={subtitleSize}
-                          onChange={(e) => setSubtitleSize(parseInt(e.target.value))}
-                          className="w-full accent-primary h-1.5 bg-slate-200 dark:bg-slate-700 rounded-lg appearance-none cursor-pointer"
-                        />
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              )}
-            </div>
-
-
-            {/* 4. Estilo & Marca (Retrátil) */}
-            <div className="space-y-4 pt-2 border-t border-slate-100 dark:border-border-dark">
-              <button
-                onClick={() => toggleSection('branding')}
-                className="w-full flex items-center justify-between group"
-              >
-                <div className="flex items-center gap-2">
-                  <div className="size-8 flex items-center justify-center bg-slate-50 dark:bg-slate-800 rounded-lg text-slate-600 dark:text-slate-400">
-                    <span className="material-symbols-outlined text-[20px]">palette</span>
-                  </div>
-                  <h3 className="text-slate-900 dark:text-white font-bold text-base">Estilo & Marca</h3>
-                </div>
-                <span className={`material-symbols-outlined text-slate-400 transition-transform duration-300 ${expandedSections.branding ? 'rotate-180' : ''}`}>expand_more</span>
-              </button>
-
-              {expandedSections.branding && (
-                <div className="space-y-4 animate-in fade-in slide-in-from-top-2 duration-300 mt-2">
-                  <div className="space-y-2">
-                    <label className="text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Modelo de Estilo</label>
-                    <div className="grid grid-cols-3 gap-3">
-                      <div className="relative cursor-pointer group" onClick={() => setStyleModel('Moderno')}>
-                        <div className={`h-16 rounded-lg bg-gradient-to-br from-indigo-500 to-purple-600 flex items-end p-2 overflow-hidden ring-2 transition-all ${styleModel === 'Moderno' ? 'ring-primary' : 'ring-transparent group-hover:ring-primary'}`}>
-                          <span className="text-[10px] text-white font-bold opacity-80">Moderno</span>
-                        </div>
-                      </div>
-                      <div className="relative cursor-pointer group" onClick={() => setStyleModel('Escuro')}>
-                        <div className={`h-16 rounded-lg bg-gradient-to-br from-slate-800 to-black border border-slate-700 flex items-end p-2 overflow-hidden ring-2 transition-all ${styleModel === 'Escuro' ? 'ring-primary' : 'ring-transparent group-hover:ring-primary'}`}>
-                          <span className="text-[10px] text-white font-bold opacity-80">Escuro</span>
-                        </div>
-                      </div>
-                      <div className="relative cursor-pointer group" onClick={() => setStyleModel('Vibrante')}>
-                        <div className={`h-16 rounded-lg bg-gradient-to-br from-orange-400 to-pink-500 flex items-end p-2 overflow-hidden ring-2 transition-all ${styleModel === 'Vibrante' ? 'ring-primary' : 'ring-transparent group-hover:ring-primary'}`}>
-                          <span className="text-[10px] text-white font-bold opacity-80">Vibrante</span>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-
-                  <div className="space-y-3 pt-2">
-                    <div className="space-y-2">
-                      <label className="text-xs text-slate-500 dark:text-slate-400">Arroba / Nome do Perfil</label>
-                      <input
-                        type="text"
-                        value={brandHandle}
-                        onChange={(e) => setBrandHandle(e.target.value)}
-                        className="w-full bg-slate-50 dark:bg-surface-darker border border-slate-200 dark:border-border-dark rounded-lg px-3 py-2 text-sm text-slate-700 dark:text-slate-300 focus:ring-2 focus:ring-primary focus:border-transparent outline-none transition-all"
-                        placeholder="@seu.perfil"
-                      />
-                    </div>
-
-                    <div className="space-y-2">
-                      <label className="text-xs text-slate-500 dark:text-slate-400">Logo do Perfil</label>
-                      {brandLogo ? (
-                        <div className="flex items-center gap-3 p-3 rounded-lg border border-slate-200 dark:border-border-dark bg-slate-50 dark:bg-surface-darker">
-                          <div className="size-8 rounded bg-slate-900 flex items-center justify-center overflow-hidden">
-                            <img src={brandLogo} alt="Logo" className="w-full h-full object-cover" />
-                          </div>
-                          <button onClick={() => setBrandLogo(null)} className="p-1 hover:bg-slate-200 dark:hover:bg-slate-700 rounded text-slate-500 ml-auto">
-                            <span className="material-symbols-outlined text-[18px]">close</span>
-                          </button>
-                        </div>
-                      ) : (
-                        <button
-                          onClick={() => brandLogoInputRef.current?.click()}
-                          className="w-full py-3 flex flex-col items-center justify-center gap-2 text-xs font-medium text-slate-500 dark:text-slate-400 border border-dashed border-slate-200 dark:border-border-dark rounded-lg hover:bg-slate-50 dark:hover:bg-surface-darker transition-colors"
-                        >
-                          <span className="material-symbols-outlined text-[20px]">add_photo_alternate</span>
-                          Upload da Logo
-                        </button>
-                      )}
-                      <input type="file" ref={brandLogoInputRef} onChange={handleBrandLogoUpload} accept="image/*" className="hidden" />
-                    </div>
-
-                    <div className="pt-1">
-                      <div className="flex items-center justify-between bg-primary/5 dark:bg-primary/10 p-3 rounded-xl border border-primary/10">
-                        <div className="flex flex-col">
-                          <span className="text-[11px] font-bold text-primary">Lembrar Marca</span>
-                          <span className="text-[9px] text-slate-500">Salva para a próxima sessão</span>
-                        </div>
-                        <label className="relative inline-flex items-center cursor-pointer">
-                          <input type="checkbox" className="sr-only peer" checked={saveDefaults} onChange={(e) => setSaveDefaults(e.target.checked)} />
-                          <div className="w-8 h-4.5 bg-slate-300 dark:bg-slate-600 rounded-full peer peer-checked:bg-primary after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-3.5 after:w-3.5 after:transition-all peer-checked:after:translate-x-3.5"></div>
-                        </label>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              )}
-            </div>
-
-            {/* 5. Configurações de Layout (Retrátil) */}
-            <div className="space-y-4 pt-2 border-t border-slate-100 dark:border-border-dark">
-              <button
-                onClick={() => toggleSection('config')}
-                className="w-full flex items-center justify-between group"
-              >
-                <div className="flex items-center gap-2">
-                  <div className="size-8 flex items-center justify-center bg-slate-50 dark:bg-slate-800 rounded-lg text-slate-600 dark:text-slate-400">
-                    <span className="material-symbols-outlined text-[20px]">settings</span>
-                  </div>
-                  <h3 className="text-slate-900 dark:text-white font-bold text-base">Configurações de Layout</h3>
-                </div>
-                <span className={`material-symbols-outlined text-slate-400 transition-transform duration-300 ${expandedSections.config ? 'rotate-180' : ''}`}>expand_more</span>
-              </button>
-
-              {expandedSections.config && (
-                <div className="space-y-4 animate-in fade-in slide-in-from-top-2 duration-300 mt-2">
-                  <div className="space-y-2">
-                    <label className="text-xs font-semibold text-slate-500 uppercase tracking-wider">Proporção</label>
-                    <div className="grid grid-cols-2 gap-2">
-                      <button onClick={() => setAspectRatio('4:5')} className={`flex items-center justify-center gap-2 p-2.5 rounded-lg border transition-all ${aspectRatio === '4:5' ? 'border-primary bg-primary/5 text-primary' : 'border-slate-200 dark:border-border-dark text-slate-500 hover:bg-slate-50 dark:hover:bg-slate-800'}`}>
-                        <div className="w-3 h-4 border-2 border-current rounded-sm"></div>
-                        <span className="text-xs font-bold">4:5</span>
-                      </button>
-                      <button onClick={() => setAspectRatio('9:16')} className={`flex items-center justify-center gap-2 p-2.5 rounded-lg border transition-all ${aspectRatio === '9:16' ? 'border-primary bg-primary/5 text-primary' : 'border-slate-200 dark:border-border-dark text-slate-500 hover:bg-slate-50 dark:hover:bg-slate-800'}`}>
-                        <div className="w-2.5 h-5 border-2 border-current rounded-sm"></div>
-                        <span className="text-xs font-bold">9:16</span>
-                      </button>
-                    </div>
-                  </div>
-
-                  <div className="flex items-center justify-between pt-2">
-                    <div className="flex flex-col">
-                      <span className="text-sm font-semibold text-slate-900 dark:text-white">Adicionar CTA Final</span>
-                    </div>
-                    <label className="relative inline-flex items-center cursor-pointer">
-                      <input type="checkbox" className="sr-only peer" checked={addCtaSlide} onChange={(e) => setAddCtaSlide(e.target.checked)} />
-                      <div className="w-11 h-6 bg-slate-200 dark:bg-slate-700 rounded-full peer peer-checked:bg-primary after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:after:translate-x-full"></div>
-                    </label>
-                  </div>
-
-                  {addCtaSlide && (
-                    <div className="space-y-3 animate-in fade-in duration-300">
-                      <SimpleRichTextEditor value={ctaContent} onChange={setCtaContent} placeholder="Sua mensagem final..." />
-                      <button onClick={() => ctaImageInputRef.current?.click()} className="w-full py-2 bg-primary/10 text-primary text-xs font-bold rounded-lg hover:bg-primary/20 transition-colors">
-                        {ctaImage ? 'Trocar Fundo CTA' : 'Fundo do CTA +'}
-                      </button>
-                    </div>
-                  )}
-                </div>
-              )}
-            </div>
-
-
-            <div className="pt-2 border-t border-slate-100 dark:border-border-dark space-y-4">
-              <div className="flex items-center justify-between bg-indigo-50/50 dark:bg-indigo-900/10 p-3 rounded-xl border border-indigo-100 dark:border-indigo-900/30">
-                <div className="flex flex-col">
-                  <span className="text-sm font-bold text-indigo-900 dark:text-indigo-200 flex items-center gap-2">
-                    <span className="material-symbols-outlined text-[18px]">auto_awesome</span> Gerar imagens com IA
-                  </span>
-                  <span className="text-[10px] text-slate-500">
-                    {customApiKey ? '💎 Imagen 4 (Gemini)' : '✨ Pollinations (Grátis)'}
-                  </span>
-                </div>
-                <label className="relative inline-flex items-center cursor-pointer">
-                  <input type="checkbox" className="sr-only peer" checked={generateWithAI} onChange={(e) => setGenerateWithAI(e.target.checked)} />
-                  <div className="w-11 h-6 bg-slate-200 dark:bg-slate-700 rounded-full peer peer-checked:bg-primary after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:after:translate-x-full"></div>
-                </label>
+              <div className="flex justify-between items-center">
+                <h3 className="text-slate-900 dark:text-white font-bold text-lg">Conteúdo</h3>
               </div>
 
-              {generateWithAI && (
-                <div className="space-y-2 animate-in fade-in slide-in-from-top-1 duration-300">
-                  <label className="text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest flex items-center gap-1.5">
-                    <span className="material-symbols-outlined text-[14px]">category</span> Nicho da Imagem
+              <div className="flex bg-slate-100 dark:bg-surface-darker rounded-lg p-1.5 shrink-0 gap-1 border border-slate-200 dark:border-border-dark">
+                <button
+                  onClick={() => setIsIuryMode(false)}
+                  className={`flex-1 py-2 text-sm font-bold rounded-md transition-all flex items-center justify-center gap-2 ${!isIuryMode ? 'bg-white dark:bg-surface-dark text-slate-800 dark:text-white shadow-sm ring-1 ring-black/5 dark:ring-white/10' : 'text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-200'}`}>
+                  <span className="material-symbols-outlined text-[16px]">edit_note</span>
+                  Modo Manual
+                </button>
+                <button
+                  onClick={() => setIsIuryMode(true)}
+                  className={`flex-1 py-2 text-sm font-bold rounded-md transition-all flex items-center justify-center gap-2 ${isIuryMode ? 'bg-primary text-white shadow-md shadow-primary/20' : 'text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-200'}`}>
+                  <span className="material-symbols-outlined text-[16px]">psychology</span>
+                  Modo Iury
+                </button>
+              </div>
+
+              {isIuryMode && (
+                <div className="space-y-2 pt-1 pb-1">
+                  <label className="text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider flex items-center gap-1">
+                    <span className="material-symbols-outlined text-[14px]">tune</span> Estratégia Narrativa
                   </label>
                   <select
-                    value={imageNiche}
-                    onChange={(e) => setImageNiche(e.target.value)}
-                    className="w-full bg-white dark:bg-surface-dark text-slate-900 dark:text-white border border-slate-200 dark:border-border-dark rounded-lg px-3 py-2 text-xs focus:ring-2 focus:ring-primary outline-none cursor-pointer"
+                    value={toneMode}
+                    onChange={(e) => setToneMode(e.target.value)}
+                    className="w-full bg-indigo-50 dark:bg-indigo-900/20 text-indigo-900 dark:text-indigo-200 border border-indigo-200 dark:border-indigo-800 rounded-lg px-3 py-2.5 text-sm focus:ring-2 focus:ring-indigo-500 outline-none cursor-pointer font-medium"
                   >
-                    {dbImageLabels.length > 0 ? (
-                      dbImageLabels.map(label => (
+                    {dbLabels.filter(label => label.key !== 'GLOBAL_INSTRUCTIONS').length > 0 ? (
+                      dbLabels.filter(label => label.key !== 'GLOBAL_INSTRUCTIONS').map(label => (
                         <option key={label.key} value={label.key}>{label.label}</option>
                       ))
                     ) : (
                       <>
-                        <option value="OUTROS">Geral / Estilo Iury</option>
-                        <option value="SAUDE">Saúde e Bem-estar</option>
-                        <option value="NEGOCIOS">Negócios e Carreira</option>
-                        <option value="FINANCAS">Finanças e Investimentos</option>
-                        <option value="BELEZA">Beleza e Estética</option>
+                        <option value="PROVOCATIVO">🥊 Provocativo (Quebra de Padrão e Ego)</option>
+                        <option value="ANALITICO">🧊 Analítico (Autoridade Fria e Dados)</option>
+                        <option value="STORYTELLING">📖 Storytelling (Jornada Histórica)</option>
+                        <option value="PRATICO">✅ Prático (Manual e Ação Imediata)</option>
                       </>
                     )}
                   </select>
                 </div>
               )}
-            </div>
 
-            <div className={`${generateWithAI ? 'opacity-50 pointer-events-none filter grayscale mt-4' : 'mt-4'} transition-all duration-300`}>
-              <div className="flex justify-between items-center mb-4">
-                <label className="text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Upload de Imagens</label>
-                <span className="text-[10px] bg-slate-200 text-slate-500 px-2 py-0.5 rounded-full font-bold">Manual</span>
+              <div className="relative">
+                <textarea
+                  className={`w-full h-48 border rounded-xl p-4 text-sm focus:ring-2 focus:ring-primary focus:border-transparent resize-none leading-relaxed font-sans transition-colors ${isIuryMode ? 'bg-primary/5 dark:bg-primary/10 border-primary/20 text-indigo-900 dark:text-indigo-100 placeholder:text-indigo-400 dark:placeholder:text-indigo-300' : 'bg-slate-50 dark:bg-surface-darker border-slate-200 dark:border-border-dark text-slate-700 dark:text-slate-300 placeholder:text-slate-400 dark:placeholder:text-slate-600'}`}
+                  style={{ fontFamily: 'var(--font-poppins), sans-serif' }}
+                  placeholder={isIuryMode ? 'Deixe o Iury fazer o trabalho. Escreva um tema, cole um rascunho completo, reclame de um nicho... e veja a mágica visceral acontecer.' : 'Modo manual ativado. Cole SEU TEXTO FORMATADO aqui e clique em gerar.\n\n⚠️ REGRA DE OURO:\nSeu slide não pode ter mais que 250 caracteres (linhas de texto demais vão sobrescrever sua foto principal!).\n\nUse este formato nativo para cada slide:\n\nSLIDE 01:\n[TÍTULO]: Título explosivo aqui\n[SUBTÍTULO]: Texto da narrativa curto aqui...\n\nSLIDE 02:\n[TÍTULO]: Segundo título...'}
+                  value={content}
+                  onChange={(e) => {
+                    setContent(e.target.value);
+                    if (!isIuryMode) {
+                      processTextIntoSlides(e.target.value, addCtaSlide, ctaContent);
+                    }
+                  }}
+                ></textarea>
+                <div className="absolute bottom-3 right-3 text-xs text-slate-400 font-medium bg-slate-100 dark:bg-border-dark px-2 py-1 rounded">{content.length} caracteres</div>
               </div>
-              <div className="grid grid-cols-4 gap-2">
-                {Array.from({ length: slideCount }).map((_, index) => {
-                  const num = index + 1;
-                  return (
-                    <div
-                      key={num}
-                      draggable={!generateWithAI && !!uploadedImages[index]}
-                      onDragStart={() => handleDragStart(index)}
-                      onDragOver={handleDragOver}
-                      onDrop={() => handleDrop(index)}
-                      onClick={() => handleIndividualUploadClick(index)}
-                      className={`aspect-[4/5] rounded border-2 border-dashed border-slate-200 dark:border-border-dark flex flex-col items-center justify-center gap-1 group transition-colors ${!generateWithAI ? 'cursor-pointer hover:border-primary/50 hover:bg-primary/5' : 'cursor-not-allowed'} overflow-hidden relative ${draggedIndex === index ? 'opacity-50' : ''}`}>
-                      {uploadedImages[index] ? (
-                        <>
-                          <img src={uploadedImages[index] as string} alt={`Slide ${num}`} className="w-full h-full object-cover pointer-events-none" />
-                          <button
-                            onClick={(e) => handleRemoveImage(index, e)}
-                            className="absolute top-1 right-1 size-5 bg-black/50 hover:bg-red-500 rounded-full flex items-center justify-center text-white opacity-0 group-hover:opacity-100 transition-all z-10"
-                            title="Remover imagem"
-                          >
-                            <span className="material-symbols-outlined text-[12px] font-bold">close</span>
-                          </button>
-                        </>
-                      ) : (
-                        <>
-                          <span className="material-symbols-outlined text-slate-400 text-sm">add</span>
-                          <span className="text-[8px] font-bold text-slate-400">S{num}</span>
-                        </>
-                      )}
+
+              {isIuryMode && (
+                <button
+                  onClick={executarIury}
+                  disabled={!content.trim() || isGeneratingText}
+                  className="w-full flex items-center justify-center gap-2 rounded-xl h-11 text-white text-sm font-bold shadow-md transition-all disabled:opacity-70 disabled:hover:scale-100 disabled:cursor-not-allowed bg-indigo-600 hover:bg-indigo-700 shadow-indigo-600/25 mt-2"
+                >
+                  {isGeneratingText ? (
+                    <span className="material-symbols-outlined animate-spin text-[18px]">progress_activity</span>
+                  ) : (
+                    <span className="material-symbols-outlined text-[18px]">psychology</span>
+                  )}
+                  {isGeneratingText ? 'Pensando de Forma Visceral...' : 'Gerar Texto com Iury'}
+                </button>
+              )}
+
+              <div className="space-y-4 pt-4 border-t border-slate-100 dark:border-border-dark">
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="space-y-2">
+                    <label className="text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Tipografia</label>
+                    <select
+                      value={fontFamily}
+                      onChange={(e) => setFontFamily(e.target.value)}
+                      className="w-full bg-slate-50 dark:bg-surface-darker text-slate-900 dark:text-white border border-slate-200 dark:border-border-dark rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-primary outline-none cursor-pointer"
+                    >
+                      <option value="var(--font-poppins), sans-serif">Padrão (Poppins)</option>
+                      <option value="'Playfair Display', serif">Clássica (Playfair)</option>
+                      <option value="'Inter', sans-serif">Clean (Inter)</option>
+                      <option value="'Montserrat', sans-serif">Impacto (Montserrat)</option>
+                      <option value="'Courier New', monospace">Código (Monospace)</option>
+                    </select>
+                  </div>
+                  <div className="space-y-2">
+                    <label className="text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Alinhamento</label>
+                    <div className="flex bg-slate-50 dark:bg-surface-darker border border-slate-200 dark:border-border-dark rounded-lg h-[38px] overflow-hidden">
+                      <button onClick={(e) => { e.preventDefault(); setTextAlign('text-left'); }} className={`flex-1 flex items-center justify-center transition-colors ${textAlign === 'text-left' ? 'bg-primary text-white' : 'text-slate-500 hover:bg-slate-200 dark:hover:bg-slate-800'}`}>
+                        <span className="material-symbols-outlined text-[18px]">format_align_left</span>
+                      </button>
+                      <div className="w-px bg-slate-200 dark:bg-border-dark"></div>
+                      <button onClick={(e) => { e.preventDefault(); setTextAlign('text-center'); }} className={`flex-1 flex items-center justify-center transition-colors ${textAlign === 'text-center' ? 'bg-primary text-white' : 'text-slate-500 hover:bg-slate-200 dark:hover:bg-slate-800'}`}>
+                        <span className="material-symbols-outlined text-[18px]">format_align_center</span>
+                      </button>
+                      <div className="w-px bg-slate-200 dark:bg-border-dark"></div>
+                      <button onClick={(e) => { e.preventDefault(); setTextAlign('text-right'); }} className={`flex-1 flex items-center justify-center transition-colors ${textAlign === 'text-right' ? 'bg-primary text-white' : 'text-slate-500 hover:bg-slate-200 dark:hover:bg-slate-800'}`}>
+                        <span className="material-symbols-outlined text-[18px]">format_align_right</span>
+                      </button>
                     </div>
-                  );
-                })}
-                <div className={`aspect-[4/5] rounded bg-slate-50 dark:bg-surface-darker flex items-center justify-center ${!generateWithAI ? 'cursor-pointer hover:bg-slate-100 dark:hover:bg-slate-800' : 'cursor-not-allowed'}`}>
-                  <span className="material-symbols-outlined text-slate-300">more_horiz</span>
+                  </div>
                 </div>
               </div>
-              <input
-                type="file"
-                multiple
-                accept="image/*"
-                className="hidden"
-                ref={fileInputRef}
-                onChange={handleFileUpload}
-              />
-              <input
-                type="file"
-                accept="image/*"
-                className="hidden"
-                ref={individualFileInputRef}
-                onChange={handleIndividualFileUpload}
-              />
+
+              <div className="flex flex-col gap-3 pt-3 border-t border-slate-100 dark:border-border-dark">
+                <div className="flex items-center justify-between">
+                  <div className="flex flex-col">
+                    <span className="text-sm font-semibold text-slate-900 dark:text-white">Adicionar CTA Final</span>
+                    <span className="text-[10px] text-slate-500 dark:text-slate-400">Gera um slide extra para Call-to-Action</span>
+                  </div>
+                  <label className="relative inline-flex items-center cursor-pointer">
+                    <input
+                      type="checkbox"
+                      className="sr-only peer"
+                      checked={addCtaSlide}
+                      onChange={(e) => {
+                        setAddCtaSlide(e.target.checked);
+                        if (!isIuryMode) processTextIntoSlides(content, e.target.checked, ctaContent);
+                      }}
+                    />
+                    <div className="w-11 h-6 bg-slate-200 peer-focus:outline-none peer-focus:ring-2 peer-focus:ring-primary/20 dark:peer-focus:ring-primary/30 rounded-full peer dark:bg-slate-700 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all dark:border-gray-600 peer-checked:bg-primary"></div>
+                  </label>
+                </div>
+                {addCtaSlide && (
+                  <div className="flex flex-col gap-3">
+                    <SimpleRichTextEditor
+                      value={ctaContent}
+                      onChange={(val) => {
+                        setCtaContent(val);
+                        if (!isIuryMode) processTextIntoSlides(content, addCtaSlide, val);
+                      }}
+                      placeholder="Deixe sua mensagem final..."
+                    />
+
+                    <div className="flex items-center justify-between border-t border-slate-100 dark:border-border-dark pt-3">
+                      <div className="flex flex-col">
+                        <span className="text-sm font-semibold text-slate-900 dark:text-white">Imagem de Fundo CTA</span>
+                        <span className="text-[10px] text-slate-500">Opcional: preenche o fundo do CTA</span>
+                      </div>
+                      <button onClick={() => ctaImageInputRef.current?.click()} className="text-[11px] font-bold bg-primary/10 text-primary px-3 py-1.5 rounded-lg hover:bg-primary/20 transition-colors">
+                        {ctaImage ? 'Trocar Imagem' : 'Upload Imagem +'}
+                      </button>
+                      <input type="file" ref={ctaImageInputRef} onChange={handleCtaImageUpload} accept="image/*" className="hidden" />
+                    </div>
+
+                    {ctaImage && (
+                      <div className="relative w-full h-24 rounded-xl overflow-hidden border border-slate-200 dark:border-border-dark group shadow-sm bg-slate-100 dark:bg-slate-800">
+                        <img src={ctaImage} alt="CTA Background" className="w-full h-full object-cover" />
+                        <button onClick={() => setCtaImage(null)} className="absolute top-2 right-2 size-6 bg-black/60 hover:bg-red-500 rounded-full flex items-center justify-center text-white opacity-0 group-hover:opacity-100 transition-all z-10 shadow-lg" title="Remover Imagem">
+                          <span className="material-symbols-outlined text-[14px]">close</span>
+                        </button>
+                      </div>
+                    )}
+                  </div>
+                )}
+              </div>
+            </div>
+            <div className="space-y-4">
+              <h3 className="text-slate-900 dark:text-white font-bold text-lg">Configuração</h3>
+              <div className="space-y-2">
+                <label className="text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Proporção</label>
+                <div className="grid grid-cols-2 gap-2">
+                  <button
+                    onClick={() => setAspectRatio('4:5')}
+                    className={`flex flex-col items-center justify-center gap-2 p-3 rounded-lg border transition-all group relative ${aspectRatio === '4:5' ? 'border-2 border-primary bg-primary/5 dark:bg-primary/10' : 'border-slate-200 dark:border-border-dark bg-slate-50 dark:bg-surface-darker hover:border-primary/50 hover:bg-primary/5 dark:hover:bg-primary/10'}`}>
+                    {aspectRatio === '4:5' && (
+                      <div className="absolute -top-1.5 -right-1.5 size-4 bg-primary rounded-full flex items-center justify-center">
+                        <span className="material-symbols-outlined text-white text-[10px] font-bold">check</span>
+                      </div>
+                    )}
+                    <div className={`w-5 h-7 border-2 rounded-sm ${aspectRatio === '4:5' ? 'border-primary' : 'border-slate-400 dark:border-slate-500 group-hover:border-primary'}`}></div>
+                    <span className={`text-xs font-medium ${aspectRatio === '4:5' ? 'text-primary' : 'text-slate-600 dark:text-slate-400 group-hover:text-primary'}`}>4:5</span>
+                  </button>
+                  <button
+                    onClick={() => setAspectRatio('9:16')}
+                    className={`flex flex-col items-center justify-center gap-2 p-3 rounded-lg border transition-all group relative ${aspectRatio === '9:16' ? 'border-2 border-primary bg-primary/5 dark:bg-primary/10' : 'border-slate-200 dark:border-border-dark bg-slate-50 dark:bg-surface-darker hover:border-primary/50 hover:bg-primary/5 dark:hover:bg-primary/10'}`}>
+                    {aspectRatio === '9:16' && (
+                      <div className="absolute -top-1.5 -right-1.5 size-4 bg-primary rounded-full flex items-center justify-center">
+                        <span className="material-symbols-outlined text-white text-[10px] font-bold">check</span>
+                      </div>
+                    )}
+                    <div className={`w-4 h-8 border-2 rounded-sm ${aspectRatio === '9:16' ? 'border-primary' : 'border-slate-400 dark:border-slate-500 group-hover:border-primary'}`}></div>
+                    <span className={`text-xs font-medium ${aspectRatio === '9:16' ? 'text-primary' : 'text-slate-600 dark:text-slate-400 group-hover:text-primary'}`}>9:16</span>
+                  </button>
+                </div>
+              </div>
+              <div className="space-y-2 pt-2">
+                <label className="text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Modelo de Estilo</label>
+                <div className="grid grid-cols-3 gap-3">
+                  <div className="relative cursor-pointer group" onClick={() => setStyleModel('Moderno')}>
+                    <div className={`h-16 rounded-lg bg-gradient-to-br from-indigo-500 to-purple-600 flex items-end p-2 overflow-hidden ring-2 transition-all ${styleModel === 'Moderno' ? 'ring-primary' : 'ring-transparent group-hover:ring-primary'}`}>
+                      <span className="text-[10px] text-white font-bold opacity-80">Moderno</span>
+                      {styleModel === 'Moderno' && <div className="absolute top-2 right-2 size-2 bg-primary rounded-full"></div>}
+                    </div>
+                    {styleModel !== 'Moderno' && (
+                      <div className="absolute inset-0 bg-black/40 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity rounded-lg">
+                        <span className="text-white text-xs font-bold">Aplicar</span>
+                      </div>
+                    )}
+                  </div>
+                  <div className="relative cursor-pointer group" onClick={() => setStyleModel('Escuro')}>
+                    <div className={`h-16 rounded-lg bg-gradient-to-br from-slate-800 to-black border border-slate-700 flex items-end p-2 overflow-hidden ring-2 transition-all ${styleModel === 'Escuro' ? 'ring-primary' : 'ring-transparent group-hover:ring-primary'}`}>
+                      <span className="text-[10px] text-white font-bold opacity-80">Escuro</span>
+                      {styleModel === 'Escuro' && <div className="absolute top-2 right-2 size-2 bg-primary rounded-full"></div>}
+                    </div>
+                    {styleModel !== 'Escuro' && (
+                      <div className="absolute inset-0 bg-black/40 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity rounded-lg">
+                        <span className="text-white text-xs font-bold">Aplicar</span>
+                      </div>
+                    )}
+                  </div>
+                  <div className="relative cursor-pointer group" onClick={() => setStyleModel('Vibrante')}>
+                    <div className={`h-16 rounded-lg bg-gradient-to-br from-orange-400 to-pink-500 flex items-end p-2 overflow-hidden ring-2 transition-all ${styleModel === 'Vibrante' ? 'ring-primary' : 'ring-transparent group-hover:ring-primary'}`}>
+                      <span className="text-[10px] text-white font-bold opacity-80">Vibrante</span>
+                      {styleModel === 'Vibrante' && <div className="absolute top-2 right-2 size-2 bg-primary rounded-full"></div>}
+                    </div>
+                    {styleModel !== 'Vibrante' && (
+                      <div className="absolute inset-0 bg-black/40 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity rounded-lg">
+                        <span className="text-white text-xs font-bold">Aplicar</span>
+                      </div>
+                    )}
+                  </div>
+                  <div className="relative cursor-pointer group" onClick={() => setStyleModel('Minimalista')}>
+                    <div className={`h-16 rounded-lg bg-white border border-slate-200 flex items-end p-2 overflow-hidden ring-2 transition-all ${styleModel === 'Minimalista' ? 'ring-primary' : 'ring-transparent group-hover:ring-primary'}`}>
+                      <span className="text-[10px] text-slate-800 font-bold opacity-80">Minimalista</span>
+                      {styleModel === 'Minimalista' && <div className="absolute top-2 right-2 size-2 bg-primary rounded-full"></div>}
+                    </div>
+                    {styleModel !== 'Minimalista' && (
+                      <div className="absolute inset-0 bg-black/5 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity rounded-lg">
+                        <span className="text-slate-800 text-xs font-bold">Aplicar</span>
+                      </div>
+                    )}
+                  </div>
+                  <div className="relative cursor-pointer group" onClick={() => setStyleModel('Regional')}>
+                    <div className={`h-16 rounded-lg bg-[#efe9dc] border border-slate-200 flex items-end p-2 overflow-hidden ring-2 transition-all ${styleModel === 'Regional' ? 'ring-primary' : 'ring-transparent group-hover:ring-primary'}`}>
+                      <span className="text-[10px] text-slate-800 font-bold opacity-80">Regional</span>
+                      {styleModel === 'Regional' && <div className="absolute top-2 right-2 size-2 bg-primary rounded-full"></div>}
+                    </div>
+                    {styleModel !== 'Regional' && (
+                      <div className="absolute inset-0 bg-black/5 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity rounded-lg">
+                        <span className="text-slate-800 text-xs font-bold">Aplicar</span>
+                      </div>
+                    )}
+                  </div>
+                  <div className="relative cursor-pointer group" onClick={() => setStyleModel('Personalizado')}>
+                    <div className={`h-16 rounded-lg border border-slate-200 flex flex-col items-center justify-center overflow-hidden ring-2 transition-all ${styleModel === 'Personalizado' ? 'ring-primary' : 'ring-transparent group-hover:ring-primary'}`} style={{ backgroundColor: styleModel === 'Personalizado' ? customColor : '#f8fafc' }}>
+                      {styleModel === 'Personalizado' ? (
+                        <input
+                          type="color"
+                          value={customColor}
+                          onChange={(e) => setCustomColor(e.target.value)}
+                          className="w-8 h-8 rounded cursor-pointer border-0 p-0 bg-transparent"
+                          onClick={(e) => e.stopPropagation()}
+                        />
+                      ) : (
+                        <span className="material-symbols-outlined text-slate-400">palette</span>
+                      )}
+                      <span className={`text-[10px] font-bold mt-1 ${styleModel === 'Personalizado' ? 'opacity-0' : 'text-slate-500'}`}>Personalizado</span>
+                      {styleModel === 'Personalizado' && <div className="absolute top-2 right-2 size-2 bg-white rounded-full shadow-sm"></div>}
+                    </div>
+                    {styleModel !== 'Personalizado' && (
+                      <div className="absolute inset-0 bg-black/5 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity rounded-lg">
+                        <span className="text-slate-800 text-xs font-bold">Aplicar</span>
+                      </div>
+                    )}
+                  </div>
+                </div>
+              </div>
+
+              <div className="space-y-3 pt-4 border-t border-slate-100 dark:border-border-dark">
+                <label className="text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Marca</label>
+
+                <div className="space-y-2">
+                  <label className="text-xs text-slate-500 dark:text-slate-400">Arroba / Nome do Perfil</label>
+                  <input
+                    type="text"
+                    value={brandHandle}
+                    onChange={(e) => setBrandHandle(e.target.value)}
+                    className="w-full bg-slate-50 dark:bg-surface-darker border border-slate-200 dark:border-border-dark rounded-lg px-3 py-2 text-sm text-slate-700 dark:text-slate-300 focus:ring-2 focus:ring-primary focus:border-transparent"
+                    placeholder="@seu.perfil"
+                  />
+                </div>
+
+                <div className="space-y-2">
+                  <label className="text-xs text-slate-500 dark:text-slate-400">Logo do Perfil</label>
+                  {brandLogo ? (
+                    <div className="flex items-center gap-3 p-3 rounded-lg border border-slate-200 dark:border-border-dark bg-slate-50 dark:bg-surface-darker">
+                      <div className="size-8 rounded bg-slate-900 flex items-center justify-center overflow-hidden">
+                        <img src={brandLogo} alt="Logo" className="w-full h-full object-cover" />
+                      </div>
+                      <div className="flex-1">
+                        <p className="text-sm font-medium text-slate-900 dark:text-white">Logo Enviado</p>
+                        <p className="text-xs text-slate-500">Visível em todos os slides</p>
+                      </div>
+                      <button
+                        onClick={() => setBrandLogo(null)}
+                        className="p-1 hover:bg-slate-200 dark:hover:bg-slate-700 rounded text-slate-500">
+                        <span className="material-symbols-outlined text-[18px]">close</span>
+                      </button>
+                    </div>
+                  ) : (
+                    <button
+                      onClick={() => brandLogoInputRef.current?.click()}
+                      className="w-full py-3 flex flex-col items-center justify-center gap-2 text-sm font-medium text-slate-500 dark:text-slate-400 border border-dashed border-slate-300 dark:border-border-dark rounded-lg hover:bg-slate-50 dark:hover:bg-surface-darker hover:text-primary hover:border-primary/50 transition-colors">
+                      <span className="material-symbols-outlined text-[24px]">add_photo_alternate</span>
+                      Fazer upload da Logo
+                    </button>
+                  )}
+                  <input
+                    type="file"
+                    ref={brandLogoInputRef}
+                    onChange={handleBrandLogoUpload}
+                    accept="image/*"
+                    className="hidden"
+                  />
+                </div>
+
+                <div className="pt-2">
+                  <div className="flex items-center justify-between bg-primary/5 dark:bg-primary/10 p-3 rounded-lg border border-primary/20">
+                    <div className="flex flex-col">
+                      <span className="text-xs font-bold text-primary dark:text-primary-light">Lembrar Marca & Estilo</span>
+                      <span className="text-[10px] text-slate-500 dark:text-slate-400 leading-tight mt-0.5">Salva a logo, arroba e cores para o futuro</span>
+                    </div>
+                    <label className="relative inline-flex items-center cursor-pointer">
+                      <input
+                        type="checkbox"
+                        className="sr-only peer"
+                        checked={saveDefaults}
+                        onChange={(e) => setSaveDefaults(e.target.checked)}
+                      />
+                      <div className="w-9 h-5 bg-slate-300 peer-focus:outline-none rounded-full peer dark:bg-slate-600 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-primary"></div>
+                    </label>
+                  </div>
+                </div>
+
+              </div>
+            </div>
+            <div className="space-y-4 pt-4 border-t border-slate-100 dark:border-border-dark">
+              <div className="flex items-center justify-between">
+                <div className="flex flex-col">
+                  <span className="text-sm font-semibold text-slate-900 dark:text-white">Gerar imagens com IA</span>
+                  <span className="text-xs text-slate-500 dark:text-slate-400">Usa o modelo Gemini 2.5 Flash</span>
+                </div>
+                <label className="relative inline-flex items-center cursor-pointer">
+                  <input
+                    type="checkbox"
+                    className="sr-only peer"
+                    checked={generateWithAI}
+                    onChange={(e) => setGenerateWithAI(e.target.checked)}
+                  />
+                  <div className="w-11 h-6 bg-slate-200 peer-focus:outline-none peer-focus:ring-2 peer-focus:ring-primary/20 dark:peer-focus:ring-primary/30 rounded-full peer dark:bg-slate-700 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all dark:border-gray-600 peer-checked:bg-primary"></div>
+                </label>
+              </div>
+
+              {generateWithAI && (
+                <>
+                  <div className="hidden space-y-2 mt-2 p-3 bg-emerald-50 dark:bg-emerald-900/10 rounded-lg border border-emerald-200 dark:border-emerald-800">
+                    <label className="text-xs font-semibold text-emerald-800 dark:text-emerald-300 uppercase tracking-wider flex items-center gap-1">
+                      <span className="material-symbols-outlined text-[14px]">imagesmode</span> Nicho Visual da Imagem
+                    </label>
+                    <select
+                      value={imageNiche}
+                      onChange={(e) => setImageNiche(e.target.value)}
+                      className="w-full bg-white dark:bg-surface-dark border border-emerald-200 dark:border-emerald-700 rounded-lg px-3 py-2 text-sm text-emerald-900 dark:text-emerald-100 focus:ring-2 focus:ring-emerald-500 outline-none cursor-pointer font-medium"
+                    >
+                      {dbImageLabels.filter(label => label.key !== 'GLOBAL_IMAGE').length > 0 ? (
+                        dbImageLabels.filter(label => label.key !== 'GLOBAL_IMAGE').map(label => (
+                          <option key={label.key} value={label.key}>{label.label}</option>
+                        ))
+                      ) : (
+                        <>
+                          <option value="SAUDE">🍎 Saúde, Nutrição</option>
+                          <option value="MINDSET">🧠 Mindset, Psicologia</option>
+                        </>
+                      )}
+                    </select>
+                  </div>
+                  <div className="space-y-2 mt-4 p-3 bg-slate-50 dark:bg-surface-darker rounded-lg border border-slate-200 dark:border-border-dark">
+                    <div className="flex items-center justify-between">
+                      <label className="text-xs font-semibold text-slate-700 dark:text-slate-300">Sua Chave da API Gemini (Opcional)</label>
+                      {customApiKey && <span className="text-[10px] text-emerald-600 font-bold flex items-center gap-1"><span className="material-symbols-outlined text-[12px]">lock</span> Salva</span>}
+                    </div>
+                    <p className="text-[10px] text-slate-500 dark:text-slate-400 leading-tight">
+                      Insira sua chave para uso ilimitado. Ela é <strong>criptografada e salva apenas no seu navegador</strong>. Você só precisa inserir uma vez.
+                    </p>
+                    <input
+                      type="password"
+                      value={customApiKey}
+                      onChange={handleApiKeyChange}
+                      placeholder="Cole sua chave AIzaSy... aqui"
+                      className="w-full bg-white dark:bg-surface-dark border border-slate-200 dark:border-border-dark rounded-md px-3 py-2 text-xs text-slate-700 dark:text-slate-300 focus:ring-2 focus:ring-primary focus:border-transparent"
+                    />
+                    <div className="flex justify-end">
+                      <a href="https://aistudio.google.com/app/apikey" target="_blank" rel="noopener noreferrer" className="text-[10px] text-primary hover:underline flex items-center gap-1">
+                        Pegar minha chave gratuita <span className="material-symbols-outlined text-[10px]">open_in_new</span>
+                      </a>
+                    </div>
+                  </div>
+                </>
+              )}
+
+              <div className={`${generateWithAI ? 'opacity-50 pointer-events-none filter grayscale mt-4' : 'mt-4'} transition-all duration-300`}>
+                <div className="flex justify-between items-center mb-4">
+                  <label className="text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Upload de Imagens</label>
+                  <span className="text-[10px] bg-slate-200 text-slate-500 px-2 py-0.5 rounded-full font-bold">Manual</span>
+                </div>
+                <div className="grid grid-cols-4 gap-2">
+                  {Array.from({ length: slideCount }).map((_, index) => {
+                    const num = index + 1;
+                    return (
+                      <div
+                        key={num}
+                        draggable={!generateWithAI && !!uploadedImages[index]}
+                        onDragStart={() => handleDragStart(index)}
+                        onDragOver={handleDragOver}
+                        onDrop={() => handleDrop(index)}
+                        onClick={() => handleIndividualUploadClick(index)}
+                        className={`aspect-[4/5] rounded border-2 border-dashed border-slate-200 dark:border-border-dark flex flex-col items-center justify-center gap-1 group transition-colors ${!generateWithAI ? 'cursor-pointer hover:border-primary/50 hover:bg-primary/5' : 'cursor-not-allowed'} overflow-hidden relative ${draggedIndex === index ? 'opacity-50' : ''}`}>
+                        {uploadedImages[index] ? (
+                          <>
+                            <img src={uploadedImages[index] as string} alt={`Slide ${num}`} className="w-full h-full object-cover pointer-events-none" />
+                            <button
+                              onClick={(e) => handleRemoveImage(index, e)}
+                              className="absolute top-1 right-1 size-5 bg-black/50 hover:bg-red-500 rounded-full flex items-center justify-center text-white opacity-0 group-hover:opacity-100 transition-all z-10"
+                              title="Remover imagem"
+                            >
+                              <span className="material-symbols-outlined text-[12px] font-bold">close</span>
+                            </button>
+                          </>
+                        ) : (
+                          <>
+                            <span className="material-symbols-outlined text-slate-400 text-sm">add</span>
+                            <span className="text-[8px] font-bold text-slate-400">S{num}</span>
+                          </>
+                        )}
+                      </div>
+                    );
+                  })}
+                  <div className={`aspect-[4/5] rounded bg-slate-50 dark:bg-surface-darker flex items-center justify-center ${!generateWithAI ? 'cursor-pointer hover:bg-slate-100 dark:hover:bg-slate-800' : 'cursor-not-allowed'}`}>
+                    <span className="material-symbols-outlined text-slate-300">more_horiz</span>
+                  </div>
+                </div>
+                <input
+                  type="file"
+                  multiple
+                  accept="image/*"
+                  className="hidden"
+                  ref={fileInputRef}
+                  onChange={handleFileUpload}
+                />
+                <input
+                  type="file"
+                  accept="image/*"
+                  className="hidden"
+                  ref={individualFileInputRef}
+                  onChange={handleIndividualFileUpload}
+                />
+                <button
+                  onClick={handleMassUploadClick}
+                  disabled={generateWithAI}
+                  className={`w-full mt-4 flex items-center justify-center gap-2 py-2.5 rounded-lg text-xs font-bold transition-colors border ${!generateWithAI ? 'bg-white dark:bg-surface-dark text-slate-700 dark:text-white border-slate-200 dark:border-border-dark hover:bg-slate-50 dark:hover:bg-slate-800 cursor-pointer' : 'bg-slate-100 dark:bg-surface-darker text-slate-400 border-slate-200 dark:border-border-dark cursor-not-allowed'}`}>
+                  <span className="material-symbols-outlined text-sm">upload_file</span>
+                  Upload em Massa ({slideCount} Slides)
+                </button>
+              </div>
+            </div>
+            <div className="mt-auto p-6 border-t border-slate-200 dark:border-border-dark bg-slate-50 dark:bg-surface-darker sticky bottom-0">
               <button
-                onClick={handleMassUploadClick}
-                disabled={generateWithAI}
-                className={`w-full mt-4 flex items-center justify-center gap-2 py-2.5 rounded-lg text-xs font-bold transition-colors border ${!generateWithAI ? 'bg-white dark:bg-surface-dark text-slate-700 dark:text-white border-slate-200 dark:border-border-dark hover:bg-slate-50 dark:hover:bg-slate-800 cursor-pointer' : 'bg-slate-100 dark:bg-surface-darker text-slate-400 border-slate-200 dark:border-border-dark cursor-not-allowed'}`}>
-                <span className="material-symbols-outlined text-sm">upload_file</span>
-                Upload em Massa ({slideCount} Slides)
+                onClick={handleGenerateCarousel}
+                disabled={!content.trim() || isGeneratingText || (isIuryMode && content.length < 50)}
+                className={`w-full flex items-center justify-center gap-2 rounded-xl h-12 text-white text-base font-bold shadow-lg transition-all disabled:opacity-70 disabled:hover:scale-100 disabled:cursor-not-allowed bg-gradient-to-r from-emerald-500 to-emerald-400 hover:from-emerald-400 hover:to-emerald-300 shadow-emerald-500/25 active:scale-[0.98]`}>
+                <span className="material-symbols-outlined">auto_fix_high</span>
+                Gerar Carrossel e Imagens
               </button>
             </div>
-          </div>
-          <div className="mt-auto p-6 border-t border-slate-200 dark:border-border-dark bg-slate-50 dark:bg-surface-darker sticky bottom-0">
-            <button
-              onClick={handleGenerateCarousel}
-              disabled={!content.trim() || isGeneratingText || (isIuryMode && content.length < 50)}
-              className={`w-full flex items-center justify-center gap-2 rounded-xl h-12 text-white text-base font-bold shadow-lg transition-all disabled:opacity-70 disabled:hover:scale-100 disabled:cursor-not-allowed bg-gradient-to-r from-emerald-500 to-emerald-400 hover:from-emerald-400 hover:to-emerald-300 shadow-emerald-500/25 active:scale-[0.98]`}>
-              <span className="material-symbols-outlined">auto_fix_high</span>
-              Gerar Carrossel e Imagens
-            </button>
           </div>
         </aside>
         <section className={`flex-1 flex flex-col min-h-0 bg-slate-100 dark:bg-background-dark overflow-hidden relative ${activeMobileTab !== 'preview' ? 'max-md:hidden' : 'max-md:flex max-md:flex-1'}`}>
@@ -1820,29 +1606,16 @@ export default function CarouselGenerator({ onLogout }: { onLogout: () => void }
                               </div>
                             )}
 
-                            <div className={`w-full flex-1 flex flex-col items-center px-8 pt-10 pb-8 shrink-0 z-20 relative ${ctaImage ? 'justify-start' : 'justify-center'} ${theme.textClass}`} style={{ fontFamily }}>
-
-                              {slide.title && (
-                                <h2
-                                  className={`font-extrabold text-2xl sm:text-3xl leading-tight uppercase mb-4`}
-                                  style={{ fontSize: `${slideTitleSize}%` }}
-                                >
-                                  {slide.title}
-                                </h2>
-                              )}
-                              <div
-                                className={`text-base sm:text-lg ${theme.subtextClass} font-medium leading-relaxed whitespace-pre-wrap [&_span]:!bg-transparent focus:outline-none w-[90%] mx-auto`}
-                                style={{ fontSize: `${subtitleSize}%` }}
-                                dangerouslySetInnerHTML={{ __html: slide.subtitle }}
-                              ></div>
+                            <div className={`w-full flex-1 flex flex-col items-center p-8 shrink-0 z-20 relative ${ctaImage ? 'justify-start' : 'justify-center'} ${theme.textClass}`} style={{ fontFamily }}>
+                              {slide.title && <h2 className={`font-extrabold text-2xl sm:text-3xl leading-tight uppercase mb-4`}>{slide.title}</h2>}
+                              <div className={`text-base sm:text-lg ${theme.subtextClass} font-medium leading-relaxed whitespace-pre-wrap [&_span]:!bg-transparent focus:outline-none w-[90%] mx-auto`} dangerouslySetInnerHTML={{ __html: slide.subtitle }}></div>
                             </div>
                           </div>
 
                           <div
-                            className={`absolute inset-0 bg-black/80 flex flex-col items-center justify-center p-6 backdrop-blur-[4px] z-[60] cursor-pointer outline-none overflow-hidden transition-opacity duration-300 ${openSlideIndex === index ? 'opacity-100' : 'opacity-0 pointer-events-none group-hover/slide-wrapper:opacity-100 group-hover/slide-wrapper:pointer-events-auto'}`}
+                            className={`absolute inset-0 bg-black/80 transition-opacity flex flex-col items-center justify-center p-6 backdrop-blur-[4px] z-[60] cursor-pointer outline-none overflow-hidden ${openSlideIndex === index ? 'opacity-100' : 'opacity-0 pointer-events-none'}`}
                             onClick={(e) => { if (e.target === e.currentTarget) setOpenSlideIndex(null); }}
                           >
-
                             <div className="flex w-full h-full gap-2 sm:gap-4 items-center justify-center pointer-events-none">
                               <button
                                 onClick={(e) => { e.stopPropagation(); handleDownloadSingle(index); }}
@@ -1859,7 +1632,9 @@ export default function CarouselGenerator({ onLogout }: { onLogout: () => void }
                   const randomPattern = [false, true, false, false, true, false, true, true, false, true];
                   const isImageBottom = index === 0 ? false : randomPattern[index % randomPattern.length];
                   const contentOrder = isImageBottom ? 'flex-col-reverse' : 'flex-col';
-
+                  const textAlignmentPadding = isImageBottom
+                    ? 'pt-12 pb-6 justify-center'
+                    : (index === 0 ? 'pt-3 pb-10 justify-end' : 'pt-3 pb-4 justify-end');
 
                   return (
                     <div key={index} className={`relative shrink-0 snap-center flex items-center group/slide-wrapper ${getSlideDimensions()}`}
@@ -1888,59 +1663,38 @@ export default function CarouselGenerator({ onLogout }: { onLogout: () => void }
                             </div>
                           </div>
 
-                          <div className={`absolute left-6 z-[60] flex items-center pointer-events-none w-[33%] opacity-30 transition-opacity hover:opacity-100 ${index === 0 || !isImageBottom ? 'top-6' : 'bottom-6'}`}>
-
-                            <div className="flex items-center gap-1.5 min-w-0">
-                              {brandHandle && (
-                                <span className="text-[10px] sm:text-[11px] font-[900] uppercase tracking-widest text-white whitespace-nowrap"
-                                  style={{
-                                    paintOrder: 'stroke',
-                                    WebkitTextStroke: '1px rgba(0,0,0,0.8)',
-                                    textShadow: '0 2px 4px rgba(0,0,0,0.3)',
-                                    fontFamily: 'var(--font-poppins), system-ui, sans-serif'
-                                  }}>
-                                  {brandHandle}
-                                </span>
-                              )}
-                              <div className="shrink-0 flex items-center">
-                                <svg viewBox="0 0 24 24" className="size-3.5 sm:size-4 fill-blue-500" style={{ filter: 'drop-shadow(0 1px 2px rgba(0,0,0,0.5))' }}>
-                                  <path d="M22.5 12.5c0-1.58-.88-2.97-2.18-3.72.26-1.54-.23-3.15-1.35-4.27-1.13-1.12-2.73-1.6-4.27-1.35-.75-1.3-2.14-2.18-3.72-2.18s-2.97.88-3.72 2.18c-1.54-.25-3.15.23-4.27 1.35C1.87 5.65 1.39 7.25 1.64 8.78 0.34 9.53-0.54 10.92-0.54 12.5s0.88 2.97 2.18 3.72c-0.26 1.54 0.23 3.15 1.35 4.27 1.13 1.12 2.73 1.6 4.27 1.35 0.75 1.3 2.14 2.18 3.72 2.18s2.97-.88 3.72-2.18c1.54 0.25 3.15-0.23 4.27-1.35 1.12-1.13 1.6-2.73 1.35-4.27 1.3-0.75 2.18-2.14 2.18-3.72zM10.69 17.03l-3.5-3.56 1.27-1.27 2.23 2.22 5.63-5.64 1.27 1.27-6.9 6.98z" />
-                                </svg>
+                          <div className="w-full h-0 shrink-0 relative z-[60] flex items-center justify-center">
+                            {(brandHandle || brandLogo) && (
+                              <div className="flex items-center gap-[4px] pr-2 pl-[1px] py-1 rounded-full absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2" style={{ minWidth: 'fit-content', filter: 'drop-shadow(0 3px 8px rgba(0,0,0,0.95)) drop-shadow(0 1px 3px rgba(0,0,0,0.8))' }}>
+                                {brandLogo && (
+                                  <div className={`size-[22px] sm:size-[26px] rounded-full overflow-hidden shrink-0 bg-white border-2 border-white/50`} style={{ boxShadow: '0 0 0 2px rgba(0,0,0,0.4), 0 4px 12px rgba(0,0,0,0.7)' }}>
+                                    <img src={brandLogo} alt="Logo" className="w-full h-full object-cover" />
+                                  </div>
+                                )}
+                                {brandHandle && (
+                                  <div className={`flex items-center text-[10px] sm:text-[12px] font-black tracking-widest text-white pb-[0.5px]`} style={{ textShadow: '0 1px 4px rgba(0,0,0,1), 0 0 12px rgba(0,0,0,0.8)' }}>
+                                    <span className="ml-[2px]">{brandHandle}</span>
+                                  </div>
+                                )}
                               </div>
-                            </div>
+                            )}
                           </div>
 
-                          <div className={`w-full px-8 flex flex-col shrink-0 z-20 relative pt-10 ${index === 0 ? 'pb-8' : 'pb-8'} ${textAlign}`} style={{ fontFamily }}>
-
+                          <div className={`w-full px-8 flex flex-col shrink-0 z-20 relative pt-6 pb-6 ${textAlign}`} style={{ fontFamily }}>
                             <div className={`flex flex-col gap-2 ${textAlign === 'text-center' ? 'items-center text-center' : textAlign === 'text-right' ? 'items-end text-right' : 'items-start text-left'}`}>
-                              {slide.title && (
-                                <h2
-                                  className={titleClass}
-                                  style={{ fontSize: `${index === 0 ? coverTitleSize : slideTitleSize}%` }}
-                                >
-                                  {slide.title}
-                                </h2>
-                              )}
-                              {slide.subtitle && (
-                                <p
-                                  className={subtitleClass}
-                                  style={{ fontSize: `${subtitleSize}%` }}
-                                >
-                                  {slide.subtitle}
-                                </p>
-                              )}
+                              {slide.title && <h2 className={titleClass}>{slide.title}</h2>}
+                              {slide.subtitle && <p className={subtitleClass}>{slide.subtitle}</p>}
                             </div>
                             {index === 0 && (
-                              <div className={`absolute bottom-2.5 right-6 flex items-center gap-1 px-3 py-1 rounded-full bg-black/10 backdrop-blur-sm border border-white/5 ${theme.textClass} group/swipe select-none`}>
-                                <span className="text-[9px] font-light tracking-wide opacity-60" style={{ fontFamily: "'Inter', sans-serif" }}>
-                                  Arraste para o lado {'>'}
-                                </span>
+                              <div className={`absolute bottom-5 left-8 right-6 flex items-center justify-end gap-1 ${theme.textClass} opacity-50`}>
+                                <span className="text-[8px] font-bold uppercase tracking-wider">Deslize para ver mais</span>
+                                <span className="material-symbols-outlined text-[14px]">arrow_forward</span>
                               </div>
                             )}
                           </div>
                         </div>
                         <div
-                          className={`absolute inset-0 bg-black/80 transition-opacity flex flex-col items-center justify-center p-6 backdrop-blur-[4px] z-[60] cursor-pointer outline-none overflow-hidden ${openSlideIndex === index ? 'opacity-100' : 'opacity-0 pointer-events-none group-hover/slide-wrapper:opacity-100 group-hover/slide-wrapper:pointer-events-auto'}`}
+                          className={`absolute inset-0 bg-black/80 transition-opacity flex flex-col items-center justify-center p-6 backdrop-blur-[4px] z-[60] cursor-pointer outline-none overflow-hidden ${openSlideIndex === index ? 'opacity-100' : 'opacity-0 pointer-events-none'}`}
                           onClick={(e) => { if (e.target === e.currentTarget) setOpenSlideIndex(null); }}
                         >
                           <div className="flex w-full h-full gap-2 sm:gap-4 items-center justify-center pointer-events-none">

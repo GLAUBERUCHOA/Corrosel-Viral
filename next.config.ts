@@ -16,22 +16,7 @@ const nextConfig: NextConfig = {
         protocol: 'https',
         hostname: 'picsum.photos',
         port: '',
-        pathname: '/**',
-      },
-      {
-        protocol: 'https',
-        hostname: 'image.pollinations.ai',
-        pathname: '/**',
-      },
-      {
-        protocol: 'https',
-        hostname: '**.leonardo.ai',
-        pathname: '/**',
-      },
-      {
-        protocol: 'https',
-        hostname: '**.googleapis.com',
-        pathname: '/**',
+        pathname: '/**', // This allows any path under the hostname
       },
     ],
   },

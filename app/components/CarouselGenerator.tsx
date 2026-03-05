@@ -1688,17 +1688,17 @@ export default function CarouselGenerator({ onLogout }: { onLogout: () => void }
                               {slide.subtitle && <p className={subtitleClass}>{slide.subtitle}</p>}
                             </div>
                             {index === 0 && (
-                              <div className="absolute bottom-4 right-5 z-30">
-                                <div className="flex items-center gap-1.5 bg-white/10 backdrop-blur-sm border border-white/10 rounded-full px-3 py-1.5">
-                                  <span className={`text-[9px] font-semibold tracking-wide ${theme.textClass} opacity-70`}>Arraste para o lado</span>
-                                  <span className={`text-[11px] ${theme.textClass} opacity-70`}>&gt;</span>
+                              <div className="absolute bottom-3 right-3 z-30">
+                                <div className="flex items-center gap-1 bg-white/[0.07] backdrop-blur-md border border-white/[0.08] rounded-full px-2.5 py-1 shadow-lg shadow-black/10">
+                                  <span className={`text-[7px] font-light tracking-widest ${theme.textClass} opacity-50`} style={{ fontFamily: 'Inter, system-ui, sans-serif' }}>Arraste para o lado</span>
+                                  <span className={`text-[9px] font-light ${theme.textClass} opacity-40`}>&gt;</span>
                                 </div>
                               </div>
                             )}
                           </div>
                         </div>
                         <div
-                          className={`absolute inset-0 bg-black/80 transition-opacity flex flex-col items-center justify-center p-6 backdrop-blur-[4px] z-[60] cursor-pointer outline-none overflow-hidden ${openSlideIndex === index ? 'opacity-100' : 'opacity-0 pointer-events-none'}`}
+                          className={`absolute inset-0 bg-black/80 transition-opacity duration-200 flex flex-col items-center justify-center p-6 backdrop-blur-[4px] z-[60] cursor-pointer outline-none overflow-hidden ${openSlideIndex === index ? 'opacity-100' : 'opacity-0 pointer-events-none group-hover/slide:opacity-100 group-hover/slide:pointer-events-auto'}`}
                           onClick={(e) => { if (e.target === e.currentTarget) setOpenSlideIndex(null); }}
                         >
                           <div className="flex w-full h-full gap-2 sm:gap-4 items-center justify-center pointer-events-none">

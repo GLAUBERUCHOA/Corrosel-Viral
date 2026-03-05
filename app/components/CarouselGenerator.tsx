@@ -1784,8 +1784,8 @@ export default function CarouselGenerator({ onLogout }: { onLogout: () => void }
                   const isImageBottom = index === 0 ? false : randomPattern[index % randomPattern.length];
                   const contentOrder = isImageBottom ? 'flex-col-reverse' : 'flex-col';
                   const textAlignmentPadding = isImageBottom
-                    ? 'pt-12 pb-10 justify-center'
-                    : (index === 0 ? 'pt-6 pb-14 justify-end' : 'pt-6 pb-8 justify-end');
+                    ? 'pt-12 pb-6'
+                    : (index === 0 ? 'pt-6 pb-20' : 'pt-6 pb-12');
 
                   return (
                     <div key={index} data-slide-index={index} className={`relative shrink-0 snap-center flex items-center group/slide-wrapper ${getSlideDimensions()}`}

@@ -983,23 +983,22 @@ export default function CarouselGenerator({ onLogout }: { onLogout: () => void }
     try {
       if (isMobile) {
         // No celular, renderiza TODAS as imagens antes de acionar qualquer download ou prompt.
-        // O prompt trava o navegador que faria o htmlToImage causar "error" na próxima foto.
         const gerados: { url: string, name: string }[] = [];
 
         for (let index = 0; index < parsedSlides.length; index++) {
           const slideElement = slideRefs.current[index];
           if (!slideElement) continue;
 
-          // Rolar a div para a tela antes de renderizar (Força a texturização de camadas pesadas no celular)
-          slideElement.scrollIntoView({ behavior: 'instant', block: 'center', inline: 'center' });
-          await new Promise(resolve => setTimeout(resolve, 600));
+          // Rolar a div para a tela antes de renderizar (Em mobile, use 'auto' ou 'smooth' - 'instant' causa crash no iOS/Safari)
+          slideElement.scrollIntoView({ behavior: 'auto', block: 'center', inline: 'center' });
+          await new Promise(resolve => setTimeout(resolve, 800));
 
           const filter = (node: HTMLElement) => {
             const exclusionClasses = ['animate-pulse', 'invisible'];
             return !exclusionClasses.some(classname => node.classList && node.classList.contains && node.classList.contains(classname));
           };
 
-          const scale = 3;
+          const scale = 2.5;
           const dataUrl = await htmlToImage.toPng(slideElement, {
             quality: 1,
             pixelRatio: 1,
@@ -1018,14 +1017,22 @@ export default function CarouselGenerator({ onLogout }: { onLogout: () => void }
           gerados.push({ url: dataUrl, name: `slide-${index + 1}.png` });
         }
 
-        // Nativo para Celulares: Tenta compartilhar/salvar as imagens de uma vez através da nativa Sheets (Muito menos propenso a falhas)
+        // Nativo para Celulares: Tenta compartilhar/salvar as imagens de uma vez
         try {
           if (navigator.canShare && navigator.share) {
-            const filesArray = await Promise.all(gerados.map(async (img) => {
-              const res = await fetch(img.url);
-              const blob = await res.blob();
-              return new File([blob], img.name, { type: 'image/png' });
-            }));
+            const filesArray = gerados.map((img) => {
+              // Converter base64 puro para Blob sem usar o 'fetch' que pode dar limit exceed no iOS
+              const arr = img.url.split(',');
+              const mime = arr[0].match(/:(.*?);/)?.[1] || 'image/png';
+              const bstr = atob(arr[1]);
+              let n = bstr.length;
+              const u8arr = new Uint8Array(n);
+              while (n--) {
+                u8arr[n] = bstr.charCodeAt(n);
+              }
+              const blob = new Blob([u8arr], { type: mime });
+              return new File([blob], img.name, { type: mime });
+            });
 
             if (navigator.canShare({ files: filesArray })) {
               await navigator.share({
@@ -1037,14 +1044,13 @@ export default function CarouselGenerator({ onLogout }: { onLogout: () => void }
             }
           }
         } catch (e) {
-          console.warn("Share API fallhou ou usuário fechou a aba:", e);
+          console.warn("Share API falhou ou usuário fechou a aba:", e);
         }
 
-        // Fallback: Dispara os downloads do cache pré gerado. O erro do dom não vai ocorrer pois o canvas já foi desenhado.
+        // Fallback: Dispara os downloads
         for (let i = 0; i < gerados.length; i++) {
           saveAs(gerados[i].url, gerados[i].name);
           if (i < gerados.length - 1) {
-            // Um delay alto aqui de segurança pois cada Prompt de confirmação pode acumular no celular
             await new Promise(resolve => setTimeout(resolve, 1500));
           }
         }

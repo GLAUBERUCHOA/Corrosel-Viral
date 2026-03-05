@@ -1,4 +1,5 @@
 ﻿'use client';
+// Version: 1.1 - Added mobile download fixes and layout adjustments
 import React, { useState, useRef, useEffect } from 'react';
 import { GoogleGenAI } from "@google/genai";
 import * as htmlToImage from 'html-to-image';
@@ -952,7 +953,7 @@ export default function CarouselGenerator({ onLogout }: { onLogout: () => void }
         return !exclusionClasses.some(classname => node.classList && node.classList.contains && node.classList.contains(classname));
       };
 
-      const scale = 5;
+      const scale = 3;
       const dataUrl = await htmlToImage.toPng(slideElement, {
         quality: 1,
         pixelRatio: 1,
@@ -991,7 +992,7 @@ export default function CarouselGenerator({ onLogout }: { onLogout: () => void }
             return !exclusionClasses.some(classname => node.classList && node.classList.contains && node.classList.contains(classname));
           };
 
-          const scale = 5;
+          const scale = 3;
           const dataUrl = await htmlToImage.toPng(slideElement, {
             quality: 1,
             pixelRatio: 1,
@@ -1025,7 +1026,7 @@ export default function CarouselGenerator({ onLogout }: { onLogout: () => void }
             return !exclusionClasses.some(classname => node.classList && node.classList.contains && node.classList.contains(classname));
           };
 
-          const scale = 5;
+          const scale = 3;
           const dataUrl = await htmlToImage.toPng(slideElement, {
             quality: 1,
             pixelRatio: 1,
@@ -1687,9 +1688,9 @@ export default function CarouselGenerator({ onLogout }: { onLogout: () => void }
 
                   if (isFirst) {
                     if (titleLength > 100) titleClass += "text-xl";
-                    else if (titleLength > 60) titleClass += "text-2xl";
-                    else if (titleLength > 30) titleClass += "text-3xl";
-                    else titleClass += "text-4xl";
+                    else if (titleLength > 60) titleClass += "text-xl";
+                    else if (titleLength > 30) titleClass += "text-2xl";
+                    else titleClass += "text-3xl";
                     subtitleClass += "text-base line-clamp-6";
                   } else {
                     if (totalLength > 450) {
@@ -1784,8 +1785,8 @@ export default function CarouselGenerator({ onLogout }: { onLogout: () => void }
                   const isImageBottom = index === 0 ? false : randomPattern[index % randomPattern.length];
                   const contentOrder = isImageBottom ? 'flex-col-reverse' : 'flex-col';
                   const textAlignmentPadding = isImageBottom
-                    ? 'pt-12 pb-6'
-                    : (index === 0 ? 'pt-6 pb-20' : 'pt-6 pb-12');
+                    ? 'pt-8 pb-4'
+                    : (index === 0 ? 'pt-4 pb-14' : 'pt-4 pb-8');
 
                   return (
                     <div key={index} data-slide-index={index} className={`relative shrink-0 snap-center flex items-center group/slide-wrapper ${getSlideDimensions()}`}

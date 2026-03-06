@@ -996,8 +996,7 @@ export default function CarouselGenerator({ onLogout }: { onLogout: () => void }
     setIsDownloading(true);
 
     try {
-      const isMobile = window.innerWidth <= 768;
-      const scale = isMobile ? 1.5 : 3;
+      const scale = 3;
       const zip = new JSZip();
 
       for (let index = 0; index < parsedSlides.length; index++) {

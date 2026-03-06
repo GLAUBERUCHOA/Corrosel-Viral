@@ -997,7 +997,7 @@ export default function CarouselGenerator({ onLogout }: { onLogout: () => void }
 
     try {
       const isMobile = window.innerWidth <= 768;
-      const scale = isMobile ? 2 : 3;
+      const scale = isMobile ? 1.5 : 3;
       const zip = new JSZip();
 
       for (let index = 0; index < parsedSlides.length; index++) {
@@ -1046,9 +1046,9 @@ export default function CarouselGenerator({ onLogout }: { onLogout: () => void }
       const content = await zip.generateAsync({ type: "blob" });
       saveAs(content, "Carrossel.zip");
 
-    } catch (error) {
+    } catch (error: any) {
       console.error("Erro ao gerar os slides para download:", error);
-      alert("Ocorreu um erro ao gerar os slides. Tente novamente ou baixe os slides individualmente.");
+      alert(`Erro DETALHADO: ${error?.message || 'Erro desconhecido'}. Isso pode ser memória cheia ou bloqueio de imagem externa no celular. Tente recarregar ou usar o PC.`);
     } finally {
       setIsDownloading(false);
     }
@@ -1728,7 +1728,7 @@ export default function CarouselGenerator({ onLogout }: { onLogout: () => void }
 
                             {ctaImage && (
                               <div className="w-[85%] aspect-[16/9] sm:aspect-video rounded-[20px] overflow-hidden shadow-xl shrink-0 border border-white/10 mt-2 mb-0 relative z-10 mx-auto">
-                                <img src={ctaImage} alt="CTA Landscape" className="w-full h-full object-cover" />
+                                <img src={ctaImage} alt="CTA Landscape" className="w-full h-full object-cover" crossOrigin="anonymous" />
                               </div>
                             )}
 
@@ -1737,7 +1737,7 @@ export default function CarouselGenerator({ onLogout }: { onLogout: () => void }
                                 <div className="flex items-center gap-[5px] px-2 py-1">
                                   {brandLogo && (
                                     <div className="size-[20px] sm:size-[22px] rounded-full overflow-hidden shrink-0 bg-white/20 border border-white/30">
-                                      <img src={brandLogo} alt="Logo" className="w-full h-full object-cover" />
+                                      <img src={brandLogo} alt="Logo" className="w-full h-full object-cover" crossOrigin="anonymous" />
                                     </div>
                                   )}
                                   {brandHandle && (
@@ -1815,6 +1815,7 @@ export default function CarouselGenerator({ onLogout }: { onLogout: () => void }
                                 style={{
                                   objectPosition: `center ${imagePosMap[index] ?? 50}%`,
                                 }}
+                                crossOrigin="anonymous"
                               />
                             </div>
                           </div>
@@ -1824,7 +1825,7 @@ export default function CarouselGenerator({ onLogout }: { onLogout: () => void }
                               <div className="flex items-center gap-[5px] px-2 py-1">
                                 {brandLogo && (
                                   <div className="size-[20px] sm:size-[22px] rounded-full overflow-hidden shrink-0 bg-white/20 border border-white/30">
-                                    <img src={brandLogo} alt="Logo" className="w-full h-full object-cover" />
+                                    <img src={brandLogo} alt="Logo" className="w-full h-full object-cover" crossOrigin="anonymous" />
                                   </div>
                                 )}
                                 {brandHandle && (

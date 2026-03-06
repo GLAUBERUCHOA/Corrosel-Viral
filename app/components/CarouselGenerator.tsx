@@ -991,9 +991,9 @@ export default function CarouselGenerator({ onLogout }: { onLogout: () => void }
           const slideElement = slideRefs.current[index];
           if (!slideElement) continue;
 
-          // Força o slide a entrar na tela para o navegador renderizar
-          slideElement.scrollIntoView({ behavior: 'smooth', block: 'center', inline: 'center' });
-          await new Promise(resolve => setTimeout(resolve, 600));
+          // Força o slide a entrar na tela instantemente para não obstruir o html-to-image com animação visual
+          slideElement.scrollIntoView({ behavior: 'auto', block: 'center', inline: 'center' });
+          await new Promise(resolve => setTimeout(resolve, 800)); // dá tempo real para o canvas "respirar"
 
           const filter = (node: HTMLElement) => {
             const exclusionClasses = ['animate-pulse', 'invisible'];
@@ -1005,6 +1005,7 @@ export default function CarouselGenerator({ onLogout }: { onLogout: () => void }
             quality: 1,
             pixelRatio: 1,
             skipFonts: false,
+            cacheBust: true, // Fix iOS cache bugs where some slides fail to render
             width: slideElement.offsetWidth * scale,
             height: slideElement.offsetHeight * scale,
             style: {
@@ -1033,8 +1034,8 @@ export default function CarouselGenerator({ onLogout }: { onLogout: () => void }
           if (!slideElement) continue;
 
           // Força o slide a entrar na tela para garantir captura
-          slideElement.scrollIntoView({ behavior: 'smooth', block: 'center', inline: 'center' });
-          await new Promise(resolve => setTimeout(resolve, 300));
+          slideElement.scrollIntoView({ behavior: 'auto', block: 'center', inline: 'center' });
+          await new Promise(resolve => setTimeout(resolve, 500));
 
           const filter = (node: HTMLElement) => {
             const exclusionClasses = ['animate-pulse', 'invisible'];
@@ -1046,6 +1047,7 @@ export default function CarouselGenerator({ onLogout }: { onLogout: () => void }
             quality: 1,
             pixelRatio: 1,
             skipFonts: false,
+            cacheBust: true,
             width: slideElement.offsetWidth * scale,
             height: slideElement.offsetHeight * scale,
             style: {

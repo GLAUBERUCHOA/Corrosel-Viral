@@ -981,119 +981,43 @@ export default function CarouselGenerator({ onLogout }: { onLogout: () => void }
     setIsDownloading(true);
 
     try {
-      if (isMobile) {
-        // No celular, renderiza TODAS as imagens antes de acionar qualquer download ou prompt.
-        const gerados: { url: string, name: string }[] = [];
+      const zip = new JSZip();
+      const promises = parsedSlides.map(async (_, index) => {
+        const slideElement = slideRefs.current[index];
+        if (!slideElement) return null;
 
-        for (let index = 0; index < parsedSlides.length; index++) {
-          const slideElement = slideRefs.current[index];
-          if (!slideElement) continue;
+        const filter = (node: HTMLElement) => {
+          const exclusionClasses = ['animate-pulse', 'invisible'];
+          return !exclusionClasses.some(classname => node.classList && node.classList.contains && node.classList.contains(classname));
+        };
 
-          // Rolar a div para a tela antes de renderizar (Em mobile, use 'auto' ou 'smooth' - 'instant' causa crash no iOS/Safari)
-          slideElement.scrollIntoView({ behavior: 'auto', block: 'center', inline: 'center' });
-          await new Promise(resolve => setTimeout(resolve, 800));
-
-          const filter = (node: HTMLElement) => {
-            const exclusionClasses = ['animate-pulse', 'invisible'];
-            return !exclusionClasses.some(classname => node.classList && node.classList.contains && node.classList.contains(classname));
-          };
-
-          const scale = 2.5;
-          const dataUrl = await htmlToImage.toPng(slideElement, {
-            quality: 1,
-            pixelRatio: 1,
-            skipFonts: false,
-            width: slideElement.offsetWidth * scale,
-            height: slideElement.offsetHeight * scale,
-            style: {
-              transform: `scale(${scale})`,
-              transformOrigin: 'top left',
-              width: `${slideElement.offsetWidth}px`,
-              height: `${slideElement.offsetHeight}px`
-            },
-            filter: filter
-          });
-
-          gerados.push({ url: dataUrl, name: `slide-${index + 1}.png` });
-        }
-
-        // Nativo para Celulares: Tenta compartilhar/salvar as imagens de uma vez
-        try {
-          if (navigator.canShare && navigator.share) {
-            const filesArray = gerados.map((img) => {
-              // Converter base64 puro para Blob sem usar o 'fetch' que pode dar limit exceed no iOS
-              const arr = img.url.split(',');
-              const mime = arr[0].match(/:(.*?);/)?.[1] || 'image/png';
-              const bstr = atob(arr[1]);
-              let n = bstr.length;
-              const u8arr = new Uint8Array(n);
-              while (n--) {
-                u8arr[n] = bstr.charCodeAt(n);
-              }
-              const blob = new Blob([u8arr], { type: mime });
-              return new File([blob], img.name, { type: mime });
-            });
-
-            if (navigator.canShare({ files: filesArray })) {
-              await navigator.share({
-                files: filesArray,
-                title: 'Meu Carrossel Viral',
-              });
-              setIsDownloading(false);
-              return; // Sucesso com share
-            }
-          }
-        } catch (e) {
-          console.warn("Share API falhou ou usuário fechou a aba:", e);
-        }
-
-        // Fallback: Dispara os downloads
-        for (let i = 0; i < gerados.length; i++) {
-          saveAs(gerados[i].url, gerados[i].name);
-          if (i < gerados.length - 1) {
-            await new Promise(resolve => setTimeout(resolve, 1500));
-          }
-        }
-
-      } else {
-        const zip = new JSZip();
-        const promises = parsedSlides.map(async (_, index) => {
-          const slideElement = slideRefs.current[index];
-          if (!slideElement) return null;
-
-          const filter = (node: HTMLElement) => {
-            const exclusionClasses = ['animate-pulse', 'invisible'];
-            return !exclusionClasses.some(classname => node.classList && node.classList.contains && node.classList.contains(classname));
-          };
-
-          const scale = 3;
-          const dataUrl = await htmlToImage.toPng(slideElement, {
-            quality: 1,
-            pixelRatio: 1,
-            skipFonts: false,
-            width: slideElement.offsetWidth * scale,
-            height: slideElement.offsetHeight * scale,
-            style: {
-              transform: `scale(${scale})`,
-              transformOrigin: 'top left',
-              width: `${slideElement.offsetWidth}px`,
-              height: `${slideElement.offsetHeight}px`
-            },
-            filter: filter
-          });
-
-          const base64Data = dataUrl.replace(/^data:image\/(png|jpg);base64,/, "");
-          zip.file(`slide-${index + 1}.png`, base64Data, { base64: true });
+        const scale = 3;
+        const dataUrl = await htmlToImage.toPng(slideElement, {
+          quality: 1,
+          pixelRatio: 1,
+          skipFonts: false,
+          width: slideElement.offsetWidth * scale,
+          height: slideElement.offsetHeight * scale,
+          style: {
+            transform: `scale(${scale})`,
+            transformOrigin: 'top left',
+            width: `${slideElement.offsetWidth}px`,
+            height: `${slideElement.offsetHeight}px`
+          },
+          filter: filter
         });
 
-        await Promise.all(promises);
+        const base64Data = dataUrl.replace(/^data:image\/(png|jpg);base64,/, "");
+        zip.file(`slide-${index + 1}.png`, base64Data, { base64: true });
+      });
 
-        const zipContent = await zip.generateAsync({ type: "blob" });
-        saveAs(zipContent, "carrossel.zip");
-      }
+      await Promise.all(promises);
+
+      const zipContent = await zip.generateAsync({ type: "blob" });
+      saveAs(zipContent, "carrossel.zip");
     } catch (error) {
       console.error("Erro ao baixar todos os slides:", error);
-      alert(isMobile ? "Erro ao baixar as imagens." : "Ocorreu um erro ao gerar o arquivo ZIP.");
+      alert("Ocorreu um erro ao gerar o arquivo ZIP.");
     } finally {
       setIsDownloading(false);
     }

@@ -976,15 +976,14 @@ export default function CarouselGenerator({ onLogout }: { onLogout: () => void }
     }
   };
 
-  const handleDownloadAll = async () => {
+  const handleSequentialDownload = async () => {
     if (isDownloading) return;
     setIsDownloading(true);
 
     try {
-      const zip = new JSZip();
-      const promises = parsedSlides.map(async (_, index) => {
+      for (let index = 0; index < parsedSlides.length; index++) {
         const slideElement = slideRefs.current[index];
-        if (!slideElement) return null;
+        if (!slideElement) continue;
 
         const filter = (node: HTMLElement) => {
           const exclusionClasses = ['animate-pulse', 'invisible'];
@@ -1007,17 +1006,16 @@ export default function CarouselGenerator({ onLogout }: { onLogout: () => void }
           filter: filter
         });
 
-        const base64Data = dataUrl.replace(/^data:image\/(png|jpg);base64,/, "");
-        zip.file(`slide-${index + 1}.png`, base64Data, { base64: true });
-      });
+        saveAs(dataUrl, `slide-${index + 1}.png`);
 
-      await Promise.all(promises);
-
-      const zipContent = await zip.generateAsync({ type: "blob" });
-      saveAs(zipContent, "carrossel.zip");
+        // Colocando delay para não travar o navegador / mobile
+        if (index < parsedSlides.length - 1) {
+          await new Promise(resolve => setTimeout(resolve, 800));
+        }
+      }
     } catch (error) {
-      console.error("Erro ao baixar todos os slides:", error);
-      alert("Ocorreu um erro ao gerar o arquivo ZIP.");
+      console.error("Erro ao baixar todos os slides seq:", error);
+      alert("Ocorreu um erro ao baixar os slides.");
     } finally {
       setIsDownloading(false);
     }
@@ -1603,15 +1601,15 @@ export default function CarouselGenerator({ onLogout }: { onLogout: () => void }
             </div>
             <div className="flex items-center gap-2 shrink-0 ml-auto">
               <button
-                onClick={handleDownloadAll}
+                onClick={handleSequentialDownload}
                 disabled={isDownloading}
-                className="flex items-center gap-1.5 sm:gap-2 px-3 sm:px-4 py-1.5 sm:py-2 bg-primary text-white rounded-lg text-xs sm:text-sm font-semibold hover:bg-primary/90 transition-colors shadow-lg shadow-primary/20 disabled:opacity-70 disabled:cursor-not-allowed whitespace-nowrap">
+                className="flex items-center gap-1.5 sm:gap-2 px-3 sm:px-4 py-1.5 sm:py-2 bg-gradient-to-r from-emerald-500 to-emerald-400 hover:from-emerald-400 hover:to-emerald-300 text-white rounded-lg text-xs sm:text-sm font-bold transition-all shadow-lg shadow-emerald-500/25 disabled:opacity-70 disabled:cursor-not-allowed whitespace-nowrap active:scale-[0.98]">
                 {isDownloading ? (
                   <span className="material-symbols-outlined text-[16px] sm:text-[18px] animate-spin">progress_activity</span>
                 ) : (
-                  <span className="material-symbols-outlined text-[16px] sm:text-[18px] fill">download</span>
+                  <span className="material-symbols-outlined text-[16px] sm:text-[18px] fill">download_for_offline</span>
                 )}
-                <span>{isDownloading ? 'Baixando...' : 'Baixar Tudo'}</span>
+                <span>{isDownloading ? 'Baixando...' : 'Baixar Todos'}</span>
               </button>
             </div>
           </div>

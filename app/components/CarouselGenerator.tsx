@@ -991,12 +991,16 @@ export default function CarouselGenerator({ onLogout }: { onLogout: () => void }
           const slideElement = slideRefs.current[index];
           if (!slideElement) continue;
 
+          // Força o slide a entrar na tela para o navegador renderizar
+          slideElement.scrollIntoView({ behavior: 'smooth', block: 'center', inline: 'center' });
+          await new Promise(resolve => setTimeout(resolve, 600));
+
           const filter = (node: HTMLElement) => {
             const exclusionClasses = ['animate-pulse', 'invisible'];
             return !exclusionClasses.some(classname => node.classList && node.classList.contains && node.classList.contains(classname));
           };
 
-          const scale = 2.5; // Reduced scale on mobile slightly to prevent canvas out-of-memory crashes
+          const scale = 2; // Reduced scale on mobile slightly to prevent canvas out-of-memory crashes
           const dataUrl = await htmlToImage.toPng(slideElement, {
             quality: 1,
             pixelRatio: 1,
@@ -1027,6 +1031,10 @@ export default function CarouselGenerator({ onLogout }: { onLogout: () => void }
         for (let index = 0; index < parsedSlides.length; index++) {
           const slideElement = slideRefs.current[index];
           if (!slideElement) continue;
+
+          // Força o slide a entrar na tela para garantir captura
+          slideElement.scrollIntoView({ behavior: 'smooth', block: 'center', inline: 'center' });
+          await new Promise(resolve => setTimeout(resolve, 300));
 
           const filter = (node: HTMLElement) => {
             const exclusionClasses = ['animate-pulse', 'invisible'];

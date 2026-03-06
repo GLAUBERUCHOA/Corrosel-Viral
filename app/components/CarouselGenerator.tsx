@@ -948,16 +948,29 @@ export default function CarouselGenerator({ onLogout }: { onLogout: () => void }
     if (!slideElement) return;
 
     try {
+      const isMobile = window.innerWidth <= 768;
+      const scale = isMobile ? 2 : 3;
+
+      const clone = slideElement.cloneNode(true) as HTMLElement;
+      clone.style.position = 'fixed';
+      clone.style.top = '-9999px';
+      clone.style.left = '-9999px';
+      clone.style.width = `${slideElement.offsetWidth}px`;
+      clone.style.height = `${slideElement.offsetHeight}px`;
+      document.body.appendChild(clone);
+
+      await new Promise(resolve => setTimeout(resolve, 150));
+
       const filter = (node: HTMLElement) => {
         const exclusionClasses = ['animate-pulse', 'invisible'];
         return !exclusionClasses.some(classname => node.classList && node.classList.contains && node.classList.contains(classname));
       };
 
-      const scale = 3;
-      const dataUrl = await htmlToImage.toPng(slideElement, {
+      const dataUrl = await htmlToImage.toPng(clone, {
         quality: 1,
         pixelRatio: 1,
         skipFonts: false,
+        cacheBust: true,
         width: slideElement.offsetWidth * scale,
         height: slideElement.offsetHeight * scale,
         style: {
@@ -968,6 +981,8 @@ export default function CarouselGenerator({ onLogout }: { onLogout: () => void }
         },
         filter: filter
       });
+
+      document.body.removeChild(clone);
 
       saveAs(dataUrl, `slide-${index + 1}.png`);
     } catch (error) {
@@ -981,22 +996,30 @@ export default function CarouselGenerator({ onLogout }: { onLogout: () => void }
     setIsDownloading(true);
 
     try {
-      // Desktop sequential download
+      const isMobile = window.innerWidth <= 768;
+      const scale = isMobile ? 2 : 3;
+      const zip = new JSZip();
+
       for (let index = 0; index < parsedSlides.length; index++) {
         const slideElement = slideRefs.current[index];
         if (!slideElement) continue;
 
-        // Força o slide a entrar na tela para garantir captura
-        slideElement.scrollIntoView({ behavior: 'auto', block: 'center', inline: 'center' });
-        await new Promise(resolve => setTimeout(resolve, 500));
+        const clone = slideElement.cloneNode(true) as HTMLElement;
+        clone.style.position = 'fixed';
+        clone.style.top = '-9999px';
+        clone.style.left = '-9999px';
+        clone.style.width = `${slideElement.offsetWidth}px`;
+        clone.style.height = `${slideElement.offsetHeight}px`;
+        document.body.appendChild(clone);
+
+        await new Promise(resolve => setTimeout(resolve, 250));
 
         const filter = (node: HTMLElement) => {
           const exclusionClasses = ['animate-pulse', 'invisible'];
           return !exclusionClasses.some(classname => node.classList && node.classList.contains && node.classList.contains(classname));
         };
 
-        const scale = 3;
-        const dataUrl = await htmlToImage.toPng(slideElement, {
+        const dataUrl = await htmlToImage.toPng(clone, {
           quality: 1,
           pixelRatio: 1,
           skipFonts: false,
@@ -1012,15 +1035,20 @@ export default function CarouselGenerator({ onLogout }: { onLogout: () => void }
           filter: filter
         });
 
-        saveAs(dataUrl, `slide-${index + 1}.png`);
+        document.body.removeChild(clone);
 
-        if (index < parsedSlides.length - 1) {
-          await new Promise(resolve => setTimeout(resolve, 800));
-        }
+        const base64Data = dataUrl.replace(/^data:image\/(png|jpeg);base64,/, "");
+        zip.file(`slide-${index + 1}.png`, base64Data, { base64: true });
+
+        await new Promise(resolve => setTimeout(resolve, 100));
       }
+
+      const content = await zip.generateAsync({ type: "blob" });
+      saveAs(content, "Carrossel.zip");
+
     } catch (error) {
       console.error("Erro ao gerar os slides para download:", error);
-      alert("Ocorreu um erro ao gerar os slides.");
+      alert("Ocorreu um erro ao gerar os slides. Tente novamente ou baixe os slides individualmente.");
     } finally {
       setIsDownloading(false);
     }
@@ -1575,26 +1603,28 @@ export default function CarouselGenerator({ onLogout }: { onLogout: () => void }
           </div>
         </aside>
         <section className={`flex-1 flex flex-col min-h-0 bg-slate-100 dark:bg-background-dark overflow-hidden relative ${activeMobileTab !== 'preview' ? 'max-md:hidden' : 'max-md:flex max-md:flex-1'}`}>
-          <div className="flex flex-wrap items-center justify-between px-2 sm:px-4 md:px-8 py-3 shrink-0 gap-2">
-            <div className="flex items-center gap-1 bg-white dark:bg-surface-dark p-1 rounded-lg border border-slate-200 dark:border-border-dark shadow-sm shrink-0">
-              <button
-                onClick={() => setViewMode('grid')}
-                className={`p-1.5 rounded ${viewMode === 'grid' ? 'bg-slate-100 dark:bg-primary/20 text-primary' : 'hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-500 dark:text-slate-400'}`}
-                title="Visualização em Grade"
-              >
-                <span className="material-symbols-outlined text-[18px]">grid_view</span>
-              </button>
-              <button
-                onClick={() => setViewMode('carousel')}
-                className={`p-1.5 rounded ${viewMode === 'carousel' ? 'bg-slate-100 dark:bg-primary/20 text-primary' : 'hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-500 dark:text-slate-400'}`}
-                title="Visualização em Carrossel"
-              >
-                <span className="material-symbols-outlined text-[18px]">view_carousel</span>
-              </button>
+          <div className="flex flex-col md:flex-row items-center justify-between px-2 sm:px-4 md:px-8 py-3 shrink-0 gap-3">
+            <div className="flex flex-1 w-full md:w-auto justify-between md:justify-start items-center gap-1 bg-white dark:bg-surface-dark p-1 rounded-lg border border-slate-200 dark:border-border-dark shadow-sm shrink-0">
+              <div className="flex gap-1">
+                <button
+                  onClick={() => setViewMode('grid')}
+                  className={`p-1.5 rounded ${viewMode === 'grid' ? 'bg-slate-100 dark:bg-primary/20 text-primary' : 'hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-500 dark:text-slate-400'}`}
+                  title="Visualização em Grade"
+                >
+                  <span className="material-symbols-outlined text-[18px]">grid_view</span>
+                </button>
+                <button
+                  onClick={() => setViewMode('carousel')}
+                  className={`p-1.5 rounded ${viewMode === 'carousel' ? 'bg-slate-100 dark:bg-primary/20 text-primary' : 'hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-500 dark:text-slate-400'}`}
+                  title="Visualização em Carrossel"
+                >
+                  <span className="material-symbols-outlined text-[18px]">view_carousel</span>
+                </button>
+              </div>
               <div className="w-px h-4 bg-slate-200 dark:bg-border-dark mx-0.5"></div>
-              <div className="flex items-center gap-1 px-1">
+              <div className="flex items-center gap-1 px-1 flex-1 md:flex-none justify-end md:justify-start">
                 <input
-                  className="w-16 sm:w-24 md:w-24 accent-primary h-1 bg-slate-300 rounded-lg appearance-none cursor-pointer dark:bg-gray-700"
+                  className="w-full max-w-[100px] sm:w-24 md:w-24 accent-primary h-1 bg-slate-300 rounded-lg appearance-none cursor-pointer dark:bg-gray-700"
                   type="range"
                   min="25"
                   max="150"
@@ -1604,15 +1634,15 @@ export default function CarouselGenerator({ onLogout }: { onLogout: () => void }
                 <span className="text-[10px] text-slate-500 w-7 text-right font-mono">{zoom}%</span>
               </div>
             </div>
-            <div className="hidden md:flex items-center gap-2 shrink-0 ml-auto">
+            <div className="flex w-full md:w-auto items-center gap-2 shrink-0">
               <button
                 onClick={handleSequentialDownload}
                 disabled={isDownloading}
-                className="flex items-center gap-1.5 sm:gap-2 px-3 sm:px-4 py-1.5 sm:py-2 bg-gradient-to-r from-emerald-500 to-emerald-400 hover:from-emerald-400 hover:to-emerald-300 text-white rounded-lg text-xs sm:text-sm font-bold transition-all shadow-lg shadow-emerald-500/25 disabled:opacity-70 disabled:cursor-not-allowed whitespace-nowrap active:scale-[0.98]">
+                className="w-full md:w-auto flex items-center justify-center gap-1.5 sm:gap-2 px-3 sm:px-4 py-2 sm:py-2 bg-gradient-to-r from-emerald-500 to-emerald-400 hover:from-emerald-400 hover:to-emerald-300 text-white rounded-lg text-sm font-bold transition-all shadow-lg shadow-emerald-500/25 disabled:opacity-70 disabled:cursor-not-allowed whitespace-nowrap active:scale-[0.98]">
                 {isDownloading ? (
-                  <span className="material-symbols-outlined text-[16px] sm:text-[18px] animate-spin">progress_activity</span>
+                  <span className="material-symbols-outlined text-[18px] animate-spin">progress_activity</span>
                 ) : (
-                  <span className="material-symbols-outlined text-[16px] sm:text-[18px] fill">download_for_offline</span>
+                  <span className="material-symbols-outlined text-[18px] fill">download_for_offline</span>
                 )}
                 <span>{isDownloading ? 'Baixando...' : 'Baixar Todos'}</span>
               </button>

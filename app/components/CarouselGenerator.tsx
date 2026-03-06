@@ -981,89 +981,41 @@ export default function CarouselGenerator({ onLogout }: { onLogout: () => void }
     setIsDownloading(true);
 
     try {
-      const isMobileDevice = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent) || window.innerWidth < 768;
+      // Desktop sequential download
+      for (let index = 0; index < parsedSlides.length; index++) {
+        const slideElement = slideRefs.current[index];
+        if (!slideElement) continue;
 
-      if (isMobileDevice) {
-        // Fallback to JSZIP for mobile to prevent multi-download blocker and share stability issues
-        const zip = new JSZip();
+        // Força o slide a entrar na tela para garantir captura
+        slideElement.scrollIntoView({ behavior: 'auto', block: 'center', inline: 'center' });
+        await new Promise(resolve => setTimeout(resolve, 500));
 
-        for (let index = 0; index < parsedSlides.length; index++) {
-          const slideElement = slideRefs.current[index];
-          if (!slideElement) continue;
+        const filter = (node: HTMLElement) => {
+          const exclusionClasses = ['animate-pulse', 'invisible'];
+          return !exclusionClasses.some(classname => node.classList && node.classList.contains && node.classList.contains(classname));
+        };
 
-          // Força o slide a entrar na tela instantemente para não obstruir o html-to-image com animação visual
-          slideElement.scrollIntoView({ behavior: 'auto', block: 'center', inline: 'center' });
-          await new Promise(resolve => setTimeout(resolve, 800)); // dá tempo real para o canvas "respirar"
+        const scale = 3;
+        const dataUrl = await htmlToImage.toPng(slideElement, {
+          quality: 1,
+          pixelRatio: 1,
+          skipFonts: false,
+          cacheBust: true,
+          width: slideElement.offsetWidth * scale,
+          height: slideElement.offsetHeight * scale,
+          style: {
+            transform: `scale(${scale})`,
+            transformOrigin: 'top left',
+            width: `${slideElement.offsetWidth}px`,
+            height: `${slideElement.offsetHeight}px`
+          },
+          filter: filter
+        });
 
-          const filter = (node: HTMLElement) => {
-            const exclusionClasses = ['animate-pulse', 'invisible'];
-            return !exclusionClasses.some(classname => node.classList && node.classList.contains && node.classList.contains(classname));
-          };
+        saveAs(dataUrl, `slide-${index + 1}.png`);
 
-          const scale = 2; // Reduced scale on mobile slightly to prevent canvas out-of-memory crashes
-          const dataUrl = await htmlToImage.toPng(slideElement, {
-            quality: 1,
-            pixelRatio: 1,
-            skipFonts: false,
-            cacheBust: true, // Fix iOS cache bugs where some slides fail to render
-            width: slideElement.offsetWidth * scale,
-            height: slideElement.offsetHeight * scale,
-            style: {
-              transform: `scale(${scale})`,
-              transformOrigin: 'top left',
-              width: `${slideElement.offsetWidth}px`,
-              height: `${slideElement.offsetHeight}px`
-            },
-            filter: filter
-          });
-
-          const base64Data = dataUrl.replace(/^data:image\/(png|jpg);base64,/, "");
-          zip.file(`slide-${index + 1}.png`, base64Data, { base64: true });
-
-          // Small delay to allow the DOM/event loop to breathe between captures
-          await new Promise(resolve => setTimeout(resolve, 300));
-        }
-
-        const zipContent = await zip.generateAsync({ type: "blob" });
-        saveAs(zipContent, "carrossel.zip");
-
-      } else {
-        // Desktop sequential download
-        for (let index = 0; index < parsedSlides.length; index++) {
-          const slideElement = slideRefs.current[index];
-          if (!slideElement) continue;
-
-          // Força o slide a entrar na tela para garantir captura
-          slideElement.scrollIntoView({ behavior: 'auto', block: 'center', inline: 'center' });
-          await new Promise(resolve => setTimeout(resolve, 500));
-
-          const filter = (node: HTMLElement) => {
-            const exclusionClasses = ['animate-pulse', 'invisible'];
-            return !exclusionClasses.some(classname => node.classList && node.classList.contains && node.classList.contains(classname));
-          };
-
-          const scale = 3;
-          const dataUrl = await htmlToImage.toPng(slideElement, {
-            quality: 1,
-            pixelRatio: 1,
-            skipFonts: false,
-            cacheBust: true,
-            width: slideElement.offsetWidth * scale,
-            height: slideElement.offsetHeight * scale,
-            style: {
-              transform: `scale(${scale})`,
-              transformOrigin: 'top left',
-              width: `${slideElement.offsetWidth}px`,
-              height: `${slideElement.offsetHeight}px`
-            },
-            filter: filter
-          });
-
-          saveAs(dataUrl, `slide-${index + 1}.png`);
-
-          if (index < parsedSlides.length - 1) {
-            await new Promise(resolve => setTimeout(resolve, 800));
-          }
+        if (index < parsedSlides.length - 1) {
+          await new Promise(resolve => setTimeout(resolve, 800));
         }
       }
     } catch (error) {
@@ -1652,7 +1604,7 @@ export default function CarouselGenerator({ onLogout }: { onLogout: () => void }
                 <span className="text-[10px] text-slate-500 w-7 text-right font-mono">{zoom}%</span>
               </div>
             </div>
-            <div className="flex items-center gap-2 shrink-0 ml-auto">
+            <div className="hidden md:flex items-center gap-2 shrink-0 ml-auto">
               <button
                 onClick={handleSequentialDownload}
                 disabled={isDownloading}

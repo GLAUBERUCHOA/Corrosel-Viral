@@ -230,6 +230,7 @@ export default function CarouselGenerator({ onLogout }: { onLogout: () => void }
   const [draggedIndex, setDraggedIndex] = useState<number | null>(null);
   const [targetUploadIndex, setTargetUploadIndex] = useState<number | null>(null);
   const [isDownloading, setIsDownloading] = useState(false);
+  const [generatedMobileImages, setGeneratedMobileImages] = useState<string[]>([]);
   const [brandLogo, setBrandLogo] = useState<string | null>(null);
   const [brandHandle, setBrandHandle] = useState<string>('');
   const [editingSlideIndex, setEditingSlideIndex] = useState<number | null>(null);
@@ -981,6 +982,9 @@ export default function CarouselGenerator({ onLogout }: { onLogout: () => void }
     setIsDownloading(true);
 
     try {
+      const isMobileDevice = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent) || window.innerWidth < 768;
+      const generatedDataUrls: string[] = [];
+
       for (let index = 0; index < parsedSlides.length; index++) {
         const slideElement = slideRefs.current[index];
         if (!slideElement) continue;
@@ -1006,16 +1010,26 @@ export default function CarouselGenerator({ onLogout }: { onLogout: () => void }
           filter: filter
         });
 
-        saveAs(dataUrl, `slide-${index + 1}.png`);
+        generatedDataUrls.push(dataUrl);
 
-        // Colocando delay para não travar o navegador / mobile
-        if (index < parsedSlides.length - 1) {
-          await new Promise(resolve => setTimeout(resolve, 800));
+        // Um pequenino delay pra manter a UI responsiva
+        await new Promise(resolve => setTimeout(resolve, 300));
+      }
+
+      if (isMobileDevice) {
+        setGeneratedMobileImages(generatedDataUrls);
+      } else {
+        // Desktop segue o sequencial com delay normal
+        for (let i = 0; i < generatedDataUrls.length; i++) {
+          saveAs(generatedDataUrls[i], `slide-${i + 1}.png`);
+          if (i < generatedDataUrls.length - 1) {
+            await new Promise(resolve => setTimeout(resolve, 800));
+          }
         }
       }
     } catch (error) {
       console.error("Erro ao baixar todos os slides seq:", error);
-      alert("Ocorreu um erro ao baixar os slides.");
+      alert("Ocorreu um erro ao gerar os slides.");
     } finally {
       setIsDownloading(false);
     }
@@ -1990,6 +2004,65 @@ export default function CarouselGenerator({ onLogout }: { onLogout: () => void }
           </div>
         )
       }
+      {/* Mobile Download Modal */}
+      {generatedMobileImages.length > 0 && (
+        <div className="fixed inset-0 bg-black/95 backdrop-blur-md z-[200] flex flex-col items-center justify-start p-4 overflow-y-auto">
+          <div className="w-full max-w-md flex flex-col gap-6 pt-6 pb-20">
+            <div className="flex items-center justify-between">
+              <h3 className="text-xl font-bold text-white tracking-tight">Imagens Prontas!</h3>
+              <button onClick={() => setGeneratedMobileImages([])} className="size-10 bg-white/10 hover:bg-white/20 rounded-full flex items-center justify-center text-white transition-colors">
+                <span className="material-symbols-outlined">close</span>
+              </button>
+            </div>
+
+            <div className="bg-emerald-500/15 border border-emerald-500/30 p-4 rounded-xl flex items-start gap-3">
+              <span className="material-symbols-outlined text-emerald-400">info</span>
+              <p className="text-xs text-emerald-100/90 leading-relaxed font-medium">
+                Para salvar no celular: tente usar o botão abaixo, ou <strong>pressione e segure cada imagem</strong> para salvar manualmente na galeria.
+              </p>
+            </div>
+
+            <button
+              onClick={async () => {
+                if (navigator.canShare) {
+                  try {
+                    const files = [];
+                    for (let i = 0; i < generatedMobileImages.length; i++) {
+                      const res = await fetch(generatedMobileImages[i]);
+                      const blob = await res.blob();
+                      files.push(new File([blob], `slide-${i + 1}.png`, { type: 'image/png' }));
+                    }
+                    if (navigator.canShare({ files })) {
+                      await navigator.share({ files, title: 'Carrossel' });
+                      return;
+                    }
+                  } catch (e) {
+                    console.log("Web share cancelled or failed", e);
+                  }
+                }
+
+                // Fallback: baixar como der (apenas funciona em alguns androids)
+                for (let i = 0; i < generatedMobileImages.length; i++) {
+                  saveAs(generatedMobileImages[i], `slide-${i + 1}.png`);
+                  await new Promise(resolve => setTimeout(resolve, 800));
+                }
+              }}
+              className="w-full flex items-center justify-center gap-2 h-14 bg-gradient-to-r from-emerald-500 to-emerald-400 hover:opacity-90 text-white rounded-xl font-bold text-lg shadow-lg shadow-emerald-500/30 transition-all active:scale-[0.98]">
+              <span className="material-symbols-outlined text-[24px]">ios_share</span>
+              Salvar na Galeria / Compartilhar
+            </button>
+
+            <div className="flex flex-col gap-8 w-full mt-2">
+              {generatedMobileImages.map((src, idx) => (
+                <div key={idx} className="w-full rounded-2xl overflow-hidden border-4 border-white/10 shadow-2xl relative group">
+                  <div className="absolute top-2 left-2 bg-black/60 backdrop-blur-sm text-white text-[10px] font-bold px-2 py-1 rounded-lg z-10">Slide {idx + 1}</div>
+                  <img src={src} alt={`Slide renderizado ${idx + 1}`} className="w-full h-auto" style={{ WebkitTouchCallout: 'default', pointerEvents: 'auto' }} />
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+      )}
     </div >
   );
 }

@@ -3,6 +3,7 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { GoogleGenAI } from "@google/genai";
 import * as htmlToImage from 'html-to-image';
+import html2canvas from 'html2canvas';
 import JSZip from 'jszip';
 import { saveAs } from 'file-saver';
 
@@ -948,46 +949,39 @@ export default function CarouselGenerator({ onLogout }: { onLogout: () => void }
     if (!slideElement) return;
 
     try {
-      const scale = 2; // Reduzido de 3 para 2 para evitar estouro de memória
-
-      const clone = slideElement.cloneNode(true) as HTMLElement;
-      clone.style.position = 'fixed';
-      clone.style.top = '-9999px';
-      clone.style.left = '-9999px';
-      clone.style.width = `${slideElement.offsetWidth}px`;
-      clone.style.height = `${slideElement.offsetHeight}px`;
-      document.body.appendChild(clone);
-
-      // Esperar um pouco mais para garantir renderização de imagens e fontes
-      await new Promise(resolve => setTimeout(resolve, 500));
-
-      const filter = (node: HTMLElement) => {
-        const exclusionClasses = ['animate-pulse', 'invisible'];
-        return !exclusionClasses.some(classname => node.classList && node.classList.contains && node.classList.contains(classname));
-      };
-
-      const dataUrl = await htmlToImage.toPng(clone, {
-        quality: 0.95,
-        pixelRatio: 1,
-        skipFonts: false,
-        cacheBust: true,
-        width: slideElement.offsetWidth * scale,
-        height: slideElement.offsetHeight * scale,
-        style: {
-          transform: `scale(${scale})`,
-          transformOrigin: 'top left',
-          width: `${slideElement.offsetWidth}px`,
-          height: `${slideElement.offsetHeight}px`
-        },
-        filter: filter
+      // Usar html2canvas para maior compatibilidade com imagens externas e CORS
+      const canvas = await html2canvas(slideElement, {
+        scale: 2,
+        useCORS: true,
+        allowTaint: false,
+        backgroundColor: null,
+        logging: false,
+        onclone: (clonedDoc) => {
+          // Garante que elementos pulantes ou invisíveis não saiam na foto
+          const exclusionClasses = ['animate-pulse', 'invisible'];
+          const elements = clonedDoc.getElementsByClassName('group/slide-wrapper');
+          if (elements[index]) {
+            const children = elements[index].querySelectorAll('*');
+            children.forEach(el => {
+              if (exclusionClasses.some(cls => el.classList.contains(cls))) {
+                (el as HTMLElement).style.display = 'none';
+              }
+            });
+          }
+        }
       });
 
-      document.body.removeChild(clone);
-
+      const dataUrl = canvas.toDataURL('image/png', 0.95);
       saveAs(dataUrl, `slide-${index + 1}.png`);
     } catch (error: any) {
       console.error("Erro ao baixar slide:", error);
-      alert(`Erro no Slide ${index + 1}: ${error?.message || 'Erro desconhecido'}. Tente novamente ou use o PC.`);
+      // Fallback para html-to-image se o html2canvas falhar por algum motivo raro
+      try {
+        const dataUrl = await htmlToImage.toPng(slideElement, { quality: 0.95, pixelRatio: 2, cacheBust: true });
+        saveAs(dataUrl, `slide-${index + 1}.png`);
+      } catch (err2) {
+        alert(`Erro no Slide ${index + 1}: ${error?.message || 'Erro de renderização'}. Tente recarregar a página.`);
+      }
     }
   };
 
@@ -996,58 +990,29 @@ export default function CarouselGenerator({ onLogout }: { onLogout: () => void }
     setIsDownloading(true);
 
     try {
-      const scale = 2; // Reduzido de 3 para 2 para economia de memória
       const zip = new JSZip();
 
       for (let index = 0; index < parsedSlides.length; index++) {
         const slideElement = slideRefs.current[index];
         if (!slideElement) continue;
 
-        const clone = slideElement.cloneNode(true) as HTMLElement;
-        clone.style.position = 'fixed';
-        clone.style.top = '-9999px';
-        clone.style.left = '-9999px';
-        clone.style.width = `${slideElement.offsetWidth}px`;
-        clone.style.height = `${slideElement.offsetHeight}px`;
-        document.body.appendChild(clone);
-
-        // Aumentado delay para garantir carregamento de imagens externas
-        await new Promise(resolve => setTimeout(resolve, 600));
-
-        const filter = (node: HTMLElement) => {
-          const exclusionClasses = ['animate-pulse', 'invisible'];
-          return !exclusionClasses.some(classname => node.classList && node.classList.contains && node.classList.contains(classname));
-        };
-
         try {
-          const dataUrl = await htmlToImage.toPng(clone, {
-            quality: 0.9,
-            pixelRatio: 1,
-            skipFonts: false,
-            cacheBust: true,
-            width: slideElement.offsetWidth * scale,
-            height: slideElement.offsetHeight * scale,
-            style: {
-              transform: `scale(${scale})`,
-              transformOrigin: 'top left',
-              width: `${slideElement.offsetWidth}px`,
-              height: `${slideElement.offsetHeight}px`
-            },
-            filter: filter
+          const canvas = await html2canvas(slideElement, {
+            scale: 2,
+            useCORS: true,
+            allowTaint: false,
+            backgroundColor: null,
+            logging: false
           });
 
-          document.body.removeChild(clone);
-
+          const dataUrl = canvas.toDataURL('image/png', 0.9);
           const base64Data = dataUrl.replace(/^data:image\/(png|jpeg);base64,/, "");
           zip.file(`slide-${index + 1}.png`, base64Data, { base64: true });
 
-          // Pequena pausa entre slides para o navegador respirar
-          await new Promise(resolve => setTimeout(resolve, 150));
+          // Pequena pausa para não travar a UI
+          await new Promise(resolve => setTimeout(resolve, 100));
         } catch (slideErr: any) {
           console.error(`Erro no slide ${index + 1}:`, slideErr);
-          document.body.removeChild(clone);
-          // Continua para o próximo slide em vez de travar tudo? 
-          // Melhor avisar e parar se quiser integridade total, mas aqui tentamos avisar qual falhou.
           throw new Error(`Falha no slide ${index + 1}: ${slideErr.message || 'Erro de processamento'}`);
         }
       }

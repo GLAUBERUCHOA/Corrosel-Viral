@@ -948,8 +948,7 @@ export default function CarouselGenerator({ onLogout }: { onLogout: () => void }
     if (!slideElement) return;
 
     try {
-      const isMobile = window.innerWidth <= 768;
-      const scale = isMobile ? 2 : 3;
+      const scale = 2; // Reduzido de 3 para 2 para evitar estouro de memória
 
       const clone = slideElement.cloneNode(true) as HTMLElement;
       clone.style.position = 'fixed';
@@ -959,7 +958,8 @@ export default function CarouselGenerator({ onLogout }: { onLogout: () => void }
       clone.style.height = `${slideElement.offsetHeight}px`;
       document.body.appendChild(clone);
 
-      await new Promise(resolve => setTimeout(resolve, 150));
+      // Esperar um pouco mais para garantir renderização de imagens e fontes
+      await new Promise(resolve => setTimeout(resolve, 500));
 
       const filter = (node: HTMLElement) => {
         const exclusionClasses = ['animate-pulse', 'invisible'];
@@ -967,7 +967,7 @@ export default function CarouselGenerator({ onLogout }: { onLogout: () => void }
       };
 
       const dataUrl = await htmlToImage.toPng(clone, {
-        quality: 1,
+        quality: 0.95,
         pixelRatio: 1,
         skipFonts: false,
         cacheBust: true,
@@ -985,9 +985,9 @@ export default function CarouselGenerator({ onLogout }: { onLogout: () => void }
       document.body.removeChild(clone);
 
       saveAs(dataUrl, `slide-${index + 1}.png`);
-    } catch (error) {
+    } catch (error: any) {
       console.error("Erro ao baixar slide:", error);
-      alert("Ocorreu um erro ao baixar o slide.");
+      alert(`Erro no Slide ${index + 1}: ${error?.message || 'Erro desconhecido'}. Tente novamente ou use o PC.`);
     }
   };
 
@@ -996,7 +996,7 @@ export default function CarouselGenerator({ onLogout }: { onLogout: () => void }
     setIsDownloading(true);
 
     try {
-      const scale = 3;
+      const scale = 2; // Reduzido de 3 para 2 para economia de memória
       const zip = new JSZip();
 
       for (let index = 0; index < parsedSlides.length; index++) {
@@ -1011,35 +1011,45 @@ export default function CarouselGenerator({ onLogout }: { onLogout: () => void }
         clone.style.height = `${slideElement.offsetHeight}px`;
         document.body.appendChild(clone);
 
-        await new Promise(resolve => setTimeout(resolve, 250));
+        // Aumentado delay para garantir carregamento de imagens externas
+        await new Promise(resolve => setTimeout(resolve, 600));
 
         const filter = (node: HTMLElement) => {
           const exclusionClasses = ['animate-pulse', 'invisible'];
           return !exclusionClasses.some(classname => node.classList && node.classList.contains && node.classList.contains(classname));
         };
 
-        const dataUrl = await htmlToImage.toPng(clone, {
-          quality: 1,
-          pixelRatio: 1,
-          skipFonts: false,
-          cacheBust: true,
-          width: slideElement.offsetWidth * scale,
-          height: slideElement.offsetHeight * scale,
-          style: {
-            transform: `scale(${scale})`,
-            transformOrigin: 'top left',
-            width: `${slideElement.offsetWidth}px`,
-            height: `${slideElement.offsetHeight}px`
-          },
-          filter: filter
-        });
+        try {
+          const dataUrl = await htmlToImage.toPng(clone, {
+            quality: 0.9,
+            pixelRatio: 1,
+            skipFonts: false,
+            cacheBust: true,
+            width: slideElement.offsetWidth * scale,
+            height: slideElement.offsetHeight * scale,
+            style: {
+              transform: `scale(${scale})`,
+              transformOrigin: 'top left',
+              width: `${slideElement.offsetWidth}px`,
+              height: `${slideElement.offsetHeight}px`
+            },
+            filter: filter
+          });
 
-        document.body.removeChild(clone);
+          document.body.removeChild(clone);
 
-        const base64Data = dataUrl.replace(/^data:image\/(png|jpeg);base64,/, "");
-        zip.file(`slide-${index + 1}.png`, base64Data, { base64: true });
+          const base64Data = dataUrl.replace(/^data:image\/(png|jpeg);base64,/, "");
+          zip.file(`slide-${index + 1}.png`, base64Data, { base64: true });
 
-        await new Promise(resolve => setTimeout(resolve, 100));
+          // Pequena pausa entre slides para o navegador respirar
+          await new Promise(resolve => setTimeout(resolve, 150));
+        } catch (slideErr: any) {
+          console.error(`Erro no slide ${index + 1}:`, slideErr);
+          document.body.removeChild(clone);
+          // Continua para o próximo slide em vez de travar tudo? 
+          // Melhor avisar e parar se quiser integridade total, mas aqui tentamos avisar qual falhou.
+          throw new Error(`Falha no slide ${index + 1}: ${slideErr.message || 'Erro de processamento'}`);
+        }
       }
 
       const content = await zip.generateAsync({ type: "blob" });
@@ -1047,7 +1057,7 @@ export default function CarouselGenerator({ onLogout }: { onLogout: () => void }
 
     } catch (error: any) {
       console.error("Erro ao gerar os slides para download:", error);
-      alert(`Erro DETALHADO: ${error?.message || 'Erro desconhecido'}. Isso pode ser memória cheia ou bloqueio de imagem externa no celular. Tente recarregar ou usar o PC.`);
+      alert(`Erro DETALHADO: ${error?.message || 'Erro desconhecido'}. Tente recarregar ou reduza o número de slides.`);
     } finally {
       setIsDownloading(false);
     }
@@ -1789,13 +1799,7 @@ export default function CarouselGenerator({ onLogout }: { onLogout: () => void }
                       onClick={() => { if (openSlideIndex !== index) setOpenSlideIndex(index); }}
                     >
                       <div className="relative group/slide w-full h-full rounded-2xl overflow-hidden shadow-2xl transition-transform hover:-translate-y-2 duration-300">
-                        {totalLength > 250 && !isIuryMode && (
-                          <div className="absolute top-4 left-0 right-0 z-[100] flex justify-center pointer-events-none">
-                            <div className="bg-red-600/95 backdrop-blur-sm border border-red-400 text-white text-[10px] sm:text-xs font-bold px-3 py-1.5 rounded-full shadow-2xl shadow-red-500/50 flex items-center gap-1.5 animate-pulse">
-                              <span className="material-symbols-outlined text-[14px]">warning</span> Texto muito longo ({totalLength} carac.)
-                            </div>
-                          </div>
-                        )}
+
                         <div
                           ref={(el) => { slideRefs.current[index] = el; }}
                           className={`absolute inset-0 flex ${contentOrder} ${theme.bgClass}`}

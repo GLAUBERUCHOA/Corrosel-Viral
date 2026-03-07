@@ -997,23 +997,39 @@ export default function CarouselGenerator({ onLogout }: { onLogout: () => void }
         if (!slideElement) continue;
 
         try {
+          // Usar EXATAMENTE a mesma configuração que o individual
           const canvas = await html2canvas(slideElement, {
             scale: 2,
             useCORS: true,
             allowTaint: false,
             backgroundColor: null,
-            logging: false
+            logging: false,
+            onclone: (clonedDoc) => {
+              const exclusionClasses = ['animate-pulse', 'invisible'];
+              const allElements = clonedDoc.querySelectorAll('*');
+              allElements.forEach(el => {
+                if (exclusionClasses.some(cls => el.classList.contains(cls))) {
+                  (el as HTMLElement).style.display = 'none';
+                }
+              });
+            }
           });
 
           const dataUrl = canvas.toDataURL('image/png', 0.9);
           const base64Data = dataUrl.replace(/^data:image\/(png|jpeg);base64,/, "");
           zip.file(`slide-${index + 1}.png`, base64Data, { base64: true });
 
-          // Pequena pausa para não travar a UI
-          await new Promise(resolve => setTimeout(resolve, 100));
+          await new Promise(resolve => setTimeout(resolve, 150));
         } catch (slideErr: any) {
           console.error(`Erro no slide ${index + 1}:`, slideErr);
-          throw new Error(`Falha no slide ${index + 1}: ${slideErr.message || 'Erro de processamento'}`);
+          // Tenta o fallback do individual também no loop
+          try {
+            const dataUrl = await htmlToImage.toPng(slideElement, { quality: 0.9, pixelRatio: 2, cacheBust: true });
+            const base64Data = dataUrl.replace(/^data:image\/(png|jpeg);base64,/, "");
+            zip.file(`slide-${index + 1}.png`, base64Data, { base64: true });
+          } catch (fallbackErr) {
+            throw new Error(`Falha crítica no slide ${index + 1}.`);
+          }
         }
       }
 
@@ -1022,7 +1038,7 @@ export default function CarouselGenerator({ onLogout }: { onLogout: () => void }
 
     } catch (error: any) {
       console.error("Erro ao gerar os slides para download:", error);
-      alert(`Erro DETALHADO: ${error?.message || 'Erro desconhecido'}. Tente recarregar ou reduza o número de slides.`);
+      alert(`Erro DETALHADO: ${error?.message || 'Erro desconhecido'}. O download individual ainda funciona se precisar.`);
     } finally {
       setIsDownloading(false);
     }

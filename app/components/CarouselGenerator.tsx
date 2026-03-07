@@ -3,7 +3,6 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { GoogleGenAI } from "@google/genai";
 import * as htmlToImage from 'html-to-image';
-import html2canvas from 'html2canvas';
 import JSZip from 'jszip';
 import { saveAs } from 'file-saver';
 
@@ -962,38 +961,30 @@ export default function CarouselGenerator({ onLogout }: { onLogout: () => void }
     await new Promise(resolve => setTimeout(resolve, 800)); // Delay aumentado para estabilidade no PC e Celular
   };
 
-  const getHtml2CanvasOptions = () => {
-    return {
-      scale: 2,
-      useCORS: true,
-      allowTaint: false,
-      backgroundColor: null,
-      logging: false,
-      onclone: (clonedDoc: Document) => {
-        const exclusionClasses = ['animate-pulse', 'invisible'];
-        const allElements = clonedDoc.querySelectorAll('*');
-        allElements.forEach(el => {
-          if (exclusionClasses.some(cls => el.classList.contains(cls))) {
-            (el as HTMLElement).style.display = 'none';
-          }
-        });
-      }
-    };
-  };
-
   const handleDownloadSingle = async (index: number) => {
     const slideElement = slideRefs.current[index];
     if (!slideElement) return;
 
     try {
       await prepareSlideForCapture(slideElement);
-      const canvas = await html2canvas(slideElement, getHtml2CanvasOptions());
 
-      const dataUrl = canvas.toDataURL('image/png', 0.95);
+      const filter = (node: HTMLElement) => {
+        const exclusionClasses = ['animate-pulse', 'invisible'];
+        return !exclusionClasses.some(classname => node.classList && node.classList.contains && node.classList.contains(classname));
+      };
+
+      const dataUrl = await htmlToImage.toPng(slideElement, {
+        quality: 0.95,
+        pixelRatio: 2,
+        skipFonts: false,
+        cacheBust: true,
+        filter: filter
+      });
+
       saveAs(dataUrl, `slide-${index + 1}.png`);
     } catch (error: any) {
       console.error("Erro ao baixar slide:", error);
-      alert(`Erro no Slide ${index + 1}: ${error?.message || 'Erro de renderização'}. Tente recarregar a página.`);
+      alert(`Erro no Slide ${index + 1}: ${error?.message || 'Possível bloqueio de imagem externa'}. Tente recarregar a página.`);
     }
   };
 
@@ -1011,17 +1002,24 @@ export default function CarouselGenerator({ onLogout }: { onLogout: () => void }
         try {
           await prepareSlideForCapture(slideElement);
 
-          const canvas = await html2canvas(slideElement, getHtml2CanvasOptions());
+          const filter = (node: HTMLElement) => {
+            const exclusionClasses = ['animate-pulse', 'invisible'];
+            return !exclusionClasses.some(classname => node.classList && node.classList.contains && node.classList.contains(classname));
+          };
 
-          // Usar blob para o ZIP (mais estável)
-          const blob = await new Promise<Blob>((resolve, reject) => {
-            canvas.toBlob((b) => b ? resolve(b) : reject(new Error("Erro no canvas")), 'image/png', 0.9);
+          const dataUrl = await htmlToImage.toPng(slideElement, {
+            quality: 0.9,
+            pixelRatio: 2,
+            skipFonts: false,
+            cacheBust: true,
+            filter: filter
           });
 
-          zip.file(`slide-${index + 1}.png`, blob);
+          const base64Data = dataUrl.replace(/^data:image\/(png|jpeg);base64,/, "");
+          zip.file(`slide-${index + 1}.png`, base64Data, { base64: true });
         } catch (slideErr: any) {
           console.error(`Falha no slide ${index + 1}:`, slideErr);
-          throw new Error(`O slide ${index + 1} bloqueou o processamento do ZIP.`);
+          throw new Error(`O slide ${index + 1} impediu o fechamento do ZIP. Tente baixar ele sozinho.`);
         }
       }
 

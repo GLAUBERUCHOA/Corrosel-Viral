@@ -1055,7 +1055,9 @@ export default function CarouselGenerator({ onLogout }: { onLogout: () => void }
               <span className="hidden sm:inline">Sair</span>
             </button>
             <div className="w-px h-6 bg-slate-200 dark:bg-border-dark"></div>
-            <div className="bg-center bg-no-repeat bg-cover rounded-full size-9 ring-2 ring-slate-100 dark:ring-border-dark cursor-pointer" data-alt="User profile picture" style={{ backgroundImage: 'url("https://lh3.googleusercontent.com/aida-public/AB6AXuDq8gwC2gYGw_ekJwtNXfCb7lnyQKPM_v5edKwjUZbSvOHK3eYZUrn0j9Zsp7DnI1y5irWu2M9jQ8s27oX9C8VS53cOb9lolxw7slhfmMAVnMrVv7AoCeW5zlCoAc6K89RUNfLyHiuWD2nCP-hNqvC-N3TSMzM6wY_FpkfrN3zKZ4yMFoV73t4WFlcggVqWO74G61RtArjXqmpvvCjTcciK-vFVCqOgWfn7BHR7aqjPLuP0MvRVXmzESNUpycuKFMtYIohCwRulGoY")' }}></div>
+            <div className="flex items-center justify-center rounded-full size-9 ring-2 ring-slate-100 dark:ring-border-dark cursor-pointer bg-slate-200 dark:bg-slate-800 text-slate-500 dark:text-slate-400" data-alt="User profile picture">
+              <span className="material-symbols-outlined text-[20px]">person</span>
+            </div>
           </div>
         </header>
 
@@ -1640,20 +1642,13 @@ export default function CarouselGenerator({ onLogout }: { onLogout: () => void }
                 {parsedSlides.map((parsedSlide, index) => {
                   const isFirst = index === 0;
 
-                  const defaultImages = [
-                    "https://lh3.googleusercontent.com/aida-public/AB6AXuBEDUi4qtUqrH8-KI69ZbnhQZq-Snc28JyH-ubsgnikhUANHvd-Xzq_3tg9gUpXgSoRx7EXYn6phYh54OADr8Nrn4HgeYKQXuhPIGBhGGy01d9j_isuAcbMkqXfpsXGtVb93CwkoA2WfjLbnuCcsr7TWIy6yjB145itn0mCY7d_aXtyA8r-LPlAqVeC08vNiWPEoEgnK_-UUzehpswrcOMG-LTNMw5WUHn2eDQfsufJyJM9_AcXije1XBQd7-MH75eHSL8NJy5x-_0",
-                    "https://lh3.googleusercontent.com/aida-public/AB6AXuAe0_vHIt2A3hxagDcxuywE2lsRTajBr4HnEBFFQ3WjkgVYCAFC7RU1esxK_dyjQXf5xv4hCzwJtU5tuAfDBspIPjNJrpmZmu5M1I468-WspjfQn8OKGwCkUW_tOqliplDMNx--mI2aDq0JzFtqvxFNLnbS-Zon3xqFCsV5eoYduNiHAqUbvMQiMlgbLkQD3n4d4A5kEZW4s4zkQ6FSgmJF5WAA_6zxXUlGB_2VEjPDMKnnY53RRXdcrZTEALC-0KIekgS5zv3fC-Y",
-                    "https://lh3.googleusercontent.com/aida-public/AB6AXuCCwW5LVWmQqUjL-DQzhrfxbNkADj5HCxpCntC6G0iBYkFzapKcF_UD_E7fmmiVyCYoZU5d9HsDTrROsHJcfIP6aE9UfXzDxfXA_CI639Qyt8Nve2yQhPbhO3L3wmc_4ODjd4WqA33umoJEKsneslNVRG_374l_HlEugXIeokASwj8LrQ0W5-0-vDCWZ_U4rXPHxrCXv6kPMiHqDi7XNgToQV8hhdrmQLB_UfwFNXangbzIOYmgyw26UN0sbXgE0RRa5VEXcW18m0A"
-                  ];
-
                   const slide = {
                     title: parsedSlide.title,
                     subtitle: parsedSlide.subtitle,
-                    isCta: parsedSlide.isCta,
-                    defaultImage: index < defaultImages.length ? defaultImages[index] : `https://picsum.photos/seed/${index}/800/1000`
+                    isCta: parsedSlide.isCta
                   };
 
-                  const imageSrc = uploadedImages[index] || slide.defaultImage;
+                  const imageSrc = uploadedImages[index] || null;
 
                   const titleLength = slide.title ? slide.title.length : 0;
                   const subtitleLength = slide.subtitle ? slide.subtitle.length : 0;
@@ -1779,19 +1774,21 @@ export default function CarouselGenerator({ onLogout }: { onLogout: () => void }
                           <div
                             className="w-full flex-1 min-h-[35%] overflow-hidden group/image z-10 relative"
                           >
-                            <div
-                              className="block h-full w-full relative z-30 pointer-events-none"
-                            >
-                              <img
-                                src={imageSrc}
-                                alt={`Slide ${index}`}
-                                className="absolute inset-0 w-full h-full object-cover transition-transform duration-500"
-                                style={{
-                                  objectPosition: `center ${imagePosMap[index] ?? 50}%`,
-                                }}
-                                crossOrigin="anonymous"
-                              />
-                            </div>
+                            {imageSrc && (
+                              <div
+                                className="block h-full w-full relative z-30 pointer-events-none"
+                              >
+                                <img
+                                  src={imageSrc}
+                                  alt={`Slide ${index}`}
+                                  className="absolute inset-0 w-full h-full object-cover transition-transform duration-500"
+                                  style={{
+                                    objectPosition: `center ${imagePosMap[index] ?? 50}%`,
+                                  }}
+                                  crossOrigin="anonymous"
+                                />
+                              </div>
+                            )}
                           </div>
 
                           <div className={`absolute ${isImageBottom ? 'bottom-3' : 'top-3'} left-3 z-[60]`} style={{ opacity: 0.7 }}>

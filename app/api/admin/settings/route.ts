@@ -20,7 +20,10 @@ export async function PUT(request: Request) {
         for (const p of prompts) {
             await prisma.promptSetting.update({
                 where: { id: p.id },
-                data: { instruction: p.instruction },
+                data: {
+                    instruction: p.instruction,
+                    label: p.label
+                },
             });
         }
 

@@ -14,10 +14,8 @@ export function SettingsForm({ initialPrompts }: { initialPrompts: PromptSetting
     const [isSaving, setIsSaving] = useState(false);
     const [message, setMessage] = useState('');
 
-    const handleChange = (index: number, value: string) => {
-        const newPrompts = [...prompts];
-        newPrompts[index].instruction = value;
-        setPrompts(newPrompts);
+    const handleChange = (id: string, value: string) => {
+        setPrompts(prev => prev.map(p => p.id === id ? { ...p, instruction: value } : p));
     };
 
     const handleSave = async (e: React.FormEvent) => {
@@ -57,14 +55,14 @@ export function SettingsForm({ initialPrompts }: { initialPrompts: PromptSetting
                 <strong>💡 Dica de Engenharia:</strong> Cada tom agora é 100% independente. Lembre-se de incluir as regras de formatação ([TÍTULO], [SUBTÍTULO], SLIDE 01:) dentro de cada bloco para garantir que o Gemini não se perca.
             </div>
 
-            {prompts.filter(p => p.toneKey !== 'GLOBAL_INSTRUCTIONS').map((p, index) => (
+            {prompts.filter(p => p.toneKey !== 'GLOBAL_INSTRUCTIONS').map((p) => (
                 <div key={p.id} className="bg-white dark:bg-surface-dark border border-slate-200 dark:border-border-dark rounded-xl p-6 shadow-sm">
                     <label className="block text-sm font-bold text-slate-900 dark:text-white mb-2">
                         {p.label}
                     </label>
                     <textarea
                         value={p.instruction}
-                        onChange={(e) => handleChange(index, e.target.value)}
+                        onChange={(e) => handleChange(p.id, e.target.value)}
                         className="w-full bg-slate-50 dark:bg-surface-darker border border-slate-200 dark:border-border-dark rounded-xl p-4 text-sm text-slate-800 dark:text-slate-200 focus:ring-2 focus:ring-primary focus:border-transparent transition-all outline-none min-h-[400px]"
                     />
                 </div>

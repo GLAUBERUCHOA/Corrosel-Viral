@@ -944,44 +944,56 @@ export default function CarouselGenerator({ onLogout }: { onLogout: () => void }
     }
   };
 
+  const prepareSlideForCapture = async (slideElement: HTMLElement) => {
+    // Garante que o slide esteja visível e focado
+    slideElement.scrollIntoView({ block: 'center', behavior: 'instant' as any });
+
+    // Espera garantir que imagens estejam carregadas e posicionamento ok
+    const imgs = Array.from(slideElement.querySelectorAll('img'));
+    await Promise.all(imgs.map(img => {
+      if (img.complete && img.naturalWidth !== 0) return Promise.resolve();
+      return new Promise(resolve => {
+        const timer = setTimeout(resolve, 3000); // Segurança: não trava se uma imagem falhar
+        img.onload = () => { clearTimeout(timer); resolve(null); };
+        img.onerror = () => { clearTimeout(timer); resolve(null); };
+      });
+    }));
+
+    await new Promise(resolve => setTimeout(resolve, 800)); // Delay aumentado para estabilidade no PC e Celular
+  };
+
+  const getHtml2CanvasOptions = () => {
+    return {
+      scale: 2,
+      useCORS: true,
+      allowTaint: false,
+      backgroundColor: null,
+      logging: false,
+      onclone: (clonedDoc: Document) => {
+        const exclusionClasses = ['animate-pulse', 'invisible'];
+        const allElements = clonedDoc.querySelectorAll('*');
+        allElements.forEach(el => {
+          if (exclusionClasses.some(cls => el.classList.contains(cls))) {
+            (el as HTMLElement).style.display = 'none';
+          }
+        });
+      }
+    };
+  };
+
   const handleDownloadSingle = async (index: number) => {
     const slideElement = slideRefs.current[index];
     if (!slideElement) return;
 
     try {
-      // Usar html2canvas para maior compatibilidade com imagens externas e CORS
-      const canvas = await html2canvas(slideElement, {
-        scale: 2,
-        useCORS: true,
-        allowTaint: false,
-        backgroundColor: null,
-        logging: false,
-        onclone: (clonedDoc) => {
-          // Garante que elementos pulantes ou invisíveis não saiam na foto
-          const exclusionClasses = ['animate-pulse', 'invisible'];
-          const elements = clonedDoc.getElementsByClassName('group/slide-wrapper');
-          if (elements[index]) {
-            const children = elements[index].querySelectorAll('*');
-            children.forEach(el => {
-              if (exclusionClasses.some(cls => el.classList.contains(cls))) {
-                (el as HTMLElement).style.display = 'none';
-              }
-            });
-          }
-        }
-      });
+      await prepareSlideForCapture(slideElement);
+      const canvas = await html2canvas(slideElement, getHtml2CanvasOptions());
 
       const dataUrl = canvas.toDataURL('image/png', 0.95);
       saveAs(dataUrl, `slide-${index + 1}.png`);
     } catch (error: any) {
       console.error("Erro ao baixar slide:", error);
-      // Fallback para html-to-image se o html2canvas falhar por algum motivo raro
-      try {
-        const dataUrl = await htmlToImage.toPng(slideElement, { quality: 0.95, pixelRatio: 2, cacheBust: true });
-        saveAs(dataUrl, `slide-${index + 1}.png`);
-      } catch (err2) {
-        alert(`Erro no Slide ${index + 1}: ${error?.message || 'Erro de renderização'}. Tente recarregar a página.`);
-      }
+      alert(`Erro no Slide ${index + 1}: ${error?.message || 'Erro de renderização'}. Tente recarregar a página.`);
     }
   };
 
@@ -997,48 +1009,28 @@ export default function CarouselGenerator({ onLogout }: { onLogout: () => void }
         if (!slideElement) continue;
 
         try {
-          // Usar EXATAMENTE a mesma configuração que o individual
-          const canvas = await html2canvas(slideElement, {
-            scale: 2,
-            useCORS: true,
-            allowTaint: false,
-            backgroundColor: null,
-            logging: false,
-            onclone: (clonedDoc) => {
-              const exclusionClasses = ['animate-pulse', 'invisible'];
-              const allElements = clonedDoc.querySelectorAll('*');
-              allElements.forEach(el => {
-                if (exclusionClasses.some(cls => el.classList.contains(cls))) {
-                  (el as HTMLElement).style.display = 'none';
-                }
-              });
-            }
+          await prepareSlideForCapture(slideElement);
+
+          const canvas = await html2canvas(slideElement, getHtml2CanvasOptions());
+
+          // Usar blob para o ZIP (mais estável)
+          const blob = await new Promise<Blob>((resolve, reject) => {
+            canvas.toBlob((b) => b ? resolve(b) : reject(new Error("Erro no canvas")), 'image/png', 0.9);
           });
 
-          const dataUrl = canvas.toDataURL('image/png', 0.9);
-          const base64Data = dataUrl.replace(/^data:image\/(png|jpeg);base64,/, "");
-          zip.file(`slide-${index + 1}.png`, base64Data, { base64: true });
-
-          await new Promise(resolve => setTimeout(resolve, 150));
+          zip.file(`slide-${index + 1}.png`, blob);
         } catch (slideErr: any) {
-          console.error(`Erro no slide ${index + 1}:`, slideErr);
-          // Tenta o fallback do individual também no loop
-          try {
-            const dataUrl = await htmlToImage.toPng(slideElement, { quality: 0.9, pixelRatio: 2, cacheBust: true });
-            const base64Data = dataUrl.replace(/^data:image\/(png|jpeg);base64,/, "");
-            zip.file(`slide-${index + 1}.png`, base64Data, { base64: true });
-          } catch (fallbackErr) {
-            throw new Error(`Falha crítica no slide ${index + 1}.`);
-          }
+          console.error(`Falha no slide ${index + 1}:`, slideErr);
+          throw new Error(`O slide ${index + 1} bloqueou o processamento do ZIP.`);
         }
       }
 
       const content = await zip.generateAsync({ type: "blob" });
-      saveAs(content, "Carrossel.zip");
+      saveAs(content, "Carrossel_Viral.zip");
 
     } catch (error: any) {
-      console.error("Erro ao gerar os slides para download:", error);
-      alert(`Erro DETALHADO: ${error?.message || 'Erro desconhecido'}. O download individual ainda funciona se precisar.`);
+      console.error("Erro ao gerar ZIP:", error);
+      alert(`Erro no ZIP: ${error?.message || 'Erro desconhecido'}.`);
     } finally {
       setIsDownloading(false);
     }

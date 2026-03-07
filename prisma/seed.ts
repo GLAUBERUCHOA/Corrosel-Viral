@@ -69,7 +69,7 @@ Sempre separe slides com a tag nativa (Ex: SLIDE 01:).`
         },
         {
             toneKey: 'STORYTELLING',
-            label: '📖 Storytelling (Jornada Histórica)',
+            label: '📖 Storytelling (Jornada do Herói)',
             instruction: 'Modo STORYTELLING (A Jornada do Herói): Focado emocionalmente na narrativa. Utilize um fato histórico, um conto, uma biografia marcante ou um mito como fio condutor da lição. Envolva o leitor no drama e ensine a moral depois.'
         },
         {
@@ -82,7 +82,10 @@ Sempre separe slides com a tag nativa (Ex: SLIDE 01:).`
     for (const prompt of prompts) {
         await prisma.promptSetting.upsert({
             where: { toneKey: prompt.toneKey },
-            update: {},
+            update: {
+                label: prompt.label,
+                instruction: prompt.instruction
+            },
             create: prompt,
         });
     }

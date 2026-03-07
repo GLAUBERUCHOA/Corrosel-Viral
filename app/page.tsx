@@ -216,11 +216,13 @@ export default function HomePage() {
               <div className="bg-[#0A0A0B] border border-slate-800/80 rounded-[2rem] overflow-hidden flex flex-col md:flex-row mt-16 group hover:border-slate-700 transition-all duration-500 shadow-2xl max-w-5xl mx-auto">
                 <div className="w-full md:w-5/12 h-[350px] md:h-auto relative overflow-hidden shrink-0">
                   <Image
-                    src="/images/cinematic_portrait.png"
-                    alt="Empreendedor Digital"
+                    src="/images/mockup-hand.jpg"
+                    alt="Pessoa usando o Carrossel Viral Lab no celular"
                     fill
-                    className="object-cover object-center transition-transform duration-700 group-hover:scale-105"
+                    className="object-cover object-center transition-transform duration-700 group-hover:scale-110"
                     sizes="(max-width: 768px) 100vw, 40vw"
+                    quality={90}
+                    priority
                   />
                   <div className="absolute inset-0 bg-gradient-to-t from-[#0A0A0B] via-transparent to-transparent md:bg-gradient-to-l md:from-[#0A0A0B] md:via-transparent opacity-90 z-10"></div>
                 </div>
@@ -274,12 +276,12 @@ export default function HomePage() {
                 <div className="absolute inset-0 bg-indigo-500/10 blur-[120px] rounded-full mix-blend-screen opacity-0 group-hover:opacity-100 transition-opacity duration-1000 z-0 pointer-events-none"></div>
                 <div className="relative z-10 w-full h-auto flex justify-center">
                   <Image
-                    src="/images/mockup-app.png"
-                    alt="Mockup do Carrossel Viral Lab no Celular e Computador"
+                    src="/images/mockup-elite.jpg"
+                    alt="Mockup do Carrossel Viral Lab em smartphones"
                     width={1200}
-                    height={800}
-                    quality={85}
-                    className="w-full h-auto max-w-full sm:max-w-[900px] object-contain drop-shadow-[0_20px_50px_rgba(0,0,0,0.5)] hover:-translate-y-2 hover:scale-[1.02] transition-transform duration-700 ease-out"
+                    height={1200}
+                    quality={90}
+                    className="w-full h-auto max-w-full sm:max-w-[800px] object-contain drop-shadow-[0_20px_50px_rgba(0,0,0,0.5)] hover:-translate-y-2 hover:scale-[1.02] transition-transform duration-700 ease-out"
                   />
                 </div>
               </div>

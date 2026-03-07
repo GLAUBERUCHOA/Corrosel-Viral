@@ -280,8 +280,8 @@ export default function HomePage() {
                     alt="Mockup do Carrossel Viral Lab em smartphones"
                     width={1200}
                     height={1200}
-                    quality={90}
-                    className="w-full h-auto max-w-full sm:max-w-[800px] object-contain drop-shadow-[0_20px_50px_rgba(0,0,0,0.5)] hover:-translate-y-2 hover:scale-[1.02] transition-transform duration-700 ease-out"
+                    quality={100}
+                    className="w-full h-auto max-w-full sm:max-w-[800px] object-contain mix-blend-screen hover:-translate-y-2 hover:scale-[1.02] transition-transform duration-700 ease-out"
                   />
                 </div>
               </div>

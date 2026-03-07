@@ -146,7 +146,7 @@ export function ImageSettingsForm({ initialSettings }: { initialSettings: ImageS
                     <textarea
                         value={s.instruction}
                         onChange={(e) => handleChange(index, 'instruction', e.target.value)}
-                        className="w-full bg-slate-50 dark:bg-surface-darker border border-slate-200 dark:border-border-dark rounded-lg p-4 text-sm text-slate-800 dark:text-slate-200 focus:ring-2 focus:ring-primary outline-none resize-none h-32"
+                        className="w-full bg-slate-50 dark:bg-surface-darker border border-slate-200 dark:border-border-dark rounded-lg p-4 text-sm text-slate-800 dark:text-slate-200 focus:ring-2 focus:ring-primary outline-none min-h-[300px]"
                     />
 
                     {s.isDeletable && (

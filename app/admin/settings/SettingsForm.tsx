@@ -65,7 +65,7 @@ export function SettingsForm({ initialPrompts }: { initialPrompts: PromptSetting
                     <textarea
                         value={p.instruction}
                         onChange={(e) => handleChange(index, e.target.value)}
-                        className="w-full bg-slate-50 dark:bg-surface-darker border border-slate-200 dark:border-border-dark rounded-xl p-4 text-sm text-slate-800 dark:text-slate-200 focus:ring-2 focus:ring-primary focus:border-transparent transition-all outline-none resize-none h-64"
+                        className="w-full bg-slate-50 dark:bg-surface-darker border border-slate-200 dark:border-border-dark rounded-xl p-4 text-sm text-slate-800 dark:text-slate-200 focus:ring-2 focus:ring-primary focus:border-transparent transition-all outline-none min-h-[400px]"
                     />
                 </div>
             ))}

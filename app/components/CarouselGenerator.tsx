@@ -147,7 +147,7 @@ const SimpleRichTextEditor = ({ value, onChange, placeholder }: { value: string,
       </div>
       <div
         ref={editorRef}
-        className="p-3 min-h-[100px] max-h-[150px] overflow-y-auto w-full text-sm text-slate-700 dark:text-slate-300 outline-none focus:ring-0 [&_span]:!bg-transparent rounded-b-xl"
+        className="p-3 min-h-[100px] max-h-[500px] overflow-y-auto w-full text-sm text-slate-700 dark:text-slate-300 outline-none focus:ring-0 [&_span]:!bg-transparent rounded-b-xl"
         style={{
           // Hack para exibir placeholder quando vazio e desativado
           emptyCells: 'show'
@@ -1125,7 +1125,7 @@ export default function CarouselGenerator({ onLogout }: { onLogout: () => void }
 
               <div className="relative">
                 <textarea
-                  className={`w-full h-48 border rounded-xl p-4 text-sm focus:ring-2 focus:ring-primary focus:border-transparent resize-none leading-relaxed font-sans transition-colors ${isIuryMode ? 'bg-primary/5 dark:bg-primary/10 border-primary/20 text-indigo-900 dark:text-indigo-100 placeholder:text-indigo-400 dark:placeholder:text-indigo-300' : 'bg-slate-50 dark:bg-surface-darker border-slate-200 dark:border-border-dark text-slate-700 dark:text-slate-300 placeholder:text-slate-400 dark:placeholder:text-slate-600'}`}
+                  className={`w-full h-[500px] border rounded-xl p-4 text-sm focus:ring-2 focus:ring-primary focus:border-transparent resize-none leading-relaxed font-sans transition-colors ${isIuryMode ? 'bg-primary/5 dark:bg-primary/10 border-primary/20 text-indigo-900 dark:text-indigo-100 placeholder:text-indigo-400 dark:placeholder:text-indigo-300' : 'bg-slate-50 dark:bg-surface-darker border-slate-200 dark:border-border-dark text-slate-700 dark:text-slate-300 placeholder:text-slate-400 dark:placeholder:text-slate-600'}`}
                   style={{ fontFamily: 'var(--font-poppins), sans-serif' }}
                   placeholder={isIuryMode ? 'Deixe o Iury fazer o trabalho. Escreva um tema, cole um rascunho completo, reclame de um nicho... e veja a mágica visceral acontecer.' : 'Modo manual ativado. Cole SEU TEXTO FORMATADO aqui e clique em gerar.\n\nUse este formato nativo para cada slide:\n\nSLIDE 01:\n[TÍTULO]: Título explosivo aqui\n[SUBTÍTULO]: Texto da narrativa curto aqui...\n\nSLIDE 02:\n[TÍTULO]: Segundo título...'}
                   value={content}

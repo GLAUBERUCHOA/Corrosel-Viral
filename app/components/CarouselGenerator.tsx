@@ -968,16 +968,16 @@ export default function CarouselGenerator({ onLogout }: { onLogout: () => void }
     try {
       await prepareSlideForCapture(slideElement);
 
-      const filter = (node: HTMLElement) => {
+      const filter = (node: any) => {
         const exclusionClasses = ['animate-pulse', 'invisible'];
-        return !exclusionClasses.some(classname => node.classList && node.classList.contains && node.classList.contains(classname));
+        return !exclusionClasses.some(classname => node.classList?.contains?.(classname));
       };
 
       const dataUrl = await htmlToImage.toPng(slideElement, {
         quality: 0.95,
         pixelRatio: 2,
         skipFonts: false,
-        cacheBust: true,
+        cacheBust: false,
         filter: filter
       });
 
@@ -1002,16 +1002,16 @@ export default function CarouselGenerator({ onLogout }: { onLogout: () => void }
         try {
           await prepareSlideForCapture(slideElement);
 
-          const filter = (node: HTMLElement) => {
+          const filter = (node: any) => {
             const exclusionClasses = ['animate-pulse', 'invisible'];
-            return !exclusionClasses.some(classname => node.classList && node.classList.contains && node.classList.contains(classname));
+            return !exclusionClasses.some(classname => node.classList?.contains?.(classname));
           };
 
           const dataUrl = await htmlToImage.toPng(slideElement, {
             quality: 0.9,
             pixelRatio: 2,
             skipFonts: false,
-            cacheBust: true,
+            cacheBust: false,
             filter: filter
           });
 
@@ -1618,7 +1618,7 @@ export default function CarouselGenerator({ onLogout }: { onLogout: () => void }
               <button
                 onClick={handleSequentialDownload}
                 disabled={isDownloading}
-                className="w-full md:w-auto flex items-center justify-center gap-1.5 sm:gap-2 px-3 sm:px-4 py-2 sm:py-2 bg-gradient-to-r from-emerald-500 to-emerald-400 hover:from-emerald-400 hover:to-emerald-300 text-white rounded-lg text-sm font-bold transition-all shadow-lg shadow-emerald-500/25 disabled:opacity-70 disabled:cursor-not-allowed whitespace-nowrap active:scale-[0.98]">
+                className="w-full md:w-auto flex items-center justify-center gap-1.5 sm:gap-2 px-3 sm:px-4 py-2 sm:py-2 bg-gradient-to-r from-indigo-600 to-indigo-500 hover:from-indigo-500 hover:to-indigo-400 text-white rounded-lg text-sm font-bold transition-all shadow-lg shadow-indigo-600/25 disabled:opacity-70 disabled:cursor-not-allowed whitespace-nowrap active:scale-[0.98]">
                 {isDownloading ? (
                   <span className="material-symbols-outlined text-[18px] animate-spin">progress_activity</span>
                 ) : (

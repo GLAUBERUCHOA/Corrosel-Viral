@@ -1115,7 +1115,7 @@ export default function CarouselGenerator({ onLogout }: { onLogout: () => void }
                       <>
                         <option value="PROVOCATIVO">🥊 Provocativo (Quebra de Padrão e Ego)</option>
                         <option value="ANALITICO">🧊 Analítico (Autoridade Fria e Dados)</option>
-                        <option value="STORYTELLING">📖 Storytelling (Jornada Histórica)</option>
+                        <option value="STORYTELLING">📖 Storytelling (Jornada do Herói)</option>
                         <option value="PRATICO">✅ Prático (Manual e Ação Imediata)</option>
                       </>
                     )}

@@ -14,8 +14,8 @@ export function SettingsForm({ initialPrompts }: { initialPrompts: PromptSetting
     const [isSaving, setIsSaving] = useState(false);
     const [message, setMessage] = useState('');
 
-    const handleChange = (id: string, value: string) => {
-        setPrompts(prev => prev.map(p => p.id === id ? { ...p, instruction: value } : p));
+    const handleChange = (id: string, field: keyof PromptSetting, value: string) => {
+        setPrompts(prev => prev.map(p => p.id === id ? { ...p, [field]: value } : p));
     };
 
     const handleSave = async (e: React.FormEvent) => {
@@ -57,12 +57,19 @@ export function SettingsForm({ initialPrompts }: { initialPrompts: PromptSetting
 
             {prompts.filter(p => p.toneKey !== 'GLOBAL_INSTRUCTIONS').map((p) => (
                 <div key={p.id} className="bg-white dark:bg-surface-dark border border-slate-200 dark:border-border-dark rounded-xl p-6 shadow-sm">
-                    <label className="block text-sm font-bold text-slate-900 dark:text-white mb-2">
-                        {p.label}
-                    </label>
+                    <div className="mb-4">
+                        <label className="block text-xs font-semibold text-slate-500 uppercase tracking-wider mb-1">Nome da Estratégia (Menu)</label>
+                        <input
+                            type="text"
+                            value={p.label}
+                            onChange={(e) => handleChange(p.id, 'label', e.target.value)}
+                            className="w-full border-b border-slate-300 dark:border-slate-700 bg-transparent text-lg font-bold text-slate-900 dark:text-white pb-1 focus:border-primary outline-none transition-colors"
+                        />
+                    </div>
+                    <label className="block text-xs font-semibold text-slate-500 uppercase tracking-wider mb-2">Instruções Matriz</label>
                     <textarea
                         value={p.instruction}
-                        onChange={(e) => handleChange(p.id, e.target.value)}
+                        onChange={(e) => handleChange(p.id, 'instruction', e.target.value)}
                         className="w-full bg-slate-50 dark:bg-surface-darker border border-slate-200 dark:border-border-dark rounded-xl p-4 text-sm text-slate-800 dark:text-slate-200 focus:ring-2 focus:ring-primary focus:border-transparent transition-all outline-none min-h-[400px]"
                     />
                 </div>

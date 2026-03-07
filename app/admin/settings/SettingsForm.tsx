@@ -33,12 +33,12 @@ export function SettingsForm({ initialPrompts }: { initialPrompts: PromptSetting
             });
 
             if (res.ok) {
-                setMessage('ConfiguraÃ§Ãµes aterradas com sucesso!');
+                setMessage('Configurações salvas com sucesso!');
             } else {
-                setMessage('Erro ao salvar as configuraÃ§Ãµes.');
+                setMessage('Erro ao salvar as configurações.');
             }
         } catch (err) {
-            setMessage('Erro de conexÃ£o. Tente novamente.');
+            setMessage('Erro de conexão. Tente novamente.');
         } finally {
             setIsSaving(false);
             setTimeout(() => setMessage(''), 3000);
@@ -53,7 +53,11 @@ export function SettingsForm({ initialPrompts }: { initialPrompts: PromptSetting
                 </div>
             )}
 
-            {prompts.map((p, index) => (
+            <div className="bg-amber-50 dark:bg-amber-900/10 border border-amber-200 dark:border-amber-800 rounded-xl p-4 mb-6 text-xs text-amber-700 dark:text-amber-300">
+                <strong>💡 Dica de Engenharia:</strong> Cada tom agora é 100% independente. Lembre-se de incluir as regras de formatação ([TÍTULO], [SUBTÍTULO], SLIDE 01:) dentro de cada bloco para garantir que o Gemini não se perca.
+            </div>
+
+            {prompts.filter(p => p.toneKey !== 'GLOBAL_INSTRUCTIONS').map((p, index) => (
                 <div key={p.id} className="bg-white dark:bg-surface-dark border border-slate-200 dark:border-border-dark rounded-xl p-6 shadow-sm">
                     <label className="block text-sm font-bold text-slate-900 dark:text-white mb-2">
                         {p.label}
@@ -61,7 +65,7 @@ export function SettingsForm({ initialPrompts }: { initialPrompts: PromptSetting
                     <textarea
                         value={p.instruction}
                         onChange={(e) => handleChange(index, e.target.value)}
-                        className="w-full bg-slate-50 dark:bg-surface-darker border border-slate-200 dark:border-border-dark rounded-xl p-4 text-sm text-slate-800 dark:text-slate-200 focus:ring-2 focus:ring-primary focus:border-transparent transition-all outline-none resize-none h-32"
+                        className="w-full bg-slate-50 dark:bg-surface-darker border border-slate-200 dark:border-border-dark rounded-xl p-4 text-sm text-slate-800 dark:text-slate-200 focus:ring-2 focus:ring-primary focus:border-transparent transition-all outline-none resize-none h-64"
                     />
                 </div>
             ))}
@@ -77,7 +81,7 @@ export function SettingsForm({ initialPrompts }: { initialPrompts: PromptSetting
                     ) : (
                         <span className="material-symbols-outlined">save</span>
                     )}
-                    {isSaving ? 'Salvando...' : 'Salvar AlteraÃ§Ãµes Globais'}
+                    {isSaving ? 'Salvando...' : 'Salvar Instruções de Tom'}
                 </button>
             </div>
         </form>

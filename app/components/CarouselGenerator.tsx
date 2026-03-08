@@ -800,6 +800,7 @@ export default function CarouselGenerator({ onLogout }: { onLogout: () => void }
         const ai = new GoogleGenAI({ apiKey });
         const promptFinal = `${getIuryPrompt(toneMode, dbPrompts)}\n\nRASCUNHO DO USUÁRIO:\n${content}`;
 
+        // Gemini 2.5 Flash - Estabilizado para restauração do Modo Iury
         console.log('--- PIPELINE: GERANDO TEXTO COM IURY ---');
 
         const response = await ai.models.generateContent({

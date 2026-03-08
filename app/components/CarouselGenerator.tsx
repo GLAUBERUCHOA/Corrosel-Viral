@@ -803,7 +803,7 @@ export default function CarouselGenerator({ onLogout }: { onLogout: () => void }
         console.log('--- PIPELINE: GERANDO TEXTO COM IURY ---');
 
         const response = await ai.models.generateContent({
-          model: 'gemini-1.5-flash-latest',
+          model: 'gemini-2.0-flash',
           contents: promptFinal,
         });
 

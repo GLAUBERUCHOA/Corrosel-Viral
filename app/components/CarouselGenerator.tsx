@@ -211,6 +211,7 @@ export default function CarouselGenerator({ onLogout }: { onLogout: () => void }
   const [editTitle, setEditTitle] = useState('');
   const [editSubtitle, setEditSubtitle] = useState('');
   const [customColor, setCustomColor] = useState('#6366f1');
+  const [customTextColor, setCustomTextColor] = useState('#ffffff');
   const [isMobile, setIsMobile] = useState(false);
   const [viewMode, setViewMode] = useState<'grid' | 'carousel'>('grid');
 
@@ -340,6 +341,7 @@ export default function CarouselGenerator({ onLogout }: { onLogout: () => void }
         if (prefs.brandLogo) setBrandLogo(prefs.brandLogo);
         if (prefs.styleModel) setStyleModel(prefs.styleModel);
         if (prefs.customColor) setCustomColor(prefs.customColor);
+        if (prefs.customTextColor) setCustomTextColor(prefs.customTextColor);
         if (prefs.fontFamily) setFontFamily(prefs.fontFamily);
         if (prefs.textAlign) setTextAlign(prefs.textAlign);
 
@@ -428,6 +430,7 @@ export default function CarouselGenerator({ onLogout }: { onLogout: () => void }
         prefs.brandLogo = brandLogo;
         prefs.styleModel = styleModel;
         prefs.customColor = customColor;
+        prefs.customTextColor = customTextColor;
         prefs.fontFamily = fontFamily;
         prefs.textAlign = textAlign;
       } else {
@@ -435,6 +438,7 @@ export default function CarouselGenerator({ onLogout }: { onLogout: () => void }
         prefs.brandLogo = null;
         prefs.styleModel = 'Escuro';
         prefs.customColor = '#6366f1';
+        prefs.customTextColor = '#ffffff';
         prefs.fontFamily = 'var(--font-poppins), sans-serif';
         prefs.textAlign = 'text-left';
       }
@@ -585,9 +589,8 @@ export default function CarouselGenerator({ onLogout }: { onLogout: () => void }
       };
       reader.readAsDataURL(file);
     }
-    if (brandLogoInputRef.current) {
-      brandLogoInputRef.current.value = '';
-    }
+    // Reset via target para permitir upload consecutivo do mesmo arquivo sem depender de ref
+    event.target.value = '';
   };
 
   const handleRemoveImage = (index: number, e: React.MouseEvent) => {
@@ -892,18 +895,11 @@ export default function CarouselGenerator({ onLogout }: { onLogout: () => void }
           subtextClass: 'text-slate-700'
         };
       case 'Personalizado': {
-        let hex = customColor.replace('#', '');
-        if (hex.length === 3) hex = hex.split('').map(c => c + c).join('');
-        const r = parseInt(hex.substr(0, 2), 16) || 0;
-        const g = parseInt(hex.substr(2, 2), 16) || 0;
-        const b = parseInt(hex.substr(4, 2), 16) || 0;
-        const isLight = ((r * 299) + (g * 587) + (b * 114)) / 1000 >= 128;
-
         return {
           bgClass: '',
           bgStyle: { backgroundColor: customColor },
-          textClass: isLight ? 'text-slate-900' : 'text-white',
-          subtextClass: isLight ? 'text-slate-700' : 'text-slate-200'
+          textClass: '',
+          subtextClass: ''
         };
       }
       default:
@@ -1216,118 +1212,143 @@ export default function CarouselGenerator({ onLogout }: { onLogout: () => void }
                         ))}
                       </div>
                     </div>
-                    <div className="grid grid-cols-2 gap-3">
-                      <div className="space-y-1.5">
-                        <label className="text-[10px] font-bold text-slate-400 uppercase">Fonte</label>
-                        <select value={fontFamily} onChange={(e) => setFontFamily(e.target.value)} className="w-full bg-slate-50 border border-slate-200 rounded-lg px-2 py-1.5 text-[11px] focus:ring-1 focus:ring-primary outline-none">
-                          <option value="var(--font-poppins), sans-serif">Poppins</option>
-                          <option value="'Playfair Display', serif">Playfair</option>
-                          <option value="'Inter', sans-serif">Inter</option>
-                          <option value="'Montserrat', sans-serif">Montserrat</option>
-                          <option value="'Outfit', sans-serif">Outfit</option>
-                          <option value="'Roboto', sans-serif">Roboto</option>
-                        </select>
-                      </div>
-                      <div className="space-y-1.5">
-                        <label className="text-[10px] font-bold text-slate-400 uppercase">Alinhamento</label>
-                        <div className="flex bg-slate-50 p-1 rounded-lg border border-slate-200">
-                          <button onClick={() => setTextAlign('text-left')} className={`flex-1 py-1 rounded ${textAlign === 'text-left' ? 'bg-white shadow-sm text-primary' : 'text-slate-400'}`}><span className="material-symbols-outlined text-[16px]">format_align_left</span></button>
-                          <button onClick={() => setTextAlign('text-center')} className={`flex-1 py-1 rounded ${textAlign === 'text-center' ? 'bg-white shadow-sm text-primary' : 'text-slate-400'}`}><span className="material-symbols-outlined text-[16px]">format_align_center</span></button>
-                          <button onClick={() => setTextAlign('text-right')} className={`flex-1 py-1 rounded ${textAlign === 'text-right' ? 'bg-white shadow-sm text-primary' : 'text-slate-400'}`}><span className="material-symbols-outlined text-[16px]">format_align_right</span></button>
-                        </div>
-                      </div>
-                    </div>
-                    <div className="space-y-3 pt-4 border-t border-slate-100">
-                      <div className="flex items-center justify-between">
-                        <div className="flex items-center gap-2">
-                          <span className="material-symbols-outlined text-slate-400 text-[18px]">verified_user</span>
-                          <span className="text-xs font-bold text-slate-700">Lembrar Marca & Estilo</span>
-                        </div>
-                        <label className="relative inline-flex items-center cursor-pointer z-20">
-                          <input type="checkbox" className="sr-only peer" checked={saveDefaults} onChange={(e) => setSaveDefaults(e.target.checked)} />
-                          <div className="w-9 h-5 bg-slate-300 rounded-full peer peer-checked:bg-primary after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:after:translate-x-full"></div>
-                        </label>
-                      </div>
-                      <div className="flex gap-2">
-                        <div className="flex-1 relative">
-                          <span className="absolute left-2.5 top-1/2 -translate-y-1/2 text-[10px] font-bold text-slate-400">@</span>
+
+                    {styleModel === 'Personalizado' && (
+                      <div key="custom-theme-controls" className="p-3 bg-slate-50 dark:bg-surface-darker rounded-xl border border-slate-100 dark:border-border-dark space-y-3 animate-in fade-in slide-in-from-top-2 duration-300">
+                        <div className="flex items-center justify-between">
+                          <span className="text-[11px] font-bold text-slate-500 uppercase">Cor do Fundo</span>
                           <input
-                            type="text"
-                            value={brandHandle}
-                            onChange={(e) => setBrandHandle(e.target.value.replace('@', ''))}
-                            placeholder="seu_perfil"
-                            className="w-full bg-slate-50 border border-slate-200 rounded-lg pl-6 pr-3 py-2 text-[10px] font-bold outline-none focus:ring-1 focus:ring-primary transition-all shadow-sm"
+                            type="color"
+                            value={customColor}
+                            onChange={(e) => setCustomColor(e.target.value)}
+                            className="size-8 cursor-pointer bg-transparent border-0 p-0"
                           />
                         </div>
-                        <button onClick={() => brandLogoInputRef.current?.click()} className="flex-1 py-2 bg-white border border-dashed border-slate-200 rounded-lg text-[10px] font-bold text-slate-400 hover:text-primary transition-colors flex items-center justify-center gap-1 shadow-sm">
-                          <span className="material-symbols-outlined text-[16px]">add_photo_alternate</span> {brandLogo ? 'Trocar Logo' : 'Logo +'}
-                        </button>
+                        <div className="flex items-center justify-between">
+                          <span className="text-[11px] font-bold text-slate-500 uppercase">Cor do Texto</span>
+                          <input
+                            type="color"
+                            value={customTextColor}
+                            onChange={(e) => setCustomTextColor(e.target.value)}
+                            className="size-8 cursor-pointer bg-transparent border-0 p-0"
+                          />
+                        </div>
                       </div>
+                    )}
+
+                  </div>
+                  <div className="grid grid-cols-2 gap-3">
+                    <div className="space-y-1.5">
+                      <label className="text-[10px] font-bold text-slate-400 uppercase">Fonte</label>
+                      <select value={fontFamily} onChange={(e) => setFontFamily(e.target.value)} className="w-full bg-slate-50 border border-slate-200 rounded-lg px-2 py-1.5 text-[11px] focus:ring-1 focus:ring-primary outline-none">
+                        <option value="var(--font-poppins), sans-serif">Poppins</option>
+                        <option value="'Playfair Display', serif">Playfair</option>
+                        <option value="'Inter', sans-serif">Inter</option>
+                        <option value="'Montserrat', sans-serif">Montserrat</option>
+                        <option value="'Outfit', sans-serif">Outfit</option>
+                        <option value="'Roboto', sans-serif">Roboto</option>
+                      </select>
+                    </div>
+                    <div className="space-y-1.5">
+                      <label className="text-[10px] font-bold text-slate-400 uppercase">Alinhamento</label>
+                      <div className="flex bg-slate-50 p-1 rounded-lg border border-slate-200">
+                        <button onClick={() => setTextAlign('text-left')} className={`flex-1 py-1 rounded ${textAlign === 'text-left' ? 'bg-white shadow-sm text-primary' : 'text-slate-400'}`}><span className="material-symbols-outlined text-[16px]">format_align_left</span></button>
+                        <button onClick={() => setTextAlign('text-center')} className={`flex-1 py-1 rounded ${textAlign === 'text-center' ? 'bg-white shadow-sm text-primary' : 'text-slate-400'}`}><span className="material-symbols-outlined text-[16px]">format_align_center</span></button>
+                        <button onClick={() => setTextAlign('text-right')} className={`flex-1 py-1 rounded ${textAlign === 'text-right' ? 'bg-white shadow-sm text-primary' : 'text-slate-400'}`}><span className="material-symbols-outlined text-[16px]">format_align_right</span></button>
+                      </div>
+                    </div>
+                  </div>
+                  <div className="space-y-3 pt-4 border-t border-slate-100">
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-2">
+                        <span className="material-symbols-outlined text-slate-400 text-[18px]">verified_user</span>
+                        <span className="text-xs font-bold text-slate-700">Lembrar Marca & Estilo</span>
+                      </div>
+                      <label className="relative inline-flex items-center cursor-pointer z-20">
+                        <input type="checkbox" className="sr-only peer" checked={saveDefaults} onChange={(e) => setSaveDefaults(e.target.checked)} />
+                        <div className="w-9 h-5 bg-slate-300 rounded-full peer peer-checked:bg-primary after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:after:translate-x-full"></div>
+                      </label>
+                    </div>
+                    <div className="flex gap-2">
+                      <div className="flex-1 relative">
+                        <span className="absolute left-2.5 top-1/2 -translate-y-1/2 text-[10px] font-bold text-slate-400">@</span>
+                        <input
+                          type="text"
+                          value={brandHandle}
+                          onChange={(e) => setBrandHandle(e.target.value.replace('@', ''))}
+                          placeholder="seu_perfil"
+                          className="w-full bg-slate-50 border border-slate-200 rounded-lg pl-6 pr-3 py-2 text-[10px] font-bold outline-none focus:ring-1 focus:ring-primary transition-all shadow-sm"
+                        />
+                      </div>
+                      <label className="flex-1 py-2 bg-white border border-dashed border-slate-200 rounded-lg text-[10px] font-bold text-slate-400 hover:text-primary transition-colors flex items-center justify-center gap-1 shadow-sm cursor-pointer relative overflow-hidden">
+                        <span className="material-symbols-outlined text-[16px]">add_photo_alternate</span> {brandLogo ? 'Trocar Logo' : 'Logo +'}
+                        <input type="file" onChange={handleBrandLogoUpload} accept="image/*" className="absolute inset-0 opacity-0 cursor-pointer" />
+                      </label>
                     </div>
                   </div>
                 </div>
               </div>
+            </div>
 
-              {/* PASSO 3: MÍDIA E IMAGENS */}
-              <div className={`border rounded-2xl overflow-hidden bg-white dark:bg-surface-dark transition-all duration-300 ${activeStep === 3 ? 'border-primary/30 shadow-lg ring-1 ring-primary/5' : 'border-slate-100 dark:border-border-dark shadow-sm'}`}>
-                <button onClick={() => setActiveStep(activeStep === 3 ? 0 : 3)} className={`w-full flex items-center justify-between p-4 text-left transition-colors ${activeStep === 3 ? 'bg-primary/5 dark:bg-primary/10' : 'hover:bg-slate-50 dark:hover:bg-surface-darker'}`}>
-                  <div className="flex items-center gap-3">
-                    <div className={`size-8 rounded-lg flex items-center justify-center transition-colors ${activeStep === 3 ? 'bg-primary text-white' : 'bg-slate-100 dark:bg-slate-800 text-slate-400'}`}>
-                      <span className="material-symbols-outlined text-[20px]">imagesmode</span>
-                    </div>
-                    <span className={`font-bold text-sm ${activeStep === 3 ? 'text-slate-900 dark:text-white' : 'text-slate-500'}`}>Passo 3: Mídia e Imagens</span>
+            {/* PASSO 3: MÍDIA E IMAGENS */}
+            <div className={`border rounded-2xl overflow-hidden bg-white dark:bg-surface-dark transition-all duration-300 ${activeStep === 3 ? 'border-primary/30 shadow-lg ring-1 ring-primary/5' : 'border-slate-100 dark:border-border-dark shadow-sm'}`}>
+              <button onClick={() => setActiveStep(activeStep === 3 ? 0 : 3)} className={`w-full flex items-center justify-between p-4 text-left transition-colors ${activeStep === 3 ? 'bg-primary/5 dark:bg-primary/10' : 'hover:bg-slate-50 dark:hover:bg-surface-darker'}`}>
+                <div className="flex items-center gap-3">
+                  <div className={`size-8 rounded-lg flex items-center justify-center transition-colors ${activeStep === 3 ? 'bg-primary text-white' : 'bg-slate-100 dark:bg-slate-800 text-slate-400'}`}>
+                    <span className="material-symbols-outlined text-[20px]">imagesmode</span>
                   </div>
-                  <span className={`material-symbols-outlined text-slate-400 transition-transform duration-300 ${activeStep === 3 ? 'rotate-180' : ''}`}>keyboard_arrow_down</span>
-                </button>
-                <div className={`transition-all duration-300 ${activeStep === 3 ? 'max-h-[1500px] opacity-100 p-4 border-t border-slate-50 dark:border-border-dark' : 'max-h-0 opacity-0 p-0 pointer-events-none'}`}>
-                  <div className="space-y-4">
-                    <div className="flex items-center justify-between bg-emerald-50 p-3 rounded-xl border border-emerald-100">
-                      <span className="text-[10px] font-black text-emerald-700 uppercase">Gerar com IA</span>
-                      <label className="relative inline-flex items-center cursor-pointer">
-                        <input type="checkbox" className="sr-only peer" checked={generateWithAI} onChange={(e) => setGenerateWithAI(e.target.checked)} />
-                        <div className="w-10 h-5 bg-slate-200 rounded-full peer peer-checked:bg-emerald-500 after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:after:translate-x-full"></div>
-                      </label>
+                  <span className={`font-bold text-sm ${activeStep === 3 ? 'text-slate-900 dark:text-white' : 'text-slate-500'}`}>Passo 3: Mídia e Imagens</span>
+                </div>
+                <span className={`material-symbols-outlined text-slate-400 transition-transform duration-300 ${activeStep === 3 ? 'rotate-180' : ''}`}>keyboard_arrow_down</span>
+              </button>
+              <div className={`transition-all duration-300 ${activeStep === 3 ? 'max-h-[1500px] opacity-100 p-4 border-t border-slate-50 dark:border-border-dark' : 'max-h-0 opacity-0 p-0 pointer-events-none'}`}>
+                <div className="space-y-4">
+                  <div className="flex items-center justify-between bg-emerald-50 p-3 rounded-xl border border-emerald-100">
+                    <span className="text-[10px] font-black text-emerald-700 uppercase">Gerar com IA</span>
+                    <label className="relative inline-flex items-center cursor-pointer">
+                      <input type="checkbox" className="sr-only peer" checked={generateWithAI} onChange={(e) => setGenerateWithAI(e.target.checked)} />
+                      <div className="w-10 h-5 bg-slate-200 rounded-full peer peer-checked:bg-emerald-500 after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:after:translate-x-full"></div>
+                    </label>
+                  </div>
+                  {generateWithAI && (
+                    <div className="space-y-3 animate-in fade-in duration-300">
+                      <select value={imageNiche} onChange={(e) => setImageNiche(e.target.value)} className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-xs font-bold">
+                        {dbImageLabels.filter(label => label.key !== 'GLOBAL_IMAGE').map(label => (<option key={label.key} value={label.key}>{label.label}</option>))}
+                      </select>
                     </div>
-                    {generateWithAI && (
-                      <div className="space-y-3 animate-in fade-in duration-300">
-                        <select value={imageNiche} onChange={(e) => setImageNiche(e.target.value)} className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-xs font-bold">
-                          {dbImageLabels.filter(label => label.key !== 'GLOBAL_IMAGE').map(label => (<option key={label.key} value={label.key}>{label.label}</option>))}
-                        </select>
-                      </div>
-                    )}
-                    <div className={`${generateWithAI ? 'opacity-40 grayscale pointer-events-none' : ''} space-y-3`}>
-                      <div className="grid grid-cols-4 gap-2">
-                        {Array.from({ length: slideCount }).map((_, i) => (
-                          <div
-                            key={i}
-                            onClick={() => handleIndividualUploadClick(i)}
-                            className="aspect-[4/5] rounded-xl border-2 border-dashed border-slate-200 flex items-center justify-center group hover:border-primary cursor-pointer relative overflow-hidden"
-                            draggable={!generateWithAI && !!uploadedImages[i]}
-                            onDragStart={() => handleDragStart(i)}
-                            onDragOver={handleDragOver}
-                            onDrop={() => handleDrop(i)}
-                          >
-                            {uploadedImages[i] ? (
-                              <>
-                                <img src={uploadedImages[i] as string} className="w-full h-full object-cover" />
-                                <button onClick={(e) => handleRemoveImage(i, e)} className="absolute top-1 right-1 size-5 bg-black/50 hover:bg-red-500 rounded-full flex items-center justify-center text-white opacity-0 group-hover:opacity-100 transition-all z-10">
-                                  <span className="material-symbols-outlined text-[12px] font-bold">close</span>
-                                </button>
-                              </>
-                            ) : (
-                              <span className="text-[10px] font-black text-slate-200">S{i + 1}</span>
-                            )}
-                          </div>
-                        ))}
-                      </div>
-                      <button onClick={handleMassUploadClick} className="w-full py-2.5 bg-white border border-slate-200 rounded-xl text-[10px] font-black uppercase text-slate-500 hover:bg-slate-50 flex items-center justify-center gap-1 transition-all">
-                        <span className="material-symbols-outlined text-[16px]">upload_file</span> Upload Massa
-                      </button>
+                  )}
+                  <div className={`${generateWithAI ? 'opacity-40 grayscale pointer-events-none' : ''} space-y-3`}>
+                    <div className="grid grid-cols-4 gap-2">
+                      {Array.from({ length: slideCount }).map((_, i) => (
+                        <div
+                          key={i}
+                          onClick={() => handleIndividualUploadClick(i)}
+                          className="aspect-[4/5] rounded-xl border-2 border-dashed border-slate-200 flex items-center justify-center group hover:border-primary cursor-pointer relative overflow-hidden"
+                          draggable={!generateWithAI && !!uploadedImages[i]}
+                          onDragStart={() => handleDragStart(i)}
+                          onDragOver={handleDragOver}
+                          onDrop={() => handleDrop(i)}
+                        >
+                          {uploadedImages[i] ? (
+                            <>
+                              <img src={uploadedImages[i] as string} className="w-full h-full object-cover" />
+                              <button onClick={(e) => handleRemoveImage(i, e)} className="absolute top-1 right-1 size-5 bg-black/50 hover:bg-red-500 rounded-full flex items-center justify-center text-white opacity-0 group-hover:opacity-100 transition-all z-10">
+                                <span className="material-symbols-outlined text-[12px] font-bold">close</span>
+                              </button>
+                            </>
+                          ) : (
+                            <span className="text-[10px] font-black text-slate-200">S{i + 1}</span>
+                          )}
+                        </div>
+                      ))}
+                    </div>
+                    <button onClick={handleMassUploadClick} className="w-full py-2.5 bg-white border border-slate-200 rounded-xl text-[10px] font-black uppercase text-slate-500 hover:bg-slate-50 flex items-center justify-center gap-1 transition-all">
+                      <span className="material-symbols-outlined text-[16px]">upload_file</span> Upload Massa
+                    </button>
 
-                      {/* Hidden Inputs Restored */}
-                      <input type="file" multiple accept="image/*" className="hidden" ref={fileInputRef} onChange={handleFileUpload} />
-                      <input type="file" accept="image/*" className="hidden" ref={individualFileInputRef} onChange={handleIndividualFileUpload} />
-                    </div>
+                    {/* Hidden Inputs Restored */}
+                    <input type="file" multiple accept="image/*" className="hidden" ref={fileInputRef} onChange={handleFileUpload} />
+                    <input type="file" accept="image/*" className="hidden" ref={individualFileInputRef} onChange={handleIndividualFileUpload} />
                   </div>
                 </div>
               </div>
@@ -1493,9 +1514,9 @@ export default function CarouselGenerator({ onLogout }: { onLogout: () => void }
                               </div>
                             )}
 
-                            <div className={`w-full flex-1 flex flex-col items-center p-8 shrink-0 z-20 relative ${ctaImage ? 'justify-start' : 'justify-center'} ${theme.textClass}`} style={{ fontFamily }}>
-                              {slide.title && <h2 className={`font-extrabold text-2xl sm:text-3xl leading-tight uppercase mb-4`}>{slide.title}</h2>}
-                              <div className={`text-base sm:text-lg ${theme.subtextClass} font-medium leading-relaxed whitespace-pre-wrap [&_span]:!bg-transparent focus:outline-none w-[90%] mx-auto`} dangerouslySetInnerHTML={{ __html: slide.subtitle }}></div>
+                            <div className={`w-full flex-1 flex flex-col items-center p-8 shrink-0 z-20 relative ${ctaImage ? 'justify-start' : 'justify-center'} ${theme.textClass}`} style={{ fontFamily, color: styleModel === 'Personalizado' ? customTextColor : undefined }}>
+                              {slide.title && <h2 className={`font-extrabold text-2xl sm:text-3xl leading-tight uppercase mb-4`} style={{ color: styleModel === 'Personalizado' ? customTextColor : undefined }}>{slide.title}</h2>}
+                              <div className={`text-base sm:text-lg ${theme.subtextClass} font-medium leading-relaxed whitespace-pre-wrap focus:outline-none w-[90%] mx-auto`} style={{ color: styleModel === 'Personalizado' ? customTextColor : undefined }} dangerouslySetInnerHTML={{ __html: slide.subtitle }}></div>
                             </div>
                           </div>
 
@@ -1577,10 +1598,10 @@ export default function CarouselGenerator({ onLogout }: { onLogout: () => void }
                             )}
                           </div>
 
-                          <div className={`w-full px-8 flex flex-col shrink-0 z-20 relative ${textAlignmentPadding} ${textAlign}`} style={{ fontFamily }}>
+                          <div className={`w-full px-8 flex flex-col shrink-0 z-20 relative ${textAlignmentPadding} ${textAlign}`} style={{ fontFamily, color: styleModel === 'Personalizado' ? customTextColor : undefined }}>
                             <div className={`flex flex-col gap-2 ${textAlign === 'text-center' ? 'items-center text-center' : textAlign === 'text-right' ? 'items-end text-right' : 'items-start text-left'}`}>
-                              {slide.title && <h2 className={`${titleClass} uppercase [&>div]:inline`} dangerouslySetInnerHTML={{ __html: slide.title }} />}
-                              {slide.subtitle && <p className={`${subtitleClass} [&>div]:inline`} dangerouslySetInnerHTML={{ __html: slide.subtitle }} />}
+                              {slide.title && <h2 className={`${titleClass} uppercase [&>div]:inline`} style={{ color: styleModel === 'Personalizado' ? customTextColor : undefined }} dangerouslySetInnerHTML={{ __html: slide.title }} />}
+                              {slide.subtitle && <p className={`${subtitleClass} [&>div]:inline`} style={{ color: styleModel === 'Personalizado' ? customTextColor : undefined }} dangerouslySetInnerHTML={{ __html: slide.subtitle }} />}
                             </div>
                             {index === 0 && (
                               <div className="absolute bottom-3 right-3 z-30">
@@ -1713,7 +1734,6 @@ export default function CarouselGenerator({ onLogout }: { onLogout: () => void }
         </section>
       </main>
 
-      {/* Edit Text Modal */}
       {
         editingSlideIndex !== null && (
           <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-[100] flex items-center justify-center p-4">

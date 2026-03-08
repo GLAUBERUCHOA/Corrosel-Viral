@@ -72,29 +72,14 @@ const SimpleRichTextEditor = ({ value, onChange, placeholder }: { value: string,
     }
   };
 
-  const exec = (command: string, val?: string) => {
-    document.execCommand(command, false, val);
-    emitChange();
+  const executeCommand = (command: string, val?: string) => {
     editorRef.current?.focus();
-  };
-
-  const saveSelection = () => {
-    const sel = window.getSelection();
-    if (sel && sel.rangeCount > 0) {
-      const range = sel.getRangeAt(0);
-      if (editorRef.current && editorRef.current.contains(range.commonAncestorContainer)) {
-        setSavedSelection(range.cloneRange());
-      }
-    }
-  };
-
-  const execWithColor = (command: string, color: string) => {
     if (savedSelection) {
       const sel = window.getSelection();
       sel?.removeAllRanges();
       sel?.addRange(savedSelection);
     }
-    document.execCommand(command, false, color);
+    document.execCommand(command, false, val);
     emitChange();
   };
 
@@ -103,10 +88,10 @@ const SimpleRichTextEditor = ({ value, onChange, placeholder }: { value: string,
 
   return (
     <div className="w-full bg-slate-50 dark:bg-surface-darker border border-slate-200 dark:border-border-dark rounded-xl shadow-inner flex flex-col focus-within:ring-2 ring-primary transition-all">
-      <div className="bg-slate-100 dark:bg-slate-800 border-b border-slate-200 dark:border-slate-700 p-1.5 flex flex-wrap gap-1 items-center z-10 rounded-t-xl">
-        <button tabIndex={-1} onMouseDown={(e) => { e.preventDefault(); exec('bold'); }} className="p-1 px-2 hover:bg-slate-200 dark:hover:bg-slate-700 rounded text-slate-700 dark:text-slate-300 font-bold" title="Negrito">B</button>
-        <button tabIndex={-1} onMouseDown={(e) => { e.preventDefault(); exec('italic'); }} className="p-1 px-2 hover:bg-slate-200 dark:hover:bg-slate-700 rounded text-slate-700 dark:text-slate-300 italic font-serif" title="Itálico">I</button>
-        <button tabIndex={-1} onMouseDown={(e) => { e.preventDefault(); exec('underline'); }} className="p-1 px-2 hover:bg-slate-200 dark:hover:bg-slate-700 rounded text-slate-700 dark:text-slate-300 underline" title="Sublinhado">U</button>
+      <div className="bg-slate-100 dark:bg-slate-800 border-b border-slate-200 dark:border-slate-700 p-1.5 flex flex-wrap gap-1 items-center z-10 rounded-t-xl" onMouseDown={(e) => e.preventDefault()}>
+        <button tabIndex={-1} onMouseDown={(e) => { e.preventDefault(); executeCommand('bold'); }} className="p-1 px-2 hover:bg-slate-200 dark:hover:bg-slate-700 rounded text-slate-700 dark:text-slate-300 font-bold" title="Negrito">B</button>
+        <button tabIndex={-1} onMouseDown={(e) => { e.preventDefault(); executeCommand('italic'); }} className="p-1 px-2 hover:bg-slate-200 dark:hover:bg-slate-700 rounded text-slate-700 dark:text-slate-300 italic font-serif" title="Itálico">I</button>
+        <button tabIndex={-1} onMouseDown={(e) => { e.preventDefault(); executeCommand('underline'); }} className="p-1 px-2 hover:bg-slate-200 dark:hover:bg-slate-700 rounded text-slate-700 dark:text-slate-300 underline" title="Sublinhado">U</button>
 
         <div className="w-px h-5 bg-slate-300 dark:bg-slate-600 mx-1"></div>
 
@@ -116,7 +101,7 @@ const SimpleRichTextEditor = ({ value, onChange, placeholder }: { value: string,
             <button
               key={color}
               tabIndex={-1}
-              onMouseDown={(e) => { e.preventDefault(); exec('foreColor', color); }}
+              onMouseDown={(e) => { e.preventDefault(); executeCommand('foreColor', color); }}
               className="size-4 rounded-full border border-slate-200 shadow-sm hover:scale-110 transition-transform active:scale-95"
               style={{ backgroundColor: color }}
               title={color}
@@ -128,7 +113,7 @@ const SimpleRichTextEditor = ({ value, onChange, placeholder }: { value: string,
         <div className="flex flex-wrap gap-1 items-center bg-white/50 dark:bg-slate-900/50 p-1 rounded-lg border border-slate-200/50 dark:border-slate-700/50">
           <button
             tabIndex={-1}
-            onMouseDown={(e) => { e.preventDefault(); exec('hiliteColor', 'transparent'); }}
+            onMouseDown={(e) => { e.preventDefault(); executeCommand('hiliteColor', 'transparent'); }}
             className="size-4 rounded-full border border-slate-300 flex items-center justify-center bg-white hover:bg-slate-100 shadow-sm hover:scale-110 transition-transform active:scale-95"
             title="Sem Fundo"
           >
@@ -138,7 +123,7 @@ const SimpleRichTextEditor = ({ value, onChange, placeholder }: { value: string,
             <button
               key={color}
               tabIndex={-1}
-              onMouseDown={(e) => { e.preventDefault(); exec('hiliteColor', color); }}
+              onMouseDown={(e) => { e.preventDefault(); executeCommand('hiliteColor', color); }}
               className="size-4 rounded-full border border-slate-200 shadow-sm hover:scale-110 transition-transform active:scale-95"
               style={{ backgroundColor: color }}
               title={color}
@@ -148,19 +133,19 @@ const SimpleRichTextEditor = ({ value, onChange, placeholder }: { value: string,
 
         <div className="w-px h-5 bg-slate-300 dark:bg-slate-600 mx-1"></div>
 
-        <button tabIndex={-1} onMouseDown={(e) => { e.preventDefault(); exec('justifyLeft'); }} className="p-1 hover:bg-slate-200 dark:hover:bg-slate-700 rounded text-slate-700 dark:text-slate-300" title="Alinhar Esquerda">
+        <button tabIndex={-1} onMouseDown={(e) => { e.preventDefault(); executeCommand('justifyLeft'); }} className="p-1 hover:bg-slate-200 dark:hover:bg-slate-700 rounded text-slate-700 dark:text-slate-300" title="Alinhar Esquerda">
           <span className="material-symbols-outlined text-[16px] leading-none block">format_align_left</span>
         </button>
-        <button tabIndex={-1} onMouseDown={(e) => { e.preventDefault(); exec('justifyCenter'); }} className="p-1 hover:bg-slate-200 dark:hover:bg-slate-700 rounded text-slate-700 dark:text-slate-300" title="Centralizar">
+        <button tabIndex={-1} onMouseDown={(e) => { e.preventDefault(); executeCommand('justifyCenter'); }} className="p-1 hover:bg-slate-200 dark:hover:bg-slate-700 rounded text-slate-700 dark:text-slate-300" title="Centralizar">
           <span className="material-symbols-outlined text-[16px] leading-none block">format_align_center</span>
         </button>
-        <button tabIndex={-1} onMouseDown={(e) => { e.preventDefault(); exec('justifyRight'); }} className="p-1 hover:bg-slate-200 dark:hover:bg-slate-700 rounded text-slate-700 dark:text-slate-300" title="Alinhar Direita">
+        <button tabIndex={-1} onMouseDown={(e) => { e.preventDefault(); executeCommand('justifyRight'); }} className="p-1 hover:bg-slate-200 dark:hover:bg-slate-700 rounded text-slate-700 dark:text-slate-300" title="Alinhar Direita">
           <span className="material-symbols-outlined text-[16px] leading-none block">format_align_right</span>
         </button>
       </div>
       <div
         ref={editorRef}
-        className="p-3 h-48 overflow-y-auto w-full text-sm text-slate-700 dark:text-slate-300 outline-none focus:ring-0 [&_span]:!bg-transparent rounded-b-xl resize-none"
+        className="p-3 h-48 overflow-y-auto w-full text-sm text-slate-700 dark:text-slate-300 outline-none focus:ring-0 [&_span]:!bg-transparent rounded-b-xl resize-none [&_b]:font-bold [&_strong]:font-bold [&_i]:italic [&_em]:italic [&_u]:underline"
         style={{
           // Hack para exibir placeholder quando vazio e desativado
           emptyCells: 'show'
@@ -530,21 +515,13 @@ export default function CarouselGenerator({ onLogout }: { onLogout: () => void }
 
   const handleDrop = (index: number) => {
     if (draggedIndex === null || draggedIndex === index) return;
-
-    const currentImages = uploadedImages.filter(img => img !== null);
-    if (draggedIndex >= currentImages.length) return;
-
-    const [draggedImage] = currentImages.splice(draggedIndex, 1);
-    const targetIndex = Math.min(index, currentImages.length);
-
-    currentImages.splice(targetIndex, 0, draggedImage);
-
-    const newUploadedImages: (string | null)[] = [...currentImages];
-    while (newUploadedImages.length < slideCount) {
-      newUploadedImages.push(null);
-    }
-
-    setUploadedImages(newUploadedImages);
+    setUploadedImages(prev => {
+      const updated = [...prev];
+      const temp = updated[draggedIndex];
+      updated[draggedIndex] = updated[index];
+      updated[index] = temp;
+      return updated;
+    });
     setDraggedIndex(null);
   };
 

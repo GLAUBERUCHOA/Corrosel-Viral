@@ -54,6 +54,7 @@ REGRAS DE LAYOUT E COMPOSIÇÃO (OBRIGATÓRIO):
 const SimpleRichTextEditor = ({ value, onChange, placeholder }: { value: string, onChange: (val: string) => void, placeholder: string }) => {
   const editorRef = useRef<HTMLDivElement>(null);
   const lastHtmlRef = useRef(value);
+  const savedSelectionRef = useRef<Range | null>(null);
 
   useEffect(() => {
     if (editorRef.current && value !== lastHtmlRef.current) {
@@ -73,8 +74,24 @@ const SimpleRichTextEditor = ({ value, onChange, placeholder }: { value: string,
   };
 
   const executeCommand = (command: string, val?: string) => {
+    editorRef.current?.focus();
+    if (savedSelectionRef.current) {
+      const sel = window.getSelection();
+      sel?.removeAllRanges();
+      sel?.addRange(savedSelectionRef.current);
+    }
     document.execCommand(command, false, val);
     emitChange();
+  };
+
+  const saveSelection = () => {
+    const sel = window.getSelection();
+    if (sel && sel.rangeCount > 0) {
+      const range = sel.getRangeAt(0);
+      if (editorRef.current && editorRef.current.contains(range.commonAncestorContainer)) {
+        savedSelectionRef.current = range.cloneRange();
+      }
+    }
   };
 
   const fgColors = ['#ffffff', '#000000', '#ef4444', '#f59e0b', '#22c55e', '#3b82f6', '#ec4899'];
@@ -90,39 +107,31 @@ const SimpleRichTextEditor = ({ value, onChange, placeholder }: { value: string,
         <div className="w-px h-5 bg-slate-300 dark:bg-slate-600 mx-1"></div>
 
         <span className="text-[10px] text-slate-500 font-bold uppercase ml-1">Letra:</span>
-        <div className="flex flex-wrap gap-1 items-center bg-white/50 dark:bg-slate-900/50 p-1 rounded-lg border border-slate-200/50 dark:border-slate-700/50">
-          {fgColors.map(color => (
-            <button
-              key={color}
-              tabIndex={-1}
-              onMouseDown={(e) => { e.preventDefault(); executeCommand('foreColor', color); }}
-              className="size-4 rounded-full border border-slate-200 shadow-sm hover:scale-110 transition-transform active:scale-95"
-              style={{ backgroundColor: color }}
-              title={color}
-            />
-          ))}
-        </div>
+        <input
+          type="color"
+          onInput={(e) => executeCommand('foreColor', e.currentTarget.value)}
+          defaultValue="#ffffff"
+          className="size-6 cursor-pointer border-0 p-0 bg-transparent rounded-full shadow-sm"
+          title="Cor da Letra"
+        />
 
         <span className="text-[10px] text-slate-500 font-bold uppercase ml-2">Fundo:</span>
-        <div className="flex flex-wrap gap-1 items-center bg-white/50 dark:bg-slate-900/50 p-1 rounded-lg border border-slate-200/50 dark:border-slate-700/50">
+        <div className="flex bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded p-0.5 gap-1 items-center">
           <button
             tabIndex={-1}
             onMouseDown={(e) => { e.preventDefault(); executeCommand('hiliteColor', 'transparent'); }}
-            className="size-4 rounded-full border border-slate-300 flex items-center justify-center bg-white hover:bg-slate-100 shadow-sm hover:scale-110 transition-transform active:scale-95"
+            className="size-4 rounded-full border border-slate-300 flex items-center justify-center bg-white hover:bg-slate-100 shadow-sm transition-transform active:scale-95"
             title="Sem Fundo"
           >
             <span className="material-symbols-outlined text-[10px] text-red-500 font-bold">close</span>
           </button>
-          {bgColors.map(color => (
-            <button
-              key={color}
-              tabIndex={-1}
-              onMouseDown={(e) => { e.preventDefault(); executeCommand('hiliteColor', color); }}
-              className="size-4 rounded-full border border-slate-200 shadow-sm hover:scale-110 transition-transform active:scale-95"
-              style={{ backgroundColor: color }}
-              title={color}
-            />
-          ))}
+          <input
+            type="color"
+            onInput={(e) => executeCommand('hiliteColor', e.currentTarget.value)}
+            defaultValue="#000000"
+            className="size-4 cursor-pointer border-0 p-0 bg-transparent"
+            title="Cor de Fundo"
+          />
         </div>
 
         <div className="w-px h-5 bg-slate-300 dark:bg-slate-600 mx-1"></div>
@@ -139,14 +148,17 @@ const SimpleRichTextEditor = ({ value, onChange, placeholder }: { value: string,
       </div>
       <div
         ref={editorRef}
-        className="p-3 h-48 overflow-y-auto w-full text-sm text-slate-700 dark:text-slate-300 outline-none focus:ring-0 [&_span]:!bg-transparent rounded-b-xl resize-none [&_b]:font-bold [&_strong]:font-bold [&_i]:italic [&_em]:italic [&_u]:underline"
+        className="p-3 min-h-[100px] max-h-[250px] overflow-y-auto w-full text-sm text-slate-700 dark:text-slate-300 outline-none focus:ring-0 rounded-b-xl resize-none [&_b]:font-bold [&_strong]:font-bold [&_i]:italic [&_em]:italic [&_u]:underline"
         style={{
           // Hack para exibir placeholder quando vazio e desativado
           emptyCells: 'show'
         }}
         contentEditable
-        onInput={emitChange}
-        onBlur={emitChange}
+        onMouseUp={saveSelection}
+        onKeyUp={saveSelection}
+        onMouseLeave={saveSelection}
+        onInput={(e) => { saveSelection(); emitChange(); }}
+        onBlur={() => { emitChange(); }}
         dangerouslySetInnerHTML={{ __html: lastHtmlRef.current }}
       />
     </div>
@@ -1714,7 +1726,7 @@ export default function CarouselGenerator({ onLogout }: { onLogout: () => void }
                   <span className="material-symbols-outlined">close</span>
                 </button>
               </div>
-              <div className="p-6 space-y-4">
+              <div className="p-6 space-y-4 overflow-y-auto max-h-[60vh] scrollbar-custom">
                 <div className="space-y-2">
                   <label className="text-sm font-semibold text-slate-700 dark:text-slate-300">Título</label>
                   <SimpleRichTextEditor

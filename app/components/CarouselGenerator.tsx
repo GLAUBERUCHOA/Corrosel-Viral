@@ -184,6 +184,7 @@ export default function CarouselGenerator({ onLogout }: { onLogout: () => void }
   const [content, setContent] = useState('');
   const [zoom, setZoom] = useState(100);
   const [activeMobileTab, setActiveMobileTab] = useState<'config' | 'preview'>('config');
+  const [activeStep, setActiveStep] = useState<number>(1);
   const [saveDefaults, setSaveDefaults] = useState(true);
   const [currentSlideIndex, setCurrentSlideIndex] = useState(0);
 
@@ -709,7 +710,7 @@ export default function CarouselGenerator({ onLogout }: { onLogout: () => void }
       const prompt = getImagePrompt(imageNiche, dbImagePrompts, slide.title, slide.subtitle);
 
       const response = await ai.models.generateContent({
-        model: 'gemini-2.5-flash-image',
+        model: 'gemini-1.5-flash-image',
         contents: prompt,
         config: {
           imageConfig: {
@@ -764,7 +765,7 @@ export default function CarouselGenerator({ onLogout }: { onLogout: () => void }
         console.log('--- PIPELINE: GERANDO TEXTO COM IURY ---');
 
         const response = await ai.models.generateContent({
-          model: 'gemini-2.5-flash',
+          model: 'gemini-1.5-flash',
           contents: promptFinal,
         });
 
@@ -803,7 +804,7 @@ export default function CarouselGenerator({ onLogout }: { onLogout: () => void }
           const prompt = getImagePrompt(imageNiche, dbImagePrompts, newSlides[i].title, newSlides[i].subtitle);
 
           const response = await ai.models.generateContent({
-            model: 'gemini-2.5-flash-image',
+            model: 'gemini-1.5-flash-image',
             contents: prompt,
             config: {
               imageConfig: {
@@ -1077,481 +1078,228 @@ export default function CarouselGenerator({ onLogout }: { onLogout: () => void }
             onMouseDown={startResizing}
             className="absolute top-0 right-0 w-1.5 h-full cursor-col-resize hover:bg-primary/50 active:bg-primary z-50 transition-colors hidden md:block"
           />
-          <div className="p-6 space-y-8 flex-1">
-            <div className="space-y-4">
-              <div className="flex justify-between items-center">
-                <h3 className="text-slate-900 dark:text-white font-bold text-lg">Conteúdo</h3>
-              </div>
+          <div className="p-5 flex flex-col gap-4 flex-1">
+            <h3 className="text-slate-900 dark:text-white font-black text-xl px-1">Configurações</h3>
 
-              <div className="flex bg-slate-100 dark:bg-surface-darker rounded-lg p-1.5 shrink-0 gap-1 border border-slate-200 dark:border-border-dark">
-                <button
-                  onClick={() => setIsIuryMode(false)}
-                  className={`flex-1 py-2 text-sm font-bold rounded-md transition-all flex items-center justify-center gap-2 ${!isIuryMode ? 'bg-white dark:bg-surface-dark text-slate-800 dark:text-white shadow-sm ring-1 ring-black/5 dark:ring-white/10' : 'text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-200'}`}>
-                  <span className="material-symbols-outlined text-[16px]">edit_note</span>
-                  Modo Manual
-                </button>
-                <button
-                  onClick={() => setIsIuryMode(true)}
-                  className={`flex-1 py-2 text-sm font-bold rounded-md transition-all flex items-center justify-center gap-2 ${isIuryMode ? 'bg-primary text-white shadow-md shadow-primary/20' : 'text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-200'}`}>
-                  <span className="material-symbols-outlined text-[16px]">psychology</span>
-                  Modo Iury
-                </button>
-              </div>
-
-              {isIuryMode && (
-                <div className="space-y-2 pt-1 pb-1">
-                  <label className="text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider flex items-center gap-1">
-                    <span className="material-symbols-outlined text-[14px]">tune</span> Estratégia Narrativa
-                  </label>
-                  <select
-                    value={toneMode}
-                    onChange={(e) => setToneMode(e.target.value)}
-                    className="w-full bg-indigo-50 dark:bg-indigo-900/20 text-indigo-900 dark:text-indigo-200 border border-indigo-200 dark:border-indigo-800 rounded-lg px-3 py-2.5 text-sm focus:ring-2 focus:ring-indigo-500 outline-none cursor-pointer font-medium"
-                  >
-                    {dbLabels.filter(label => label.key !== 'GLOBAL_INSTRUCTIONS').length > 0 ? (
-                      dbLabels.filter(label => label.key !== 'GLOBAL_INSTRUCTIONS').map(label => (
-                        <option key={label.key} value={label.key}>{label.label}</option>
-                      ))
-                    ) : (
-                      <>
-                        <option value="PROVOCATIVO">🥊 Provocativo (Quebra de Padrão e Ego)</option>
-                        <option value="ANALITICO">🧊 Analítico (Autoridade Fria e Dados)</option>
-                        <option value="STORYTELLING">📖 Storytelling (Jornada do Herói)</option>
-                        <option value="PRATICO">✅ Prático (Manual e Ação Imediata)</option>
-                      </>
-                    )}
-                  </select>
-                </div>
-              )}
-
-              <div className="relative">
-                <textarea
-                  className={`w-full h-80 border rounded-xl p-4 text-sm focus:ring-2 focus:ring-primary focus:border-transparent resize-none overflow-y-auto leading-relaxed font-sans transition-colors ${isIuryMode ? 'bg-primary/5 dark:bg-primary/10 border-primary/20 text-indigo-900 dark:text-indigo-100 placeholder:text-indigo-400 dark:placeholder:text-indigo-300' : 'bg-slate-50 dark:bg-surface-darker border-slate-200 dark:border-border-dark text-slate-700 dark:text-slate-300 placeholder:text-slate-400 dark:placeholder:text-slate-600'}`}
-                  style={{ fontFamily: 'var(--font-poppins), sans-serif' }}
-                  placeholder={isIuryMode ? 'Deixe o Iury fazer o trabalho. Escreva um tema, cole um rascunho completo, reclame de um nicho... e veja a mágica visceral acontecer.' : 'Modo manual ativado. Cole SEU TEXTO FORMATADO aqui e clique em gerar.\n\nUse este formato nativo para cada slide:\n\nSLIDE 01:\n[TÍTULO]: Título explosivo aqui\n[SUBTÍTULO]: Texto da narrativa curto aqui...\n\nSLIDE 02:\n[TÍTULO]: Segundo título...'}
-                  value={content}
-                  onChange={(e) => {
-                    setContent(e.target.value);
-                    if (!isIuryMode) {
-                      processTextIntoSlides(e.target.value, addCtaSlide, ctaContent);
-                    }
-                  }}
-                ></textarea>
-                <div className="absolute bottom-3 right-3 text-xs text-slate-400 font-medium bg-slate-100 dark:bg-border-dark px-2 py-1 rounded">{content.length} caracteres</div>
-              </div>
-
-
-
-              <div className="space-y-4 pt-4 border-t border-slate-100 dark:border-border-dark">
-                <div className="grid grid-cols-2 gap-4">
-                  <div className="space-y-2">
-                    <label className="text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Tipografia</label>
-                    <select
-                      value={fontFamily}
-                      onChange={(e) => setFontFamily(e.target.value)}
-                      className="w-full bg-slate-50 dark:bg-surface-darker text-slate-900 dark:text-white border border-slate-200 dark:border-border-dark rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-primary outline-none cursor-pointer"
-                    >
-                      <option value="var(--font-poppins), sans-serif">Padrão (Poppins)</option>
-                      <option value="'Playfair Display', serif">Clássica (Playfair)</option>
-                      <option value="'Inter', sans-serif">Clean (Inter)</option>
-                      <option value="'Montserrat', sans-serif">Impacto (Montserrat)</option>
-                      <option value="'Courier New', monospace">Código (Monospace)</option>
-                    </select>
+            <div className="space-y-3">
+              {/* PASSO 1: CONTEÚDO E TEXTO */}
+              <div className={`border rounded-2xl overflow-hidden bg-white dark:bg-surface-dark transition-all duration-300 ${activeStep === 1 ? 'border-primary/30 shadow-lg ring-1 ring-primary/5' : 'border-slate-100 dark:border-border-dark shadow-sm'}`}>
+                <button onClick={() => setActiveStep(activeStep === 1 ? 0 : 1)} className={`w-full flex items-center justify-between p-4 text-left transition-colors ${activeStep === 1 ? 'bg-primary/5 dark:bg-primary/10' : 'hover:bg-slate-50 dark:hover:bg-surface-darker'}`}>
+                  <div className="flex items-center gap-3">
+                    <div className={`size-8 rounded-lg flex items-center justify-center transition-colors ${activeStep === 1 ? 'bg-primary text-white' : 'bg-slate-100 dark:bg-slate-800 text-slate-400'}`}>
+                      <span className="material-symbols-outlined text-[20px]">edit_document</span>
+                    </div>
+                    <span className={`font-bold text-sm ${activeStep === 1 ? 'text-slate-900 dark:text-white' : 'text-slate-500'}`}>Passo 1: Conteúdo e Texto</span>
                   </div>
-                  <div className="space-y-2">
-                    <label className="text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Alinhamento</label>
-                    <div className="flex bg-slate-50 dark:bg-surface-darker border border-slate-200 dark:border-border-dark rounded-lg h-[38px] overflow-hidden">
-                      <button onClick={(e) => { e.preventDefault(); setTextAlign('text-left'); }} className={`flex-1 flex items-center justify-center transition-colors ${textAlign === 'text-left' ? 'bg-primary text-white' : 'text-slate-500 hover:bg-slate-200 dark:hover:bg-slate-800'}`}>
-                        <span className="material-symbols-outlined text-[18px]">format_align_left</span>
+                  <span className={`material-symbols-outlined text-slate-400 transition-transform duration-300 ${activeStep === 1 ? 'rotate-180' : ''}`}>keyboard_arrow_down</span>
+                </button>
+                <div className={`transition-all duration-300 ${activeStep === 1 ? 'max-h-[1500px] opacity-100 p-4 border-t border-slate-50 dark:border-border-dark' : 'max-h-0 opacity-0 p-0 pointer-events-none'}`}>
+                  <div className="space-y-4">
+                    <div className="flex gap-2 p-1 bg-slate-50 dark:bg-surface-darker rounded-xl border border-slate-100 dark:border-border-dark">
+                      <button onClick={() => setIsIuryMode(true)} className={`flex-1 flex items-center justify-center gap-1.5 py-2 rounded-lg text-xs font-bold transition-all ${isIuryMode ? 'bg-white dark:bg-surface-dark shadow-sm text-primary ring-1 ring-slate-100 dark:ring-border-dark' : 'text-slate-500 hover:bg-white/50'}`}>
+                        <span className="material-symbols-outlined text-[16px]">psychology</span> Modo Iury
                       </button>
-                      <div className="w-px bg-slate-200 dark:bg-border-dark"></div>
-                      <button onClick={(e) => { e.preventDefault(); setTextAlign('text-center'); }} className={`flex-1 flex items-center justify-center transition-colors ${textAlign === 'text-center' ? 'bg-primary text-white' : 'text-slate-500 hover:bg-slate-200 dark:hover:bg-slate-800'}`}>
-                        <span className="material-symbols-outlined text-[18px]">format_align_center</span>
-                      </button>
-                      <div className="w-px bg-slate-200 dark:bg-border-dark"></div>
-                      <button onClick={(e) => { e.preventDefault(); setTextAlign('text-right'); }} className={`flex-1 flex items-center justify-center transition-colors ${textAlign === 'text-right' ? 'bg-primary text-white' : 'text-slate-500 hover:bg-slate-200 dark:hover:bg-slate-800'}`}>
-                        <span className="material-symbols-outlined text-[18px]">format_align_right</span>
+                      <button onClick={() => setIsIuryMode(false)} className={`flex-1 flex items-center justify-center gap-1.5 py-2 rounded-lg text-xs font-bold transition-all ${!isIuryMode ? 'bg-white dark:bg-surface-dark shadow-sm text-primary ring-1 ring-slate-100 dark:ring-border-dark' : 'text-slate-500 hover:bg-white/50'}`}>
+                        <span className="material-symbols-outlined text-[16px]">edit_note</span> Manual
                       </button>
                     </div>
-                  </div>
-                </div>
-              </div>
 
-              <div className="flex flex-col gap-3 pt-3 border-t border-slate-100 dark:border-border-dark">
-                <div className="flex items-center justify-between">
-                  <div className="flex flex-col">
-                    <span className="text-sm font-semibold text-slate-900 dark:text-white">Adicionar CTA Final</span>
-                    <span className="text-[10px] text-slate-500 dark:text-slate-400">Gera um slide extra para Call-to-Action</span>
-                  </div>
-                  <label className="relative inline-flex items-center cursor-pointer">
-                    <input
-                      type="checkbox"
-                      className="sr-only peer"
-                      checked={addCtaSlide}
-                      onChange={(e) => {
-                        setAddCtaSlide(e.target.checked);
-                        if (!isIuryMode) processTextIntoSlides(content, e.target.checked, ctaContent);
-                      }}
-                    />
-                    <div className="w-11 h-6 bg-slate-200 peer-focus:outline-none peer-focus:ring-2 peer-focus:ring-primary/20 dark:peer-focus:ring-primary/30 rounded-full peer dark:bg-slate-700 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all dark:border-gray-600 peer-checked:bg-primary"></div>
-                  </label>
-                </div>
-                {addCtaSlide && (
-                  <div className="flex flex-col gap-3">
-                    <SimpleRichTextEditor
-                      value={ctaContent}
-                      onChange={(val) => {
-                        setCtaContent(val);
-                        if (!isIuryMode) processTextIntoSlides(content, addCtaSlide, val);
-                      }}
-                      placeholder="Deixe sua mensagem final..."
-                    />
-
-                    <div className="flex items-center justify-between border-t border-slate-100 dark:border-border-dark pt-3">
-                      <div className="flex flex-col">
-                        <span className="text-sm font-semibold text-slate-900 dark:text-white">Imagem de Fundo CTA</span>
-                        <span className="text-[10px] text-slate-500">Opcional: preenche o fundo do CTA</span>
+                    {isIuryMode && (
+                      <div className="animate-in fade-in slide-in-from-top-2 duration-300">
+                        <select value={toneMode} onChange={(e) => setToneMode(e.target.value)} className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2.5 text-xs font-bold focus:ring-2 focus:ring-primary/20 outline-none transition-all">
+                          {dbLabels.filter(l => l.key !== 'GLOBAL_INSTRUCTIONS').map((t) => (<option key={t.key} value={t.key}>{t.label}</option>))}
+                        </select>
                       </div>
-                      <button onClick={() => ctaImageInputRef.current?.click()} className="text-[11px] font-bold bg-primary/10 text-primary px-3 py-1.5 rounded-lg hover:bg-primary/20 transition-colors">
-                        {ctaImage ? 'Trocar Imagem' : 'Upload Imagem +'}
-                      </button>
-                      <input type="file" ref={ctaImageInputRef} onChange={handleCtaImageUpload} accept="image/*" className="hidden" />
+                    )}
+
+                    <div className="space-y-2 relative group">
+                      <div className="flex items-center justify-between px-1">
+                        <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest leading-none">{isIuryMode ? 'O que quer ensinar hoje?' : 'Conteúdo do Carrossel'}</label>
+                        <span className={`text-[10px] font-bold ${content.length > 2000 ? 'text-red-500' : 'text-slate-300'}`}>{content.length}/2000</span>
+                      </div>
+                      <textarea
+                        value={content}
+                        onChange={(e) => setContent(e.target.value)}
+                        placeholder={isIuryMode ? "Ex: Como criar uma landing page que converte em 7 passos..." : "Ex: [Slide 1] Título do Slide..."}
+                        className={`w-full dark:bg-surface-darker border border-slate-100 dark:border-border-dark rounded-xl p-4 text-sm resize-none focus:ring-2 focus:ring-primary/20 outline-none transition-all placeholder:text-slate-300 overflow-y-auto ${isIuryMode ? 'h-80' : 'h-48'}`}
+                      />
                     </div>
 
-                    {ctaImage && (
-                      <div className="relative w-full h-24 rounded-xl overflow-hidden border border-slate-200 dark:border-border-dark group shadow-sm bg-slate-100 dark:bg-slate-800">
-                        <img src={ctaImage} alt="CTA Background" className="w-full h-full object-cover" />
-                        <button onClick={() => setCtaImage(null)} className="absolute top-2 right-2 size-6 bg-black/60 hover:bg-red-500 rounded-full flex items-center justify-center text-white opacity-0 group-hover:opacity-100 transition-all z-10 shadow-lg" title="Remover Imagem">
-                          <span className="material-symbols-outlined text-[14px]">close</span>
+                    <div className="flex flex-col gap-3 pt-4 border-t border-slate-100 dark:border-border-dark">
+                      <div className="flex items-center justify-between">
+                        <div className="flex flex-col">
+                          <span className="text-sm font-bold text-slate-900 dark:text-white">Slide de CTA Final</span>
+                        </div>
+                        <label className="relative inline-flex items-center cursor-pointer">
+                          <input type="checkbox" className="sr-only peer" checked={addCtaSlide} onChange={(e) => {
+                            setAddCtaSlide(e.target.checked);
+                            if (!isIuryMode) processTextIntoSlides(content, e.target.checked, ctaContent);
+                          }} />
+                          <div className="w-11 h-6 bg-slate-200 peer-focus:outline-none rounded-full peer peer-checked:bg-primary after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:after:translate-x-full"></div>
+                        </label>
+                      </div>
+                      {addCtaSlide && (
+                        <div className="flex flex-col gap-3 animate-in fade-in slide-in-from-top-2 duration-300">
+                          <SimpleRichTextEditor value={ctaContent} onChange={(val) => { setCtaContent(val); if (!isIuryMode) processTextIntoSlides(content, addCtaSlide, val); }} placeholder="Mensagem final..." />
+                          <div className="flex items-center justify-between border-t border-slate-100 dark:border-border-dark pt-3">
+                            <span className="text-[11px] font-semibold text-slate-500">Imagem de Fundo</span>
+                            <button onClick={() => ctaImageInputRef.current?.click()} className="text-[10px] font-bold bg-primary/10 text-primary px-3 py-1.5 rounded-lg hover:bg-primary/20 transition-colors">{ctaImage ? 'Trocar' : 'Upload +'}</button>
+                            <input type="file" ref={ctaImageInputRef} onChange={handleCtaImageUpload} accept="image/*" className="hidden" />
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              {/* PASSO 2: ESTILO E MARCA */}
+              <div className={`border rounded-2xl overflow-hidden bg-white dark:bg-surface-dark transition-all duration-300 ${activeStep === 2 ? 'border-primary/30 shadow-lg ring-1 ring-primary/5' : 'border-slate-100 dark:border-border-dark shadow-sm'}`}>
+                <button onClick={() => setActiveStep(activeStep === 2 ? 0 : 2)} className={`w-full flex items-center justify-between p-4 text-left transition-colors ${activeStep === 2 ? 'bg-primary/5 dark:bg-primary/10' : 'hover:bg-slate-50 dark:hover:bg-surface-darker'}`}>
+                  <div className="flex items-center gap-3">
+                    <div className={`size-8 rounded-lg flex items-center justify-center transition-colors ${activeStep === 2 ? 'bg-primary text-white' : 'bg-slate-100 dark:bg-slate-800 text-slate-400'}`}>
+                      <span className="material-symbols-outlined text-[20px]">palette</span>
+                    </div>
+                    <span className={`font-bold text-sm ${activeStep === 2 ? 'text-slate-900 dark:text-white' : 'text-slate-500'}`}>Passo 2: Estilo e Marca</span>
+                  </div>
+                  <span className={`material-symbols-outlined text-slate-400 transition-transform duration-300 ${activeStep === 2 ? 'rotate-180' : ''}`}>keyboard_arrow_down</span>
+                </button>
+                <div className={`transition-all duration-300 ${activeStep === 2 ? 'max-h-[1500px] opacity-100 p-4 border-t border-slate-50 dark:border-border-dark' : 'max-h-0 opacity-0 p-0 pointer-events-none'}`}>
+                  <div className="space-y-6">
+                    <div className="space-y-3">
+                      <label className="text-xs font-bold text-slate-400 uppercase tracking-widest">Proporção</label>
+                      <div className="grid grid-cols-2 gap-3">
+                        <button onClick={() => setAspectRatio('4:5')} className={`flex flex-col items-center justify-center gap-2 p-3 rounded-xl border transition-all ${aspectRatio === '4:5' ? 'border-2 border-primary bg-primary/5' : 'border-slate-100 bg-slate-50 hover:border-primary/30'}`}>
+                          <div className={`w-4 h-6 border-2 rounded-sm ${aspectRatio === '4:5' ? 'border-primary' : 'border-slate-400'}`}></div>
+                          <span className={`text-[10px] font-bold ${aspectRatio === '4:5' ? 'text-primary' : 'text-slate-500'}`}>Vertical (4:5)</span>
+                        </button>
+                        <button onClick={() => setAspectRatio('9:16')} className={`flex flex-col items-center justify-center gap-2 p-3 rounded-xl border transition-all ${aspectRatio === '9:16' ? 'border-2 border-primary bg-primary/5' : 'border-slate-100 bg-slate-50 hover:border-primary/30'}`}>
+                          <div className={`w-3.5 h-6 border-2 rounded-sm ${aspectRatio === '9:16' ? 'border-primary' : 'border-slate-400'}`}></div>
+                          <span className={`text-[10px] font-bold ${aspectRatio === '9:16' ? 'text-primary' : 'text-slate-500'}`}>Stories (9:16)</span>
                         </button>
                       </div>
-                    )}
-                  </div>
-                )}
-              </div>
-            </div>
-            <div className="space-y-4">
-              <h3 className="text-slate-900 dark:text-white font-bold text-lg">Configuração</h3>
-              <div className="space-y-2">
-                <label className="text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Proporção</label>
-                <div className="grid grid-cols-2 gap-2">
-                  <button
-                    onClick={() => setAspectRatio('4:5')}
-                    className={`flex flex-col items-center justify-center gap-2 p-3 rounded-lg border transition-all group relative ${aspectRatio === '4:5' ? 'border-2 border-primary bg-primary/5 dark:bg-primary/10' : 'border-slate-200 dark:border-border-dark bg-slate-50 dark:bg-surface-darker hover:border-primary/50 hover:bg-primary/5 dark:hover:bg-primary/10'}`}>
-                    {aspectRatio === '4:5' && (
-                      <div className="absolute -top-1.5 -right-1.5 size-4 bg-primary rounded-full flex items-center justify-center">
-                        <span className="material-symbols-outlined text-white text-[10px] font-bold">check</span>
-                      </div>
-                    )}
-                    <div className={`w-5 h-7 border-2 rounded-sm ${aspectRatio === '4:5' ? 'border-primary' : 'border-slate-400 dark:border-slate-500 group-hover:border-primary'}`}></div>
-                    <span className={`text-xs font-medium ${aspectRatio === '4:5' ? 'text-primary' : 'text-slate-600 dark:text-slate-400 group-hover:text-primary'}`}>4:5</span>
-                  </button>
-                  <button
-                    onClick={() => setAspectRatio('9:16')}
-                    className={`flex flex-col items-center justify-center gap-2 p-3 rounded-lg border transition-all group relative ${aspectRatio === '9:16' ? 'border-2 border-primary bg-primary/5 dark:bg-primary/10' : 'border-slate-200 dark:border-border-dark bg-slate-50 dark:bg-surface-darker hover:border-primary/50 hover:bg-primary/5 dark:hover:bg-primary/10'}`}>
-                    {aspectRatio === '9:16' && (
-                      <div className="absolute -top-1.5 -right-1.5 size-4 bg-primary rounded-full flex items-center justify-center">
-                        <span className="material-symbols-outlined text-white text-[10px] font-bold">check</span>
-                      </div>
-                    )}
-                    <div className={`w-4 h-8 border-2 rounded-sm ${aspectRatio === '9:16' ? 'border-primary' : 'border-slate-400 dark:border-slate-500 group-hover:border-primary'}`}></div>
-                    <span className={`text-xs font-medium ${aspectRatio === '9:16' ? 'text-primary' : 'text-slate-600 dark:text-slate-400 group-hover:text-primary'}`}>9:16</span>
-                  </button>
-                </div>
-              </div>
-              <div className="space-y-2 pt-2">
-                <label className="text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Modelo de Estilo</label>
-                <div className="grid grid-cols-3 gap-3">
-                  <div className="relative cursor-pointer group" onClick={() => setStyleModel('Moderno')}>
-                    <div className={`h-16 rounded-lg bg-gradient-to-br from-indigo-500 to-purple-600 flex items-end p-2 overflow-hidden ring-2 transition-all ${styleModel === 'Moderno' ? 'ring-primary' : 'ring-transparent group-hover:ring-primary'}`}>
-                      <span className="text-[10px] text-white font-bold opacity-80">Moderno</span>
-                      {styleModel === 'Moderno' && <div className="absolute top-2 right-2 size-2 bg-primary rounded-full"></div>}
                     </div>
-                    {styleModel !== 'Moderno' && (
-                      <div className="absolute inset-0 bg-black/40 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity rounded-lg">
-                        <span className="text-white text-xs font-bold">Aplicar</span>
+                    <div className="space-y-3">
+                      <label className="text-xs font-bold text-slate-400 uppercase tracking-widest">Estilo Visual</label>
+                      <div className="grid grid-cols-3 gap-2">
+                        {['Moderno', 'Escuro', 'Vibrante', 'Minimalista', 'Regional', 'Personalizado'].map((mode) => (
+                          <div key={mode} className={`h-12 rounded-lg flex items-center justify-center cursor-pointer ring-2 transition-all ${styleModel === mode ? 'ring-primary' : 'ring-transparent'}`}
+                            style={{ background: mode === 'Moderno' ? 'linear-gradient(135deg, #6366f1, #a855f7)' : mode === 'Escuro' ? '#1e293b' : mode === 'Vibrante' ? 'linear-gradient(135deg, #f87171, #fb923c)' : mode === 'Minimalista' ? '#fff' : mode === 'Regional' ? '#efe9dc' : mode === 'Personalizado' ? customColor : '#f8fafc', border: (mode === 'Minimalista' || mode === 'Regional') ? '1px solid #e2e8f0' : 'none' }}
+                            onClick={() => setStyleModel(mode)}>
+                            <span className={`text-[9px] font-black uppercase ${mode === 'Minimalista' || mode === 'Regional' ? 'text-slate-800' : 'text-white'}`}>{mode}</span>
+                          </div>
+                        ))}
                       </div>
-                    )}
-                  </div>
-                  <div className="relative cursor-pointer group" onClick={() => setStyleModel('Escuro')}>
-                    <div className={`h-16 rounded-lg bg-gradient-to-br from-slate-800 to-black border border-slate-700 flex items-end p-2 overflow-hidden ring-2 transition-all ${styleModel === 'Escuro' ? 'ring-primary' : 'ring-transparent group-hover:ring-primary'}`}>
-                      <span className="text-[10px] text-white font-bold opacity-80">Escuro</span>
-                      {styleModel === 'Escuro' && <div className="absolute top-2 right-2 size-2 bg-primary rounded-full"></div>}
                     </div>
-                    {styleModel !== 'Escuro' && (
-                      <div className="absolute inset-0 bg-black/40 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity rounded-lg">
-                        <span className="text-white text-xs font-bold">Aplicar</span>
+                    <div className="grid grid-cols-2 gap-3">
+                      <div className="space-y-1.5">
+                        <label className="text-[10px] font-bold text-slate-400 uppercase">Fonte</label>
+                        <select value={fontFamily} onChange={(e) => setFontFamily(e.target.value)} className="w-full bg-slate-50 border border-slate-200 rounded-lg px-2 py-1.5 text-[11px] focus:ring-1 focus:ring-primary outline-none">
+                          <option value="var(--font-poppins), sans-serif">Poppins</option>
+                          <option value="'Playfair Display', serif">Playfair</option>
+                          <option value="'Inter', sans-serif">Inter</option>
+                          <option value="'Montserrat', sans-serif">Montserrat</option>
+                          <option value="'Outfit', sans-serif">Outfit</option>
+                          <option value="'Roboto', sans-serif">Roboto</option>
+                        </select>
                       </div>
-                    )}
-                  </div>
-                  <div className="relative cursor-pointer group" onClick={() => setStyleModel('Vibrante')}>
-                    <div className={`h-16 rounded-lg bg-gradient-to-br from-orange-400 to-pink-500 flex items-end p-2 overflow-hidden ring-2 transition-all ${styleModel === 'Vibrante' ? 'ring-primary' : 'ring-transparent group-hover:ring-primary'}`}>
-                      <span className="text-[10px] text-white font-bold opacity-80">Vibrante</span>
-                      {styleModel === 'Vibrante' && <div className="absolute top-2 right-2 size-2 bg-primary rounded-full"></div>}
+                      <div className="space-y-1.5">
+                        <label className="text-[10px] font-bold text-slate-400 uppercase">Alinhamento</label>
+                        <div className="flex bg-slate-50 p-1 rounded-lg border border-slate-200">
+                          <button onClick={() => setTextAlign('left')} className={`flex-1 py-1 rounded ${textAlign === 'left' ? 'bg-white shadow-sm text-primary' : 'text-slate-400'}`}><span className="material-symbols-outlined text-[16px]">format_align_left</span></button>
+                          <button onClick={() => setTextAlign('center')} className={`flex-1 py-1 rounded ${textAlign === 'center' ? 'bg-white shadow-sm text-primary' : 'text-slate-400'}`}><span className="material-symbols-outlined text-[16px]">format_align_center</span></button>
+                          <button onClick={() => setTextAlign('right')} className={`flex-1 py-1 rounded ${textAlign === 'right' ? 'bg-white shadow-sm text-primary' : 'text-slate-400'}`}><span className="material-symbols-outlined text-[16px]">format_align_right</span></button>
+                        </div>
+                      </div>
                     </div>
-                    {styleModel !== 'Vibrante' && (
-                      <div className="absolute inset-0 bg-black/40 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity rounded-lg">
-                        <span className="text-white text-xs font-bold">Aplicar</span>
+                    <div className="space-y-3 pt-4 border-t border-slate-100">
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center gap-2">
+                          <span className="material-symbols-outlined text-slate-400 text-[18px]">verified_user</span>
+                          <span className="text-xs font-bold text-slate-700">Marca</span>
+                        </div>
+                        <label className="relative inline-flex items-center cursor-pointer">
+                          <input type="checkbox" className="sr-only peer" checked={saveDefaults} onChange={(e) => setSaveDefaults(e.target.checked)} />
+                          <div className="w-8 h-4 bg-slate-300 rounded-full peer peer-checked:bg-primary after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-3 after:w-3 after:transition-all peer-checked:after:translate-x-full"></div>
+                        </label>
                       </div>
-                    )}
-                  </div>
-                  <div className="relative cursor-pointer group" onClick={() => setStyleModel('Minimalista')}>
-                    <div className={`h-16 rounded-lg bg-white border border-slate-200 flex items-end p-2 overflow-hidden ring-2 transition-all ${styleModel === 'Minimalista' ? 'ring-primary' : 'ring-transparent group-hover:ring-primary'}`}>
-                      <span className="text-[10px] text-slate-800 font-bold opacity-80">Minimalista</span>
-                      {styleModel === 'Minimalista' && <div className="absolute top-2 right-2 size-2 bg-primary rounded-full"></div>}
+                      <div className="flex gap-2">
+                        <div className="flex-1 relative">
+                          <span className="absolute left-2.5 top-1/2 -translate-y-1/2 text-[10px] font-bold text-slate-400">@</span>
+                          <input
+                            type="text"
+                            value={brandHandle}
+                            onChange={(e) => setBrandHandle(e.target.value.replace('@', ''))}
+                            placeholder="seu_perfil"
+                            className="w-full bg-slate-50 border border-slate-200 rounded-lg pl-6 pr-3 py-2 text-[10px] font-bold outline-none focus:ring-1 focus:ring-primary transition-all shadow-sm"
+                          />
+                        </div>
+                        <button onClick={() => brandLogoInputRef.current?.click()} className="flex-1 py-2 bg-white border border-dashed border-slate-200 rounded-lg text-[10px] font-bold text-slate-400 hover:text-primary transition-colors flex items-center justify-center gap-1 shadow-sm">
+                          <span className="material-symbols-outlined text-[16px]">add_photo_alternate</span> {brandLogo ? 'Trocar Logo' : 'Logo +'}
+                        </button>
+                      </div>
                     </div>
-                    {styleModel !== 'Minimalista' && (
-                      <div className="absolute inset-0 bg-black/5 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity rounded-lg">
-                        <span className="text-slate-800 text-xs font-bold">Aplicar</span>
-                      </div>
-                    )}
-                  </div>
-                  <div className="relative cursor-pointer group" onClick={() => setStyleModel('Regional')}>
-                    <div className={`h-16 rounded-lg bg-[#efe9dc] border border-slate-200 flex items-end p-2 overflow-hidden ring-2 transition-all ${styleModel === 'Regional' ? 'ring-primary' : 'ring-transparent group-hover:ring-primary'}`}>
-                      <span className="text-[10px] text-slate-800 font-bold opacity-80">Regional</span>
-                      {styleModel === 'Regional' && <div className="absolute top-2 right-2 size-2 bg-primary rounded-full"></div>}
-                    </div>
-                    {styleModel !== 'Regional' && (
-                      <div className="absolute inset-0 bg-black/5 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity rounded-lg">
-                        <span className="text-slate-800 text-xs font-bold">Aplicar</span>
-                      </div>
-                    )}
-                  </div>
-                  <div className="relative cursor-pointer group" onClick={() => setStyleModel('Personalizado')}>
-                    <div className={`h-16 rounded-lg border border-slate-200 flex flex-col items-center justify-center overflow-hidden ring-2 transition-all ${styleModel === 'Personalizado' ? 'ring-primary' : 'ring-transparent group-hover:ring-primary'}`} style={{ backgroundColor: styleModel === 'Personalizado' ? customColor : '#f8fafc' }}>
-                      {styleModel === 'Personalizado' ? (
-                        <input
-                          type="color"
-                          value={customColor}
-                          onChange={(e) => setCustomColor(e.target.value)}
-                          className="w-8 h-8 rounded cursor-pointer border-0 p-0 bg-transparent"
-                          onClick={(e) => e.stopPropagation()}
-                        />
-                      ) : (
-                        <span className="material-symbols-outlined text-slate-400">palette</span>
-                      )}
-                      <span className={`text-[10px] font-bold mt-1 ${styleModel === 'Personalizado' ? 'opacity-0' : 'text-slate-500'}`}>Personalizado</span>
-                      {styleModel === 'Personalizado' && <div className="absolute top-2 right-2 size-2 bg-white rounded-full shadow-sm"></div>}
-                    </div>
-                    {styleModel !== 'Personalizado' && (
-                      <div className="absolute inset-0 bg-black/5 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity rounded-lg">
-                        <span className="text-slate-800 text-xs font-bold">Aplicar</span>
-                      </div>
-                    )}
                   </div>
                 </div>
               </div>
 
-              <div className="space-y-3 pt-4 border-t border-slate-100 dark:border-border-dark">
-                <label className="text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Marca</label>
-
-                <div className="space-y-2">
-                  <label className="text-xs text-slate-500 dark:text-slate-400">Arroba / Nome do Perfil</label>
-                  <input
-                    type="text"
-                    value={brandHandle}
-                    onChange={(e) => setBrandHandle(e.target.value)}
-                    className="w-full bg-slate-50 dark:bg-surface-darker border border-slate-200 dark:border-border-dark rounded-lg px-3 py-2 text-sm text-slate-700 dark:text-slate-300 focus:ring-2 focus:ring-primary focus:border-transparent"
-                    placeholder="@seu.perfil"
-                  />
-                </div>
-
-                <div className="space-y-2">
-                  <label className="text-xs text-slate-500 dark:text-slate-400">Logo do Perfil</label>
-                  {brandLogo ? (
-                    <div className="flex items-center gap-3 p-3 rounded-lg border border-slate-200 dark:border-border-dark bg-slate-50 dark:bg-surface-darker">
-                      <div className="size-8 rounded bg-slate-900 flex items-center justify-center overflow-hidden">
-                        <img src={brandLogo} alt="Logo" className="w-full h-full object-cover" />
+              {/* PASSO 3: MÍDIA E IMAGENS */}
+              <div className={`border rounded-2xl overflow-hidden bg-white dark:bg-surface-dark transition-all duration-300 ${activeStep === 3 ? 'border-primary/30 shadow-lg ring-1 ring-primary/5' : 'border-slate-100 dark:border-border-dark shadow-sm'}`}>
+                <button onClick={() => setActiveStep(activeStep === 3 ? 0 : 3)} className={`w-full flex items-center justify-between p-4 text-left transition-colors ${activeStep === 3 ? 'bg-primary/5 dark:bg-primary/10' : 'hover:bg-slate-50 dark:hover:bg-surface-darker'}`}>
+                  <div className="flex items-center gap-3">
+                    <div className={`size-8 rounded-lg flex items-center justify-center transition-colors ${activeStep === 3 ? 'bg-primary text-white' : 'bg-slate-100 dark:bg-slate-800 text-slate-400'}`}>
+                      <span className="material-symbols-outlined text-[20px]">imagesmode</span>
+                    </div>
+                    <span className={`font-bold text-sm ${activeStep === 3 ? 'text-slate-900 dark:text-white' : 'text-slate-500'}`}>Passo 3: Mídia e Imagens</span>
+                  </div>
+                  <span className={`material-symbols-outlined text-slate-400 transition-transform duration-300 ${activeStep === 3 ? 'rotate-180' : ''}`}>keyboard_arrow_down</span>
+                </button>
+                <div className={`transition-all duration-300 ${activeStep === 3 ? 'max-h-[1500px] opacity-100 p-4 border-t border-slate-50 dark:border-border-dark' : 'max-h-0 opacity-0 p-0 pointer-events-none'}`}>
+                  <div className="space-y-4">
+                    <div className="flex items-center justify-between bg-emerald-50 p-3 rounded-xl border border-emerald-100">
+                      <span className="text-[10px] font-black text-emerald-700 uppercase">Gerar com IA</span>
+                      <label className="relative inline-flex items-center cursor-pointer">
+                        <input type="checkbox" className="sr-only peer" checked={generateWithAI} onChange={(e) => setGenerateWithAI(e.target.checked)} />
+                        <div className="w-10 h-5 bg-slate-200 rounded-full peer peer-checked:bg-emerald-500 after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:after:translate-x-full"></div>
+                      </label>
+                    </div>
+                    {generateWithAI && (
+                      <div className="space-y-3 animate-in fade-in duration-300">
+                        <select value={imageNiche} onChange={(e) => setImageNiche(e.target.value)} className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-xs font-bold">
+                          {dbImageLabels.filter(label => label.key !== 'GLOBAL_IMAGE').map(label => (<option key={label.key} value={label.key}>{label.label}</option>))}
+                        </select>
+                        <input type="password" value={customApiKey} onChange={handleApiKeyChange} placeholder="API Key (Opcional)" className="w-full bg-white border border-slate-100 rounded-lg px-3 py-2 text-[10px] outline-none" />
                       </div>
-                      <div className="flex-1">
-                        <p className="text-sm font-medium text-slate-900 dark:text-white">Logo Enviado</p>
-                        <p className="text-xs text-slate-500">Visível em todos os slides</p>
+                    )}
+                    <div className={`${generateWithAI ? 'opacity-40 grayscale pointer-events-none' : ''} space-y-3`}>
+                      <div className="grid grid-cols-4 gap-2">
+                        {Array.from({ length: slideCount }).map((_, i) => (
+                          <div key={i} onClick={() => handleIndividualUploadClick(i)} className="aspect-[4/5] rounded-xl border-2 border-dashed border-slate-200 flex items-center justify-center group hover:border-primary cursor-pointer relative overflow-hidden">
+                            {uploadedImages[i] ? <img src={uploadedImages[i] as string} className="w-full h-full object-cover" /> : <span className="text-[10px] font-black text-slate-200">S{i + 1}</span>}
+                          </div>
+                        ))}
                       </div>
-                      <button
-                        onClick={() => setBrandLogo(null)}
-                        className="p-1 hover:bg-slate-200 dark:hover:bg-slate-700 rounded text-slate-500">
-                        <span className="material-symbols-outlined text-[18px]">close</span>
+                      <button onClick={handleMassUploadClick} className="w-full py-2.5 bg-white border border-slate-200 rounded-xl text-[10px] font-black uppercase text-slate-500 hover:bg-slate-50 flex items-center justify-center gap-1 transition-all">
+                        <span className="material-symbols-outlined text-[16px]">upload_file</span> Upload Massa
                       </button>
                     </div>
-                  ) : (
-                    <button
-                      onClick={() => brandLogoInputRef.current?.click()}
-                      className="w-full py-3 flex flex-col items-center justify-center gap-2 text-sm font-medium text-slate-500 dark:text-slate-400 border border-dashed border-slate-300 dark:border-border-dark rounded-lg hover:bg-slate-50 dark:hover:bg-surface-darker hover:text-primary hover:border-primary/50 transition-colors">
-                      <span className="material-symbols-outlined text-[24px]">add_photo_alternate</span>
-                      Fazer upload da Logo
-                    </button>
-                  )}
-                  <input
-                    type="file"
-                    ref={brandLogoInputRef}
-                    onChange={handleBrandLogoUpload}
-                    accept="image/*"
-                    className="hidden"
-                  />
-                </div>
-
-                <div className="pt-2">
-                  <div className="flex items-center justify-between bg-primary/5 dark:bg-primary/10 p-3 rounded-lg border border-primary/20">
-                    <div className="flex flex-col">
-                      <span className="text-xs font-bold text-primary dark:text-primary-light">Lembrar Marca & Estilo</span>
-                      <span className="text-[10px] text-slate-500 dark:text-slate-400 leading-tight mt-0.5">Salva a logo, arroba e cores para o futuro</span>
-                    </div>
-                    <label className="relative inline-flex items-center cursor-pointer">
-                      <input
-                        type="checkbox"
-                        className="sr-only peer"
-                        checked={saveDefaults}
-                        onChange={(e) => setSaveDefaults(e.target.checked)}
-                      />
-                      <div className="w-9 h-5 bg-slate-300 peer-focus:outline-none rounded-full peer dark:bg-slate-600 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-primary"></div>
-                    </label>
                   </div>
                 </div>
-
               </div>
             </div>
-            <div className="space-y-4 pt-4 border-t border-slate-100 dark:border-border-dark">
-              <div className="flex items-center justify-between">
-                <div className="flex flex-col">
-                  <span className="text-sm font-semibold text-slate-900 dark:text-white">Gerar imagens com IA</span>
-                  <span className="text-xs text-slate-500 dark:text-slate-400">Usa o modelo Gemini 2.5 Flash</span>
-                </div>
-                <label className="relative inline-flex items-center cursor-pointer">
-                  <input
-                    type="checkbox"
-                    className="sr-only peer"
-                    checked={generateWithAI}
-                    onChange={(e) => setGenerateWithAI(e.target.checked)}
-                  />
-                  <div className="w-11 h-6 bg-slate-200 peer-focus:outline-none peer-focus:ring-2 peer-focus:ring-primary/20 dark:peer-focus:ring-primary/30 rounded-full peer dark:bg-slate-700 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all dark:border-gray-600 peer-checked:bg-primary"></div>
-                </label>
-              </div>
-
-              {generateWithAI && (
-                <>
-                  <div className="hidden space-y-2 mt-2 p-3 bg-emerald-50 dark:bg-emerald-900/10 rounded-lg border border-emerald-200 dark:border-emerald-800">
-                    <label className="text-xs font-semibold text-emerald-800 dark:text-emerald-300 uppercase tracking-wider flex items-center gap-1">
-                      <span className="material-symbols-outlined text-[14px]">imagesmode</span> Nicho Visual da Imagem
-                    </label>
-                    <select
-                      value={imageNiche}
-                      onChange={(e) => setImageNiche(e.target.value)}
-                      className="w-full bg-white dark:bg-surface-dark border border-emerald-200 dark:border-emerald-700 rounded-lg px-3 py-2 text-sm text-emerald-900 dark:text-emerald-100 focus:ring-2 focus:ring-emerald-500 outline-none cursor-pointer font-medium"
-                    >
-                      {dbImageLabels.filter(label => label.key !== 'GLOBAL_IMAGE').length > 0 ? (
-                        dbImageLabels.filter(label => label.key !== 'GLOBAL_IMAGE').map(label => (
-                          <option key={label.key} value={label.key}>{label.label}</option>
-                        ))
-                      ) : (
-                        <>
-                          <option value="SAUDE">🍎 Saúde, Nutrição</option>
-                          <option value="MINDSET">🧠 Mindset, Psicologia</option>
-                        </>
-                      )}
-                    </select>
-                  </div>
-                  <div className="space-y-2 mt-4 p-3 bg-slate-50 dark:bg-surface-darker rounded-lg border border-slate-200 dark:border-border-dark">
-                    <div className="flex items-center justify-between">
-                      <label className="text-xs font-semibold text-slate-700 dark:text-slate-300">Sua Chave da API Gemini (Opcional)</label>
-                      {customApiKey && <span className="text-[10px] text-emerald-600 font-bold flex items-center gap-1"><span className="material-symbols-outlined text-[12px]">lock</span> Salva</span>}
-                    </div>
-                    <p className="text-[10px] text-slate-500 dark:text-slate-400 leading-tight">
-                      Insira sua chave para uso ilimitado. Ela é <strong>criptografada e salva apenas no seu navegador</strong>. Você só precisa inserir uma vez.
-                    </p>
-                    <input
-                      type="password"
-                      value={customApiKey}
-                      onChange={handleApiKeyChange}
-                      placeholder="Cole sua chave AIzaSy... aqui"
-                      className="w-full bg-white dark:bg-surface-dark border border-slate-200 dark:border-border-dark rounded-md px-3 py-2 text-xs text-slate-700 dark:text-slate-300 focus:ring-2 focus:ring-primary focus:border-transparent"
-                    />
-                    <div className="flex justify-end">
-                      <a href="https://aistudio.google.com/app/apikey" target="_blank" rel="noopener noreferrer" className="text-[10px] text-primary hover:underline flex items-center gap-1">
-                        Pegar minha chave gratuita <span className="material-symbols-outlined text-[10px]">open_in_new</span>
-                      </a>
-                    </div>
-                  </div>
-                </>
+          </div>
+          <div className="mt-auto p-6 border-t border-slate-200 dark:border-border-dark bg-slate-50 dark:bg-surface-darker sticky bottom-0">
+            <button
+              onClick={handleGenerateCarousel}
+              disabled={!content.trim() || isGeneratingText || generatingImages.some(v => v) || (isIuryMode && content.length < 50)}
+              className={`w-full flex items-center justify-center gap-2 rounded-xl h-12 text-white text-base font-bold shadow-lg transition-all disabled:opacity-70 disabled:hover:scale-100 disabled:cursor-not-allowed bg-gradient-to-r from-emerald-500 to-emerald-400 hover:from-emerald-400 hover:to-emerald-300 shadow-emerald-500/25 active:scale-[0.98]`}>
+              {isGeneratingText || generatingImages.some(v => v) ? (
+                <span className="material-symbols-outlined animate-spin">progress_activity</span>
+              ) : (
+                <span className="material-symbols-outlined">auto_fix_high</span>
               )}
-
-              <div className={`${generateWithAI ? 'opacity-50 pointer-events-none filter grayscale mt-4' : 'mt-4'} transition-all duration-300`}>
-                <div className="flex justify-between items-center mb-4">
-                  <label className="text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Upload de Imagens</label>
-                  <span className="text-[10px] bg-slate-200 text-slate-500 px-2 py-0.5 rounded-full font-bold">Manual</span>
-                </div>
-                <div className="grid grid-cols-4 gap-2">
-                  {Array.from({ length: slideCount }).map((_, index) => {
-                    const num = index + 1;
-                    return (
-                      <div
-                        key={num}
-                        draggable={!generateWithAI && !!uploadedImages[index]}
-                        onDragStart={() => handleDragStart(index)}
-                        onDragOver={handleDragOver}
-                        onDrop={() => handleDrop(index)}
-                        onClick={() => handleIndividualUploadClick(index)}
-                        className={`aspect-[4/5] rounded border-2 border-dashed border-slate-200 dark:border-border-dark flex flex-col items-center justify-center gap-1 group transition-colors ${!generateWithAI ? 'cursor-pointer hover:border-primary/50 hover:bg-primary/5' : 'cursor-not-allowed'} overflow-hidden relative ${draggedIndex === index ? 'opacity-50' : ''}`}>
-                        {uploadedImages[index] ? (
-                          <>
-                            <img src={uploadedImages[index] as string} alt={`Slide ${num}`} className="w-full h-full object-cover pointer-events-none" />
-                            <button
-                              onClick={(e) => handleRemoveImage(index, e)}
-                              className="absolute top-1 right-1 size-5 bg-black/50 hover:bg-red-500 rounded-full flex items-center justify-center text-white opacity-0 group-hover:opacity-100 transition-all z-10"
-                              title="Remover imagem"
-                            >
-                              <span className="material-symbols-outlined text-[12px] font-bold">close</span>
-                            </button>
-                          </>
-                        ) : (
-                          <>
-                            <span className="material-symbols-outlined text-slate-400 text-sm">add</span>
-                            <span className="text-[8px] font-bold text-slate-400">S{num}</span>
-                          </>
-                        )}
-                      </div>
-                    );
-                  })}
-                  <div className={`aspect-[4/5] rounded bg-slate-50 dark:bg-surface-darker flex items-center justify-center ${!generateWithAI ? 'cursor-pointer hover:bg-slate-100 dark:hover:bg-slate-800' : 'cursor-not-allowed'}`}>
-                    <span className="material-symbols-outlined text-slate-300">more_horiz</span>
-                  </div>
-                </div>
-                <input
-                  type="file"
-                  multiple
-                  accept="image/*"
-                  className="hidden"
-                  ref={fileInputRef}
-                  onChange={handleFileUpload}
-                />
-                <input
-                  type="file"
-                  accept="image/*"
-                  className="hidden"
-                  ref={individualFileInputRef}
-                  onChange={handleIndividualFileUpload}
-                />
-                <button
-                  onClick={handleMassUploadClick}
-                  disabled={generateWithAI}
-                  className={`w-full mt-4 flex items-center justify-center gap-2 py-2.5 rounded-lg text-xs font-bold transition-colors border ${!generateWithAI ? 'bg-white dark:bg-surface-dark text-slate-700 dark:text-white border-slate-200 dark:border-border-dark hover:bg-slate-50 dark:hover:bg-slate-800 cursor-pointer' : 'bg-slate-100 dark:bg-surface-darker text-slate-400 border-slate-200 dark:border-border-dark cursor-not-allowed'}`}>
-                  <span className="material-symbols-outlined text-sm">upload_file</span>
-                  Upload em Massa ({slideCount} Slides)
-                </button>
-              </div>
-            </div>
-            <div className="mt-auto p-6 border-t border-slate-200 dark:border-border-dark bg-slate-50 dark:bg-surface-darker sticky bottom-0">
-              <button
-                onClick={handleGenerateCarousel}
-                disabled={!content.trim() || isGeneratingText || generatingImages.some(v => v) || (isIuryMode && content.length < 50)}
-                className={`w-full flex items-center justify-center gap-2 rounded-xl h-12 text-white text-base font-bold shadow-lg transition-all disabled:opacity-70 disabled:hover:scale-100 disabled:cursor-not-allowed bg-gradient-to-r from-emerald-500 to-emerald-400 hover:from-emerald-400 hover:to-emerald-300 shadow-emerald-500/25 active:scale-[0.98]`}>
-                {isGeneratingText || generatingImages.some(v => v) ? (
-                  <span className="material-symbols-outlined animate-spin">progress_activity</span>
-                ) : (
-                  <span className="material-symbols-outlined">auto_fix_high</span>
-                )}
-                {isGeneratingText ? 'IA Pensando...' : generatingImages.some(v => v) ? 'Gerando Imagens...' : 'Gerar Carrossel e Imagens'}
-              </button>
-            </div>
+              {isGeneratingText ? 'IA Pensando...' : generatingImages.some(v => v) ? 'Gerando Imagens...' : 'Gerar Carrossel e Imagens'}
+            </button>
           </div>
         </aside>
         <section className={`flex-1 flex flex-col min-h-0 bg-slate-100 dark:bg-background-dark overflow-hidden relative ${activeMobileTab !== 'preview' ? 'max-md:hidden' : 'max-md:flex max-md:flex-1'}`}>
@@ -1917,8 +1665,8 @@ export default function CarouselGenerator({ onLogout }: { onLogout: () => void }
             <button className="text-slate-500 hover:text-primary"><span className="material-symbols-outlined text-[18px] sm:text-[24px]">chevron_right</span></button>
             <button className="text-slate-500 hover:text-primary"><span className="material-symbols-outlined text-[18px] sm:text-[24px]">last_page</span></button>
           </div>
-        </section >
-      </main >
+        </section>
+      </main>
 
       {/* Edit Text Modal */}
       {
@@ -1926,7 +1674,7 @@ export default function CarouselGenerator({ onLogout }: { onLogout: () => void }
           <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-[100] flex items-center justify-center p-4">
             <div className="bg-white dark:bg-surface-dark rounded-2xl shadow-2xl w-full max-w-lg overflow-hidden flex flex-col">
               <div className="flex items-center justify-between p-4 border-b border-slate-200 dark:border-border-dark">
-                <h3 className="text-lg font-bold text-slate-900 dark:text-white">Editar Slide {editingSlideIndex + 1}</h3>
+                <h3 className="text-lg font-bold text-slate-900 dark:text-white">Editar Slide {(editingSlideIndex ?? 0) + 1}</h3>
                 <button
                   onClick={() => setEditingSlideIndex(null)}
                   className="p-1 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors">

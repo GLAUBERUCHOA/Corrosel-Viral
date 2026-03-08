@@ -1187,8 +1187,17 @@ export default function CarouselGenerator({ onLogout }: { onLogout: () => void }
                           <SimpleRichTextEditor value={ctaContent} onChange={(val) => { setCtaContent(val); if (!isIuryMode) processTextIntoSlides(content, addCtaSlide, val); }} placeholder="Mensagem final..." />
                           <div className="flex items-center justify-between border-t border-slate-100 dark:border-border-dark pt-3">
                             <span className="text-[11px] font-semibold text-slate-500">Imagem de Fundo</span>
-                            <button onClick={() => ctaImageInputRef.current?.click()} className="text-[10px] font-bold bg-primary/10 text-primary px-3 py-1.5 rounded-lg hover:bg-primary/20 transition-colors">{ctaImage ? 'Trocar' : 'Upload +'}</button>
-                            <input type="file" ref={ctaImageInputRef} onChange={handleCtaImageUpload} accept="image/*" className="hidden" />
+                            <div className="flex items-center gap-2">
+                              {ctaImage && (
+                                <button onClick={() => setCtaImage(null)} className="p-1.5 bg-red-500/10 text-red-500 rounded-lg hover:bg-red-500/20 transition-colors flex items-center justify-center" title="Remover Imagem">
+                                  <span className="material-symbols-outlined text-[16px]">delete</span>
+                                </button>
+                              )}
+                              <button onClick={() => ctaImageInputRef.current?.click()} className="text-[10px] font-bold bg-primary/10 text-primary px-3 py-1.5 rounded-lg hover:bg-primary/20 transition-colors">
+                                {ctaImage ? 'Trocar' : 'Upload +'}
+                              </button>
+                              <input type="file" ref={ctaImageInputRef} onChange={handleCtaImageUpload} accept="image/*" className="hidden" />
+                            </div>
                           </div>
 
                           {/* Painel Exclusivo do CTA */}
@@ -1588,7 +1597,7 @@ export default function CarouselGenerator({ onLogout }: { onLogout: () => void }
                         <div className="relative group/slide w-full h-full rounded-2xl overflow-hidden shadow-2xl transition-transform hover:-translate-y-2 duration-300">
                           <div
                             ref={(el) => { slideRefs.current[index] = el; }}
-                            className={`absolute inset-0 flex flex-col items-center justify-start pt-12 text-center`}
+                            className={`absolute inset-0 flex flex-col items-center ${ctaImage ? 'justify-start pt-12' : 'justify-center p-8'} text-center`}
                             style={{ backgroundColor: ctaBgColor }}
                           >
 

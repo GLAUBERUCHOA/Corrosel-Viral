@@ -685,40 +685,7 @@ export default function CarouselGenerator({ onLogout }: { onLogout: () => void }
     return newSlides;
   };
 
-  const executarIury = async () => {
-    if (!content.trim()) return;
 
-    const apiKey = customApiKey || process.env.NEXT_PUBLIC_GEMINI_API_KEY;
-    if (!apiKey) {
-      alert("Chave da API Gemini não encontrada. Por favor, insira sua chave nas configurações para usar o Modo Iury.");
-      return;
-    }
-
-    setIsGeneratingText(true);
-    try {
-      const ai = new GoogleGenAI({ apiKey });
-      const promptFinal = `${getIuryPrompt(toneMode, dbPrompts)}\n\nRASCUNHO DO USUÁRIO:\n${content}`;
-
-      console.log('--- PROMPT ENVIADO PARA O GEMINI ---');
-      console.log(promptFinal);
-      console.log('------------------------------------');
-
-      const response = await ai.models.generateContent({
-        model: 'gemini-2.5-flash',
-        contents: promptFinal,
-      });
-
-      const generatedText = response.text || '';
-      setContent(generatedText); // Sobrescreve a caixa
-      processTextIntoSlides(generatedText, addCtaSlide, ctaContent); // Processa imediatamente
-      setHasNewPreview(true);
-    } catch (error) {
-      console.error("Erro ao gerar Modo Iury:", error);
-      alert("Ocorreu um erro ao processar o texto pelo Iury. Tente novamente.");
-    } finally {
-      setIsGeneratingText(false);
-    }
-  };
 
   const regenerateImageForSlide = async (index: number) => {
     const slide = parsedSlides[index];
@@ -779,14 +746,48 @@ export default function CarouselGenerator({ onLogout }: { onLogout: () => void }
   const handleGenerateCarousel = async () => {
     if (!content.trim()) return;
 
-    let newSlides = processTextIntoSlides(content, addCtaSlide, ctaContent);
+    let finalContent = content;
+    const apiKey = customApiKey || process.env.NEXT_PUBLIC_GEMINI_API_KEY;
+
+    // ETAPA 01: GERAÇÃO DE TEXTO (MODO IURY)
+    if (isIuryMode) {
+      if (!apiKey) {
+        alert("Chave da API Gemini não encontrada. Por favor, insira sua chave nas configurações para usar o Modo Iury.");
+        return;
+      }
+
+      setIsGeneratingText(true);
+      try {
+        const ai = new GoogleGenAI({ apiKey });
+        const promptFinal = `${getIuryPrompt(toneMode, dbPrompts)}\n\nRASCUNHO DO USUÁRIO:\n${content}`;
+
+        console.log('--- PIPELINE: GERANDO TEXTO COM IURY ---');
+
+        const response = await ai.models.generateContent({
+          model: 'gemini-2.5-flash',
+          contents: promptFinal,
+        });
+
+        finalContent = response.text || '';
+        setContent(finalContent); // Atualiza a caixa de texto visualmente
+      } catch (error) {
+        console.error("Erro no Pipeline (Texto):", error);
+        alert("Ocorreu um erro ao processar o texto pelo Iury. Tente novamente.");
+        setIsGeneratingText(false);
+        return;
+      } finally {
+        setIsGeneratingText(false);
+      }
+    }
+
+    // ETAPA 02: PROCESSAMENTO DE SLIDES
+    const newSlides = processTextIntoSlides(finalContent, addCtaSlide, ctaContent);
     setHasNewPreview(true);
 
+    // ETAPA 03: GERAÇÃO DE IMAGENS
     if (generateWithAI) {
-      const apiKey = customApiKey || process.env.NEXT_PUBLIC_GEMINI_API_KEY;
       if (!apiKey) {
-        alert("Chave da API Gemini não encontrada. Por favor, insira sua chave nas configurações.");
-        console.error("Gemini API key is missing");
+        alert("Chave da API Gemini não encontrada. Por favor, insira sua chave nas configurações para gerar imagens.");
         return;
       }
 
@@ -1139,20 +1140,7 @@ export default function CarouselGenerator({ onLogout }: { onLogout: () => void }
                 <div className="absolute bottom-3 right-3 text-xs text-slate-400 font-medium bg-slate-100 dark:bg-border-dark px-2 py-1 rounded">{content.length} caracteres</div>
               </div>
 
-              {isIuryMode && (
-                <button
-                  onClick={executarIury}
-                  disabled={!content.trim() || isGeneratingText}
-                  className="w-full flex items-center justify-center gap-2 rounded-xl h-11 text-white text-sm font-bold shadow-md transition-all disabled:opacity-70 disabled:hover:scale-100 disabled:cursor-not-allowed bg-indigo-600 hover:bg-indigo-700 shadow-indigo-600/25 mt-2"
-                >
-                  {isGeneratingText ? (
-                    <span className="material-symbols-outlined animate-spin text-[18px]">progress_activity</span>
-                  ) : (
-                    <span className="material-symbols-outlined text-[18px]">psychology</span>
-                  )}
-                  {isGeneratingText ? 'Pensando de Forma Visceral...' : 'Gerar Texto com Iury'}
-                </button>
-              )}
+
 
               <div className="space-y-4 pt-4 border-t border-slate-100 dark:border-border-dark">
                 <div className="grid grid-cols-2 gap-4">
@@ -1554,10 +1542,14 @@ export default function CarouselGenerator({ onLogout }: { onLogout: () => void }
             <div className="mt-auto p-6 border-t border-slate-200 dark:border-border-dark bg-slate-50 dark:bg-surface-darker sticky bottom-0">
               <button
                 onClick={handleGenerateCarousel}
-                disabled={!content.trim() || isGeneratingText || (isIuryMode && content.length < 50)}
+                disabled={!content.trim() || isGeneratingText || generatingImages.some(v => v) || (isIuryMode && content.length < 50)}
                 className={`w-full flex items-center justify-center gap-2 rounded-xl h-12 text-white text-base font-bold shadow-lg transition-all disabled:opacity-70 disabled:hover:scale-100 disabled:cursor-not-allowed bg-gradient-to-r from-emerald-500 to-emerald-400 hover:from-emerald-400 hover:to-emerald-300 shadow-emerald-500/25 active:scale-[0.98]`}>
-                <span className="material-symbols-outlined">auto_fix_high</span>
-                Gerar Carrossel e Imagens
+                {isGeneratingText || generatingImages.some(v => v) ? (
+                  <span className="material-symbols-outlined animate-spin">progress_activity</span>
+                ) : (
+                  <span className="material-symbols-outlined">auto_fix_high</span>
+                )}
+                {isGeneratingText ? 'IA Pensando...' : generatingImages.some(v => v) ? 'Gerando Imagens...' : 'Gerar Carrossel e Imagens'}
               </button>
             </div>
           </div>

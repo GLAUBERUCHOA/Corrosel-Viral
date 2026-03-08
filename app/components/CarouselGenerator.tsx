@@ -1146,8 +1146,12 @@ export default function CarouselGenerator({ onLogout }: { onLogout: () => void }
 
                     {isIuryMode && (
                       <div className="animate-in fade-in slide-in-from-top-2 duration-300">
-                        <select value={toneMode} onChange={(e) => setToneMode(e.target.value)} className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2.5 text-xs font-bold focus:ring-2 focus:ring-primary/20 outline-none transition-all">
-                          {dbLabels.filter(l => l.key !== 'GLOBAL_INSTRUCTIONS').map((t) => (<option key={t.key} value={t.key}>{t.label}</option>))}
+                        <select value={toneMode} onChange={(e) => setToneMode(e.target.value)} className="w-full bg-slate-50 dark:bg-surface-darker border border-slate-200 dark:border-border-dark text-slate-900 dark:text-white rounded-xl px-3 py-2.5 text-xs font-bold focus:ring-2 focus:ring-primary/20 outline-none transition-all">
+                          {dbLabels.filter(l => l.key !== 'GLOBAL_INSTRUCTIONS').map((t) => (
+                            <option key={t.key} value={t.key} className="bg-white dark:bg-surface-darker text-slate-900 dark:text-white">
+                              {t.label}
+                            </option>
+                          ))}
                         </select>
                       </div>
                     )}
@@ -1320,13 +1324,13 @@ export default function CarouselGenerator({ onLogout }: { onLogout: () => void }
                   <div className="grid grid-cols-2 gap-3">
                     <div className="space-y-1.5">
                       <label className="text-[10px] font-bold text-slate-400 uppercase">Fonte</label>
-                      <select value={fontFamily} onChange={(e) => setFontFamily(e.target.value)} className="w-full bg-slate-50 border border-slate-200 rounded-lg px-2 py-1.5 text-[11px] focus:ring-1 focus:ring-primary outline-none">
-                        <option value="var(--font-poppins), sans-serif">Poppins</option>
-                        <option value="'Playfair Display', serif">Playfair</option>
-                        <option value="'Inter', sans-serif">Inter</option>
-                        <option value="'Montserrat', sans-serif">Montserrat</option>
-                        <option value="'Outfit', sans-serif">Outfit</option>
-                        <option value="'Roboto', sans-serif">Roboto</option>
+                      <select value={fontFamily} onChange={(e) => setFontFamily(e.target.value)} className="w-full bg-slate-50 dark:bg-surface-darker border border-slate-200 dark:border-border-dark text-slate-900 dark:text-white rounded-lg px-2 py-1.5 text-[11px] focus:ring-1 focus:ring-primary outline-none">
+                        <option value="var(--font-poppins), sans-serif" className="bg-white dark:bg-surface-darker text-slate-900 dark:text-white">Poppins</option>
+                        <option value="'Playfair Display', serif" className="bg-white dark:bg-surface-darker text-slate-900 dark:text-white">Playfair</option>
+                        <option value="'Inter', sans-serif" className="bg-white dark:bg-surface-darker text-slate-900 dark:text-white">Inter</option>
+                        <option value="'Montserrat', sans-serif" className="bg-white dark:bg-surface-darker text-slate-900 dark:text-white">Montserrat</option>
+                        <option value="'Outfit', sans-serif" className="bg-white dark:bg-surface-darker text-slate-900 dark:text-white">Outfit</option>
+                        <option value="'Roboto', sans-serif" className="bg-white dark:bg-surface-darker text-slate-900 dark:text-white">Roboto</option>
                       </select>
                     </div>
                     <div className="space-y-1.5">
@@ -1376,10 +1380,10 @@ export default function CarouselGenerator({ onLogout }: { onLogout: () => void }
                           value={brandHandle}
                           onChange={(e) => setBrandHandle(e.target.value.replace('@', ''))}
                           placeholder="seu_perfil"
-                          className="w-full bg-slate-50 border border-slate-200 rounded-lg pl-6 pr-3 py-2 text-[10px] font-bold outline-none focus:ring-1 focus:ring-primary transition-all shadow-sm"
+                          className="w-full bg-slate-50 dark:bg-surface-darker border border-slate-200 dark:border-border-dark text-slate-900 dark:text-white rounded-lg pl-6 pr-3 py-2 text-[10px] font-bold outline-none focus:ring-1 focus:ring-primary transition-all shadow-sm"
                         />
                       </div>
-                      <label className="flex-1 py-2 bg-white border border-dashed border-slate-200 rounded-lg text-[10px] font-bold text-slate-400 hover:text-primary transition-colors flex items-center justify-center gap-1 shadow-sm cursor-pointer relative overflow-hidden">
+                      <label className="flex-1 py-2 bg-white dark:bg-surface-dark border border-dashed border-slate-200 dark:border-border-dark rounded-lg text-[10px] font-bold text-slate-400 hover:text-primary transition-colors flex items-center justify-center gap-1 shadow-sm cursor-pointer relative overflow-hidden">
                         <span className="material-symbols-outlined text-[16px]">add_photo_alternate</span> {brandLogo ? 'Trocar Logo' : 'Logo +'}
                         <input type="file" onChange={handleBrandLogoUpload} accept="image/*" className="absolute inset-0 opacity-0 cursor-pointer" />
                       </label>
@@ -1411,8 +1415,12 @@ export default function CarouselGenerator({ onLogout }: { onLogout: () => void }
                   </div>
                   {generateWithAI && (
                     <div className="space-y-3 animate-in fade-in duration-300">
-                      <select value={imageNiche} onChange={(e) => setImageNiche(e.target.value)} className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-xs font-bold">
-                        {dbImageLabels.filter(label => label.key !== 'GLOBAL_IMAGE').map(label => (<option key={label.key} value={label.key}>{label.label}</option>))}
+                      <select value={imageNiche} onChange={(e) => setImageNiche(e.target.value)} className="w-full bg-slate-50 dark:bg-surface-darker border border-slate-200 dark:border-border-dark text-slate-900 dark:text-white rounded-xl px-3 py-2 text-xs font-bold focus:ring-1 focus:ring-primary outline-none">
+                        {dbImageLabels.filter(label => label.key !== 'GLOBAL_IMAGE').map(label => (
+                          <option key={label.key} value={label.key} className="bg-white dark:bg-surface-darker text-slate-900 dark:text-white">
+                            {label.label}
+                          </option>
+                        ))}
                       </select>
                     </div>
                   )}

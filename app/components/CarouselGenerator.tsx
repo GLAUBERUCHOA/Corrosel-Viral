@@ -111,26 +111,39 @@ const SimpleRichTextEditor = ({ value, onChange, placeholder }: { value: string,
         <div className="w-px h-5 bg-slate-300 dark:bg-slate-600 mx-1"></div>
 
         <span className="text-[10px] text-slate-500 font-bold uppercase ml-1">Letra:</span>
-        <input
-          type="color"
-          onInput={(e) => { execWithColor('foreColor', e.currentTarget.value); }}
-          className="size-6 cursor-pointer border-0 p-0 bg-transparent rounded-full shadow-sm"
-          title="Cor da Letra"
-          defaultValue="#ffffff"
-        />
+        <div className="flex flex-wrap gap-1 items-center bg-white/50 dark:bg-slate-900/50 p-1 rounded-lg border border-slate-200/50 dark:border-slate-700/50">
+          {fgColors.map(color => (
+            <button
+              key={color}
+              tabIndex={-1}
+              onMouseDown={(e) => { e.preventDefault(); exec('foreColor', color); }}
+              className="size-4 rounded-full border border-slate-200 shadow-sm hover:scale-110 transition-transform active:scale-95"
+              style={{ backgroundColor: color }}
+              title={color}
+            />
+          ))}
+        </div>
 
         <span className="text-[10px] text-slate-500 font-bold uppercase ml-2">Fundo:</span>
-        <div className="flex bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded p-0.5 gap-0.5 items-center">
-          <button tabIndex={-1} onMouseDown={(e) => { e.preventDefault(); exec('hiliteColor', 'transparent'); }} className="size-[14px] rounded-full border border-slate-300 flex items-center justify-center bg-slate-100 hover:bg-slate-200" title="Sem Fundo">
+        <div className="flex flex-wrap gap-1 items-center bg-white/50 dark:bg-slate-900/50 p-1 rounded-lg border border-slate-200/50 dark:border-slate-700/50">
+          <button
+            tabIndex={-1}
+            onMouseDown={(e) => { e.preventDefault(); exec('hiliteColor', 'transparent'); }}
+            className="size-4 rounded-full border border-slate-300 flex items-center justify-center bg-white hover:bg-slate-100 shadow-sm hover:scale-110 transition-transform active:scale-95"
+            title="Sem Fundo"
+          >
             <span className="material-symbols-outlined text-[10px] text-red-500 font-bold">close</span>
           </button>
-          <input
-            type="color"
-            onInput={(e) => { execWithColor('hiliteColor', e.currentTarget.value); }}
-            className="size-4 cursor-pointer border-0 p-0 bg-transparent"
-            title="Cor de Fundo"
-            defaultValue="#000000"
-          />
+          {bgColors.map(color => (
+            <button
+              key={color}
+              tabIndex={-1}
+              onMouseDown={(e) => { e.preventDefault(); exec('hiliteColor', color); }}
+              className="size-4 rounded-full border border-slate-200 shadow-sm hover:scale-110 transition-transform active:scale-95"
+              style={{ backgroundColor: color }}
+              title={color}
+            />
+          ))}
         </div>
 
         <div className="w-px h-5 bg-slate-300 dark:bg-slate-600 mx-1"></div>
@@ -1248,11 +1261,11 @@ export default function CarouselGenerator({ onLogout }: { onLogout: () => void }
                       <div className="flex items-center justify-between">
                         <div className="flex items-center gap-2">
                           <span className="material-symbols-outlined text-slate-400 text-[18px]">verified_user</span>
-                          <span className="text-xs font-bold text-slate-700">Marca</span>
+                          <span className="text-xs font-bold text-slate-700">Lembrar Marca & Estilo</span>
                         </div>
-                        <label className="relative inline-flex items-center cursor-pointer">
+                        <label className="relative inline-flex items-center cursor-pointer z-20">
                           <input type="checkbox" className="sr-only peer" checked={saveDefaults} onChange={(e) => setSaveDefaults(e.target.checked)} />
-                          <div className="w-8 h-4 bg-slate-300 rounded-full peer peer-checked:bg-primary after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-3 after:w-3 after:transition-all peer-checked:after:translate-x-full"></div>
+                          <div className="w-9 h-5 bg-slate-300 rounded-full peer peer-checked:bg-primary after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:after:translate-x-full"></div>
                         </label>
                       </div>
                       <div className="flex gap-2">
@@ -1305,8 +1318,25 @@ export default function CarouselGenerator({ onLogout }: { onLogout: () => void }
                     <div className={`${generateWithAI ? 'opacity-40 grayscale pointer-events-none' : ''} space-y-3`}>
                       <div className="grid grid-cols-4 gap-2">
                         {Array.from({ length: slideCount }).map((_, i) => (
-                          <div key={i} onClick={() => handleIndividualUploadClick(i)} className="aspect-[4/5] rounded-xl border-2 border-dashed border-slate-200 flex items-center justify-center group hover:border-primary cursor-pointer relative overflow-hidden">
-                            {uploadedImages[i] ? <img src={uploadedImages[i] as string} className="w-full h-full object-cover" /> : <span className="text-[10px] font-black text-slate-200">S{i + 1}</span>}
+                          <div
+                            key={i}
+                            onClick={() => handleIndividualUploadClick(i)}
+                            className="aspect-[4/5] rounded-xl border-2 border-dashed border-slate-200 flex items-center justify-center group hover:border-primary cursor-pointer relative overflow-hidden"
+                            draggable={!generateWithAI && !!uploadedImages[i]}
+                            onDragStart={() => handleDragStart(i)}
+                            onDragOver={handleDragOver}
+                            onDrop={() => handleDrop(i)}
+                          >
+                            {uploadedImages[i] ? (
+                              <>
+                                <img src={uploadedImages[i] as string} className="w-full h-full object-cover" />
+                                <button onClick={(e) => handleRemoveImage(i, e)} className="absolute top-1 right-1 size-5 bg-black/50 hover:bg-red-500 rounded-full flex items-center justify-center text-white opacity-0 group-hover:opacity-100 transition-all z-10">
+                                  <span className="material-symbols-outlined text-[12px] font-bold">close</span>
+                                </button>
+                              </>
+                            ) : (
+                              <span className="text-[10px] font-black text-slate-200">S{i + 1}</span>
+                            )}
                           </div>
                         ))}
                       </div>

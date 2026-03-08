@@ -1597,7 +1597,7 @@ export default function CarouselGenerator({ onLogout }: { onLogout: () => void }
                         <div className="relative group/slide w-full h-full rounded-2xl overflow-hidden shadow-2xl transition-transform hover:-translate-y-2 duration-300">
                           <div
                             ref={(el) => { slideRefs.current[index] = el; }}
-                            className={`absolute inset-0 flex flex-col items-center ${ctaImage ? 'justify-start pt-12' : 'justify-center p-8'} text-center`}
+                            className={`absolute inset-0 flex flex-col items-center ${ctaImage ? 'justify-start pt-12' : 'justify-center'} p-8 text-center overflow-hidden`}
                             style={{ backgroundColor: ctaBgColor }}
                           >
 
@@ -1630,9 +1630,9 @@ export default function CarouselGenerator({ onLogout }: { onLogout: () => void }
                               </div>
                             )}
 
-                            <div className={`w-full flex-1 flex flex-col items-center p-8 shrink-0 z-20 relative ${ctaImage ? 'justify-start' : 'justify-center'}`} style={{ fontFamily, color: ctaTextColor, fontSize: `${ctaTextSize}px` }}>
-                              {slide.title && <h2 className={`font-extrabold text-2xl sm:text-3xl leading-tight uppercase mb-4`} style={{ color: ctaTextColor }}>{slide.title}</h2>}
-                              <div className={`font-medium leading-relaxed whitespace-pre-wrap focus:outline-none w-[90%] mx-auto`} style={{ color: ctaTextColor }} dangerouslySetInnerHTML={{ __html: slide.subtitle }}></div>
+                            <div className={`w-full flex-1 flex flex-col items-center shrink-0 z-20 relative px-4 ${ctaImage ? 'justify-start mt-6' : 'justify-center'}`} style={{ fontFamily, color: ctaTextColor, fontSize: `${ctaTextSize}px` }}>
+                              {slide.title && <h2 className={`font-extrabold text-2xl sm:text-3xl leading-tight uppercase mb-4 break-words w-full px-4`} style={{ color: ctaTextColor }}>{slide.title}</h2>}
+                              <div className={`font-medium leading-relaxed whitespace-pre-wrap focus:outline-none w-full px-4 break-all sm:break-words mx-auto`} style={{ color: ctaTextColor }} dangerouslySetInnerHTML={{ __html: slide.subtitle }}></div>
                             </div>
                           </div>
 

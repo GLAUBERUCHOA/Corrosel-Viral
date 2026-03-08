@@ -1149,6 +1149,38 @@ export default function CarouselGenerator({ onLogout }: { onLogout: () => void }
                         </div>
                       )}
                     </div>
+                    {/* API Key Block - Moved to Step 1 */}
+                    <div className="space-y-3 pt-4 border-t border-slate-100 dark:border-border-dark mt-4">
+                      <div className="flex items-center justify-between">
+                        <div className="flex flex-col gap-0.5">
+                          <label className="text-[11px] font-black text-slate-400 uppercase tracking-widest leading-none">Sua Chave da API Gemini (Opcional)</label>
+                          <p className="text-[10px] text-slate-400 leading-tight">Criptografia Local: Sua chave nunca toca nosso servidor.</p>
+                        </div>
+                        {customApiKey && (
+                          <span className="flex items-center gap-1 text-[10px] font-bold text-emerald-500 bg-emerald-50 dark:bg-emerald-500/10 px-2 py-0.5 rounded-full">
+                            <span className="material-symbols-outlined text-[14px]">lock</span> Salva
+                          </span>
+                        )}
+                      </div>
+                      <div className="relative group">
+                        <input
+                          type="password"
+                          value={customApiKey}
+                          onChange={handleApiKeyChange}
+                          placeholder="Cole aqui: AIzaSy..."
+                          className="w-full bg-slate-50 dark:bg-surface-darker border border-slate-100 dark:border-border-dark rounded-xl px-4 py-3 text-xs opacity-80 focus:opacity-100 focus:bg-white outline-none focus:ring-2 focus:ring-primary/20 transition-all font-mono"
+                        />
+                        <a
+                          href="https://aistudio.google.com/app/apikey"
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="absolute right-3 top-1/2 -translate-y-1/2 text-primary hover:text-primary-dark transition-colors"
+                          title="Obter chave no Google AI Studio"
+                        >
+                          <span className="material-symbols-outlined text-[18px]">open_in_new</span>
+                        </a>
+                      </div>
+                    </div>
                   </div>
                 </div>
               </div>
@@ -1206,9 +1238,9 @@ export default function CarouselGenerator({ onLogout }: { onLogout: () => void }
                       <div className="space-y-1.5">
                         <label className="text-[10px] font-bold text-slate-400 uppercase">Alinhamento</label>
                         <div className="flex bg-slate-50 p-1 rounded-lg border border-slate-200">
-                          <button onClick={() => setTextAlign('left')} className={`flex-1 py-1 rounded ${textAlign === 'left' ? 'bg-white shadow-sm text-primary' : 'text-slate-400'}`}><span className="material-symbols-outlined text-[16px]">format_align_left</span></button>
-                          <button onClick={() => setTextAlign('center')} className={`flex-1 py-1 rounded ${textAlign === 'center' ? 'bg-white shadow-sm text-primary' : 'text-slate-400'}`}><span className="material-symbols-outlined text-[16px]">format_align_center</span></button>
-                          <button onClick={() => setTextAlign('right')} className={`flex-1 py-1 rounded ${textAlign === 'right' ? 'bg-white shadow-sm text-primary' : 'text-slate-400'}`}><span className="material-symbols-outlined text-[16px]">format_align_right</span></button>
+                          <button onClick={() => setTextAlign('text-left')} className={`flex-1 py-1 rounded ${textAlign === 'text-left' ? 'bg-white shadow-sm text-primary' : 'text-slate-400'}`}><span className="material-symbols-outlined text-[16px]">format_align_left</span></button>
+                          <button onClick={() => setTextAlign('text-center')} className={`flex-1 py-1 rounded ${textAlign === 'text-center' ? 'bg-white shadow-sm text-primary' : 'text-slate-400'}`}><span className="material-symbols-outlined text-[16px]">format_align_center</span></button>
+                          <button onClick={() => setTextAlign('text-right')} className={`flex-1 py-1 rounded ${textAlign === 'text-right' ? 'bg-white shadow-sm text-primary' : 'text-slate-400'}`}><span className="material-symbols-outlined text-[16px]">format_align_right</span></button>
                         </div>
                       </div>
                     </div>
@@ -1268,7 +1300,6 @@ export default function CarouselGenerator({ onLogout }: { onLogout: () => void }
                         <select value={imageNiche} onChange={(e) => setImageNiche(e.target.value)} className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-xs font-bold">
                           {dbImageLabels.filter(label => label.key !== 'GLOBAL_IMAGE').map(label => (<option key={label.key} value={label.key}>{label.label}</option>))}
                         </select>
-                        <input type="password" value={customApiKey} onChange={handleApiKeyChange} placeholder="API Key (Opcional)" className="w-full bg-white border border-slate-100 rounded-lg px-3 py-2 text-[10px] outline-none" />
                       </div>
                     )}
                     <div className={`${generateWithAI ? 'opacity-40 grayscale pointer-events-none' : ''} space-y-3`}>
@@ -1282,6 +1313,10 @@ export default function CarouselGenerator({ onLogout }: { onLogout: () => void }
                       <button onClick={handleMassUploadClick} className="w-full py-2.5 bg-white border border-slate-200 rounded-xl text-[10px] font-black uppercase text-slate-500 hover:bg-slate-50 flex items-center justify-center gap-1 transition-all">
                         <span className="material-symbols-outlined text-[16px]">upload_file</span> Upload Massa
                       </button>
+
+                      {/* Hidden Inputs Restored */}
+                      <input type="file" multiple accept="image/*" className="hidden" ref={fileInputRef} onChange={handleFileUpload} />
+                      <input type="file" accept="image/*" className="hidden" ref={individualFileInputRef} onChange={handleIndividualFileUpload} />
                     </div>
                   </div>
                 </div>

@@ -1031,7 +1031,7 @@ export default function CarouselGenerator({ onLogout }: { onLogout: () => void }
   };
 
   return (
-    <div className="bg-background-light dark:bg-background-dark text-slate-900 dark:text-slate-100 font-display h-[100dvh] flex flex-col overflow-hidden">
+    <div className="bg-slate-100 dark:bg-background-dark text-slate-900 dark:text-slate-100 font-display h-[100dvh] flex flex-col overflow-hidden">
 
       {/* Wrapper fixo para Header e Tabs no Celular */}
       <div className="sticky top-0 z-40 flex flex-col w-full shadow-sm relative">

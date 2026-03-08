@@ -215,6 +215,11 @@ export default function CarouselGenerator({ onLogout }: { onLogout: () => void }
   const [isMobile, setIsMobile] = useState(false);
   const [isDarkMode, setIsDarkMode] = useState(false);
   const [viewMode, setViewMode] = useState<'grid' | 'carousel'>('grid');
+  const [titleSize, setTitleSize] = useState(30);
+  const [subSize, setSubSize] = useState(16);
+  const [ctaBgColor, setCtaBgColor] = useState('#111827');
+  const [ctaTextColor, setCtaTextColor] = useState('#ffffff');
+  const [ctaTextSize, setCtaTextSize] = useState(24);
 
   // Dark Mode Logic
   useEffect(() => {
@@ -387,6 +392,11 @@ export default function CarouselGenerator({ onLogout }: { onLogout: () => void }
         if (prefs.parsedSlides && Array.isArray(prefs.parsedSlides) && prefs.parsedSlides.length > 0) {
           setParsedSlides(prefs.parsedSlides);
         }
+        if (prefs.titleSize) setTitleSize(prefs.titleSize);
+        if (prefs.subSize) setSubSize(prefs.subSize);
+        if (prefs.ctaBgColor) setCtaBgColor(prefs.ctaBgColor);
+        if (prefs.ctaTextColor) setCtaTextColor(prefs.ctaTextColor);
+        if (prefs.ctaTextSize) setCtaTextSize(prefs.ctaTextSize);
       } catch (e) {
         console.error("Failed to parse saved preferences", e);
       }
@@ -460,6 +470,11 @@ export default function CarouselGenerator({ onLogout }: { onLogout: () => void }
         prefs.customTextColor = customTextColor;
         prefs.fontFamily = fontFamily;
         prefs.textAlign = textAlign;
+        prefs.titleSize = titleSize;
+        prefs.subSize = subSize;
+        prefs.ctaBgColor = ctaBgColor;
+        prefs.ctaTextColor = ctaTextColor;
+        prefs.ctaTextSize = ctaTextSize;
       } else {
         prefs.brandHandle = '';
         prefs.brandLogo = null;
@@ -1171,6 +1186,25 @@ export default function CarouselGenerator({ onLogout }: { onLogout: () => void }
                             <button onClick={() => ctaImageInputRef.current?.click()} className="text-[10px] font-bold bg-primary/10 text-primary px-3 py-1.5 rounded-lg hover:bg-primary/20 transition-colors">{ctaImage ? 'Trocar' : 'Upload +'}</button>
                             <input type="file" ref={ctaImageInputRef} onChange={handleCtaImageUpload} accept="image/*" className="hidden" />
                           </div>
+
+                          {/* Painel Exclusivo do CTA */}
+                          <div className="space-y-3 pt-3 border-t border-slate-100 dark:border-border-dark">
+                            <div className="flex items-center justify-between">
+                              <span className="text-[10px] font-bold text-slate-400 uppercase">Fundo do CTA</span>
+                              <input type="color" value={ctaBgColor} onChange={(e) => setCtaBgColor(e.target.value)} className="size-6 cursor-pointer bg-transparent border-0 p-0" />
+                            </div>
+                            <div className="flex items-center justify-between">
+                              <span className="text-[10px] font-bold text-slate-400 uppercase">Texto do CTA</span>
+                              <input type="color" value={ctaTextColor} onChange={(e) => setCtaTextColor(e.target.value)} className="size-6 cursor-pointer bg-transparent border-0 p-0" />
+                            </div>
+                            <div className="space-y-1.5">
+                              <div className="flex justify-between items-center">
+                                <label className="text-[10px] font-bold text-slate-400 uppercase">Tamanho Texto CTA</label>
+                                <span className="text-[10px] font-mono font-bold text-primary">{ctaTextSize}px</span>
+                              </div>
+                              <input type="range" min="12" max="50" value={ctaTextSize} onChange={(e) => setCtaTextSize(Number(e.target.value))} className="w-full h-1 bg-slate-200 rounded-lg appearance-none cursor-pointer accent-primary" />
+                            </div>
+                          </div>
                         </div>
                       )}
                     </div>
@@ -1304,6 +1338,25 @@ export default function CarouselGenerator({ onLogout }: { onLogout: () => void }
                       </div>
                     </div>
                   </div>
+
+                  {/* Gaveta 2: Tamanhos Globais */}
+                  <div className="space-y-4 pt-4 border-t border-slate-100 dark:border-border-dark mt-4">
+                    <div className="space-y-1.5">
+                      <div className="flex justify-between items-center">
+                        <label className="text-[10px] font-bold text-slate-400 uppercase">Tamanho do Título</label>
+                        <span className="text-[10px] font-mono font-bold text-primary">{titleSize}px</span>
+                      </div>
+                      <input type="range" min="16" max="60" value={titleSize} onChange={(e) => setTitleSize(Number(e.target.value))} className="w-full h-1 bg-slate-200 rounded-lg appearance-none cursor-pointer accent-primary" />
+                    </div>
+                    <div className="space-y-1.5">
+                      <div className="flex justify-between items-center">
+                        <label className="text-[10px] font-bold text-slate-400 uppercase">Tamanho do Texto</label>
+                        <span className="text-[10px] font-mono font-bold text-primary">{subSize}px</span>
+                      </div>
+                      <input type="range" min="10" max="40" value={subSize} onChange={(e) => setSubSize(Number(e.target.value))} className="w-full h-1 bg-slate-200 rounded-lg appearance-none cursor-pointer accent-primary" />
+                    </div>
+                  </div>
+
                   <div className="space-y-3 pt-4 border-t border-slate-100">
                     <div className="flex items-center justify-between">
                       <div className="flex items-center gap-2">
@@ -1527,8 +1580,8 @@ export default function CarouselGenerator({ onLogout }: { onLogout: () => void }
                         <div className="relative group/slide w-full h-full rounded-2xl overflow-hidden shadow-2xl transition-transform hover:-translate-y-2 duration-300">
                           <div
                             ref={(el) => { slideRefs.current[index] = el; }}
-                            className={`absolute inset-0 flex flex-col items-center justify-start pt-12 text-center ${theme.bgClass}`}
-                            style={{ ...theme.bgStyle, backgroundColor: customColor }}
+                            className={`absolute inset-0 flex flex-col items-center justify-start pt-12 text-center`}
+                            style={{ backgroundColor: ctaBgColor }}
                           >
 
                             {ctaImage && (
@@ -1560,9 +1613,9 @@ export default function CarouselGenerator({ onLogout }: { onLogout: () => void }
                               </div>
                             )}
 
-                            <div className={`w-full flex-1 flex flex-col items-center p-8 shrink-0 z-20 relative ${ctaImage ? 'justify-start' : 'justify-center'} ${theme.textClass}`} style={{ fontFamily, color: customTextColor }}>
-                              {slide.title && <h2 className={`font-extrabold text-2xl sm:text-3xl leading-tight uppercase mb-4`} style={{ color: customTextColor }}>{slide.title}</h2>}
-                              <div className={`text-base sm:text-lg ${theme.subtextClass} font-medium leading-relaxed whitespace-pre-wrap focus:outline-none w-[90%] mx-auto`} style={{ color: customTextColor }} dangerouslySetInnerHTML={{ __html: slide.subtitle }}></div>
+                            <div className={`w-full flex-1 flex flex-col items-center p-8 shrink-0 z-20 relative ${ctaImage ? 'justify-start' : 'justify-center'}`} style={{ fontFamily, color: ctaTextColor, fontSize: `${ctaTextSize}px` }}>
+                              {slide.title && <h2 className={`font-extrabold text-2xl sm:text-3xl leading-tight uppercase mb-4`} style={{ color: ctaTextColor }}>{slide.title}</h2>}
+                              <div className={`font-medium leading-relaxed whitespace-pre-wrap focus:outline-none w-[90%] mx-auto`} style={{ color: ctaTextColor }} dangerouslySetInnerHTML={{ __html: slide.subtitle }}></div>
                             </div>
                           </div>
 
@@ -1646,8 +1699,8 @@ export default function CarouselGenerator({ onLogout }: { onLogout: () => void }
 
                           <div className={`w-full px-8 flex flex-col shrink-0 z-20 relative ${textAlignmentPadding} ${textAlign}`} style={{ fontFamily, color: customTextColor }}>
                             <div className={`flex flex-col gap-2 ${textAlign === 'text-center' ? 'items-center text-center' : textAlign === 'text-right' ? 'items-end text-right' : 'items-start text-left'}`}>
-                              {slide.title && <h2 className={`${titleClass} uppercase [&>div]:inline`} style={{ color: customTextColor }} dangerouslySetInnerHTML={{ __html: slide.title }} />}
-                              {slide.subtitle && <p className={`${subtitleClass} [&>div]:inline`} style={{ color: customTextColor }} dangerouslySetInnerHTML={{ __html: slide.subtitle }} />}
+                              {slide.title && <h2 className={`${titleClass} uppercase [&>div]:inline`} style={{ color: customTextColor, fontSize: `${titleSize}px` }} dangerouslySetInnerHTML={{ __html: slide.title }} />}
+                              {slide.subtitle && <p className={`${subtitleClass} [&>div]:inline`} style={{ color: customTextColor, fontSize: `${subSize}px` }} dangerouslySetInnerHTML={{ __html: slide.subtitle }} />}
                             </div>
                             {index === 0 && (
                               <div className="absolute bottom-3 right-3 z-30">

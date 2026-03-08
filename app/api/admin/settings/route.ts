@@ -39,8 +39,21 @@ export async function GET() {
         const prompts = await prisma.promptSetting.findMany({
             orderBy: { toneKey: 'asc' },
         });
+
+        // Sincronização automática para garantir que o nome seja atualizado no banco online
+        for (const p of prompts) {
+            if (p.toneKey === 'STORYTELLING' && p.label.includes('Jornada Histórica')) {
+                await prisma.promptSetting.update({
+                    where: { id: p.id },
+                    data: { label: '📖 Storytelling (Jornada do Herói)' }
+                });
+                p.label = '📖 Storytelling (Jornada do Herói)';
+            }
+        }
+
         return NextResponse.json({ success: true, prompts });
     } catch (error) {
+        console.error('Fetch settings error:', error);
         return NextResponse.json({ error: 'Erro interno.' }, { status: 500 });
     }
 }

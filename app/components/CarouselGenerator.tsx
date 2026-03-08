@@ -53,8 +53,6 @@ REGRAS DE LAYOUT E COMPOSIÇÃO (OBRIGATÓRIO):
 
 const SimpleRichTextEditor = ({ value, onChange, placeholder }: { value: string, onChange: (val: string) => void, placeholder: string }) => {
   const editorRef = useRef<HTMLDivElement>(null);
-  const [savedSelection, setSavedSelection] = useState<Range | null>(null);
-
   const lastHtmlRef = useRef(value);
 
   useEffect(() => {
@@ -67,18 +65,14 @@ const SimpleRichTextEditor = ({ value, onChange, placeholder }: { value: string,
   const emitChange = () => {
     if (editorRef.current) {
       const html = editorRef.current.innerHTML;
-      lastHtmlRef.current = html;
-      onChange(html);
+      if (html !== lastHtmlRef.current) {
+        lastHtmlRef.current = html;
+        onChange(html);
+      }
     }
   };
 
   const executeCommand = (command: string, val?: string) => {
-    editorRef.current?.focus();
-    if (savedSelection) {
-      const sel = window.getSelection();
-      sel?.removeAllRanges();
-      sel?.addRange(savedSelection);
-    }
     document.execCommand(command, false, val);
     emitChange();
   };
@@ -151,12 +145,9 @@ const SimpleRichTextEditor = ({ value, onChange, placeholder }: { value: string,
           emptyCells: 'show'
         }}
         contentEditable
-        onMouseUp={saveSelection}
-        onKeyUp={saveSelection}
-        onMouseLeave={saveSelection}
-        onInput={(e) => { saveSelection(); emitChange(); }}
-        onBlur={() => { emitChange(); }}
-        dangerouslySetInnerHTML={{ __html: value }}
+        onInput={emitChange}
+        onBlur={emitChange}
+        dangerouslySetInnerHTML={{ __html: lastHtmlRef.current }}
       />
     </div>
   );

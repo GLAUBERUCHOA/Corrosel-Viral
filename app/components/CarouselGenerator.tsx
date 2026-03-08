@@ -213,7 +213,34 @@ export default function CarouselGenerator({ onLogout }: { onLogout: () => void }
   const [customColor, setCustomColor] = useState('#6366f1');
   const [customTextColor, setCustomTextColor] = useState('#ffffff');
   const [isMobile, setIsMobile] = useState(false);
+  const [isDarkMode, setIsDarkMode] = useState(false);
   const [viewMode, setViewMode] = useState<'grid' | 'carousel'>('grid');
+
+  // Dark Mode Logic
+  useEffect(() => {
+    const savedTheme = localStorage.getItem('theme');
+    const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+
+    if (savedTheme === 'dark' || (!savedTheme && prefersDark)) {
+      setIsDarkMode(true);
+      document.documentElement.classList.add('dark');
+    } else {
+      setIsDarkMode(false);
+      document.documentElement.classList.remove('dark');
+    }
+  }, []);
+
+  const toggleDarkMode = () => {
+    const newMode = !isDarkMode;
+    setIsDarkMode(newMode);
+    if (newMode) {
+      document.documentElement.classList.add('dark');
+      localStorage.setItem('theme', 'dark');
+    } else {
+      document.documentElement.classList.remove('dark');
+      localStorage.setItem('theme', 'light');
+    }
+  };
 
   const [imagePosMap, setImagePosMap] = useState<Record<number, number>>({});
   const isDraggingImg = useRef<{ index: number, startY: number, startPos: number } | null>(null);
@@ -1017,6 +1044,15 @@ export default function CarouselGenerator({ onLogout }: { onLogout: () => void }
           </div>
           <div className="flex flex-1 justify-end gap-4 items-center">
             <button
+              onClick={toggleDarkMode}
+              className="size-9 rounded-full flex items-center justify-center bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-400 hover:text-primary transition-colors border border-slate-200 dark:border-border-dark"
+              title={isDarkMode ? 'Mudar para modo claro' : 'Mudar para modo escuro'}
+            >
+              <span className="material-symbols-outlined text-[20px]">
+                {isDarkMode ? 'light_mode' : 'dark_mode'}
+              </span>
+            </button>
+            <button
               onClick={onLogout}
               className="text-sm font-semibold text-slate-500 hover:text-red-500 transition-colors flex items-center gap-1"
             >
@@ -1146,7 +1182,7 @@ export default function CarouselGenerator({ onLogout }: { onLogout: () => void }
                           <p className="text-[10px] text-slate-400 leading-tight">Criptografia Local: Sua chave nunca toca nosso servidor.</p>
                         </div>
                         {customApiKey && (
-                          <span className="flex items-center gap-1 text-[10px] font-bold text-emerald-500 bg-emerald-50 dark:bg-emerald-500/10 px-2 py-0.5 rounded-full">
+                          <span className="flex items-center gap-1 text-[10px] font-bold text-orange-500 bg-orange-50 dark:bg-orange-500/10 px-2 py-0.5 rounded-full">
                             <span className="material-symbols-outlined text-[14px]">lock</span> Salva
                           </span>
                         )}
@@ -1313,11 +1349,11 @@ export default function CarouselGenerator({ onLogout }: { onLogout: () => void }
               </button>
               <div className={`transition-all duration-300 ${activeStep === 3 ? 'max-h-[1500px] opacity-100 p-4 border-t border-slate-50 dark:border-border-dark' : 'max-h-0 opacity-0 p-0 pointer-events-none'}`}>
                 <div className="space-y-4">
-                  <div className="flex items-center justify-between bg-emerald-50 p-3 rounded-xl border border-emerald-100">
-                    <span className="text-[10px] font-black text-emerald-700 uppercase">Gerar com IA</span>
+                  <div className="flex items-center justify-between bg-orange-50 dark:bg-orange-500/10 p-3 rounded-xl border border-orange-100 dark:border-orange-500/20">
+                    <span className="text-[10px] font-black text-orange-700 dark:text-orange-400 uppercase">Gerar com IA</span>
                     <label className="relative inline-flex items-center cursor-pointer">
                       <input type="checkbox" className="sr-only peer" checked={generateWithAI} onChange={(e) => setGenerateWithAI(e.target.checked)} />
-                      <div className="w-10 h-5 bg-slate-200 rounded-full peer peer-checked:bg-emerald-500 after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:after:translate-x-full"></div>
+                      <div className="w-10 h-5 bg-slate-200 dark:bg-slate-700 rounded-full peer peer-checked:bg-orange-500 after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:after:translate-x-full"></div>
                     </label>
                   </div>
                   {generateWithAI && (
@@ -1368,7 +1404,7 @@ export default function CarouselGenerator({ onLogout }: { onLogout: () => void }
             <button
               onClick={handleGenerateCarousel}
               disabled={!content.trim() || isGeneratingText || generatingImages.some(v => v) || (isIuryMode && content.length < 50)}
-              className={`w-full flex items-center justify-center gap-2 rounded-xl h-12 text-white text-base font-bold shadow-lg transition-all disabled:opacity-70 disabled:hover:scale-100 disabled:cursor-not-allowed bg-gradient-to-r from-emerald-500 to-emerald-400 hover:from-emerald-400 hover:to-emerald-300 shadow-emerald-500/25 active:scale-[0.98]`}>
+              className={`w-full flex items-center justify-center gap-2 rounded-xl h-12 text-white text-base font-bold shadow-lg transition-all disabled:opacity-70 disabled:hover:scale-100 disabled:cursor-not-allowed bg-gradient-to-r from-orange-500 to-orange-400 hover:from-orange-400 hover:to-orange-300 shadow-orange-500/25 active:scale-[0.98]`}>
               {isGeneratingText || generatingImages.some(v => v) ? (
                 <span className="material-symbols-outlined animate-spin">progress_activity</span>
               ) : (

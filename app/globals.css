@@ -1,12 +1,12 @@
 @import "tailwindcss";
 
 @theme {
-  --color-primary: #1919e6;
+  --color-primary: #FF8A00;
   --color-background-light: #f6f6f8;
-  --color-background-dark: #111121;
-  --color-surface-dark: #1a1a2e;
-  --color-surface-darker: #151525;
-  --color-border-dark: #2a2a45;
+  --color-background-dark: #0A0B1A;
+  --color-surface-dark: #131426;
+  --color-surface-darker: #1C1D33;
+  --color-border-dark: #2A2C4A;
   --font-display: "Poppins", sans-serif;
 }
 

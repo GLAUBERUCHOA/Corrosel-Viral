@@ -172,8 +172,8 @@ export default function LoginScreen({ onLogin }: { onLogin: (email: string) => v
             )}
 
             {successMsg && (
-              <div className="p-3 bg-emerald-50 dark:bg-emerald-500/10 border border-emerald-200 dark:border-emerald-500/20 rounded-lg animate-in fade-in slide-in-from-top-1">
-                <p className="text-sm font-medium text-emerald-600 dark:text-emerald-400 flex items-start gap-2">
+              <div className="p-3 bg-orange-50 dark:bg-orange-500/10 border border-orange-200 dark:border-orange-500/20 rounded-lg animate-in fade-in slide-in-from-top-1">
+                <p className="text-sm font-medium text-orange-600 dark:text-orange-400 flex items-start gap-2">
                   <span className="material-symbols-outlined text-[18px] translate-y-0.5">check_circle</span> {successMsg}
                 </p>
               </div>

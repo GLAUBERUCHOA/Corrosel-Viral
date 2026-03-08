@@ -1206,35 +1206,45 @@ export default function CarouselGenerator({ onLogout }: { onLogout: () => void }
                         {['Moderno', 'Escuro', 'Vibrante', 'Minimalista', 'Regional', 'Personalizado'].map((mode) => (
                           <div key={mode} className={`h-12 rounded-lg flex items-center justify-center cursor-pointer ring-2 transition-all ${styleModel === mode ? 'ring-primary' : 'ring-transparent'}`}
                             style={{ background: mode === 'Moderno' ? 'linear-gradient(135deg, #6366f1, #a855f7)' : mode === 'Escuro' ? '#1e293b' : mode === 'Vibrante' ? 'linear-gradient(135deg, #f87171, #fb923c)' : mode === 'Minimalista' ? '#fff' : mode === 'Regional' ? '#efe9dc' : mode === 'Personalizado' ? customColor : '#f8fafc', border: (mode === 'Minimalista' || mode === 'Regional') ? '1px solid #e2e8f0' : 'none' }}
-                            onClick={() => setStyleModel(mode)}>
+                            onClick={() => {
+                              setStyleModel(mode);
+                              // Ajuste automático de contraste
+                              if (mode === 'Minimalista' || mode === 'Regional') {
+                                setCustomTextColor('#0f172a'); // text-slate-900
+                              } else {
+                                setCustomTextColor('#ffffff'); // text-white
+                              }
+                              // Ajuste automático de fundo base
+                              if (mode === 'Escuro') setCustomColor('#151525');
+                              if (mode === 'Minimalista') setCustomColor('#ffffff');
+                              if (mode === 'Regional') setCustomColor('#efe9dc');
+                            }}>
                             <span className={`text-[9px] font-black uppercase ${mode === 'Minimalista' || mode === 'Regional' ? 'text-slate-800' : 'text-white'}`}>{mode}</span>
                           </div>
                         ))}
                       </div>
                     </div>
 
-                    {styleModel === 'Personalizado' && (
-                      <div key="custom-theme-controls" className="p-3 bg-slate-50 dark:bg-surface-darker rounded-xl border border-slate-100 dark:border-border-dark space-y-3 animate-in fade-in slide-in-from-top-2 duration-300">
-                        <div className="flex items-center justify-between">
-                          <span className="text-[11px] font-bold text-slate-500 uppercase">Cor do Fundo</span>
-                          <input
-                            type="color"
-                            value={customColor}
-                            onChange={(e) => setCustomColor(e.target.value)}
-                            className="size-8 cursor-pointer bg-transparent border-0 p-0"
-                          />
-                        </div>
-                        <div className="flex items-center justify-between">
-                          <span className="text-[11px] font-bold text-slate-500 uppercase">Cor do Texto</span>
-                          <input
-                            type="color"
-                            value={customTextColor}
-                            onChange={(e) => setCustomTextColor(e.target.value)}
-                            className="size-8 cursor-pointer bg-transparent border-0 p-0"
-                          />
-                        </div>
+                    <div key="custom-theme-controls" className="p-3 bg-slate-50 dark:bg-surface-darker rounded-xl border border-slate-100 dark:border-border-dark space-y-3 animate-in fade-in slide-in-from-top-2 duration-300">
+                      <div className="flex items-center justify-between">
+                        <span className="text-[11px] font-bold text-slate-500 uppercase">Cor do Fundo</span>
+                        <input
+                          type="color"
+                          value={customColor}
+                          onChange={(e) => setCustomColor(e.target.value)}
+                          className="size-8 cursor-pointer bg-transparent border-0 p-0"
+                        />
                       </div>
-                    )}
+                      <div className="flex items-center justify-between">
+                        <span className="text-[11px] font-bold text-slate-500 uppercase">Cor do Texto</span>
+                        <input
+                          type="color"
+                          value={customTextColor}
+                          onChange={(e) => setCustomTextColor(e.target.value)}
+                          className="size-8 cursor-pointer bg-transparent border-0 p-0"
+                        />
+                      </div>
+                    </div>
 
                   </div>
                   <div className="grid grid-cols-2 gap-3">
@@ -1482,7 +1492,7 @@ export default function CarouselGenerator({ onLogout }: { onLogout: () => void }
                           <div
                             ref={(el) => { slideRefs.current[index] = el; }}
                             className={`absolute inset-0 flex flex-col items-center justify-start pt-12 text-center ${theme.bgClass}`}
-                            style={theme.bgStyle}
+                            style={{ ...theme.bgStyle, backgroundColor: customColor }}
                           >
 
                             {ctaImage && (
@@ -1514,9 +1524,9 @@ export default function CarouselGenerator({ onLogout }: { onLogout: () => void }
                               </div>
                             )}
 
-                            <div className={`w-full flex-1 flex flex-col items-center p-8 shrink-0 z-20 relative ${ctaImage ? 'justify-start' : 'justify-center'} ${theme.textClass}`} style={{ fontFamily, color: styleModel === 'Personalizado' ? customTextColor : undefined }}>
-                              {slide.title && <h2 className={`font-extrabold text-2xl sm:text-3xl leading-tight uppercase mb-4`} style={{ color: styleModel === 'Personalizado' ? customTextColor : undefined }}>{slide.title}</h2>}
-                              <div className={`text-base sm:text-lg ${theme.subtextClass} font-medium leading-relaxed whitespace-pre-wrap focus:outline-none w-[90%] mx-auto`} style={{ color: styleModel === 'Personalizado' ? customTextColor : undefined }} dangerouslySetInnerHTML={{ __html: slide.subtitle }}></div>
+                            <div className={`w-full flex-1 flex flex-col items-center p-8 shrink-0 z-20 relative ${ctaImage ? 'justify-start' : 'justify-center'} ${theme.textClass}`} style={{ fontFamily, color: customTextColor }}>
+                              {slide.title && <h2 className={`font-extrabold text-2xl sm:text-3xl leading-tight uppercase mb-4`} style={{ color: customTextColor }}>{slide.title}</h2>}
+                              <div className={`text-base sm:text-lg ${theme.subtextClass} font-medium leading-relaxed whitespace-pre-wrap focus:outline-none w-[90%] mx-auto`} style={{ color: customTextColor }} dangerouslySetInnerHTML={{ __html: slide.subtitle }}></div>
                             </div>
                           </div>
 
@@ -1553,7 +1563,7 @@ export default function CarouselGenerator({ onLogout }: { onLogout: () => void }
                         <div
                           ref={(el) => { slideRefs.current[index] = el; }}
                           className={`absolute inset-0 flex ${contentOrder} ${theme.bgClass}`}
-                          style={theme.bgStyle}
+                          style={{ ...theme.bgStyle, backgroundColor: customColor }}
                         >
                           <div
                             className="w-full flex-1 min-h-[35%] overflow-hidden group/image z-10 relative"
@@ -1598,10 +1608,10 @@ export default function CarouselGenerator({ onLogout }: { onLogout: () => void }
                             )}
                           </div>
 
-                          <div className={`w-full px-8 flex flex-col shrink-0 z-20 relative ${textAlignmentPadding} ${textAlign}`} style={{ fontFamily, color: styleModel === 'Personalizado' ? customTextColor : undefined }}>
+                          <div className={`w-full px-8 flex flex-col shrink-0 z-20 relative ${textAlignmentPadding} ${textAlign}`} style={{ fontFamily, color: customTextColor }}>
                             <div className={`flex flex-col gap-2 ${textAlign === 'text-center' ? 'items-center text-center' : textAlign === 'text-right' ? 'items-end text-right' : 'items-start text-left'}`}>
-                              {slide.title && <h2 className={`${titleClass} uppercase [&>div]:inline`} style={{ color: styleModel === 'Personalizado' ? customTextColor : undefined }} dangerouslySetInnerHTML={{ __html: slide.title }} />}
-                              {slide.subtitle && <p className={`${subtitleClass} [&>div]:inline`} style={{ color: styleModel === 'Personalizado' ? customTextColor : undefined }} dangerouslySetInnerHTML={{ __html: slide.subtitle }} />}
+                              {slide.title && <h2 className={`${titleClass} uppercase [&>div]:inline`} style={{ color: customTextColor }} dangerouslySetInnerHTML={{ __html: slide.title }} />}
+                              {slide.subtitle && <p className={`${subtitleClass} [&>div]:inline`} style={{ color: customTextColor }} dangerouslySetInnerHTML={{ __html: slide.subtitle }} />}
                             </div>
                             {index === 0 && (
                               <div className="absolute bottom-3 right-3 z-30">

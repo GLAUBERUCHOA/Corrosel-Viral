@@ -179,14 +179,14 @@ export default function HomePage() {
 
           <div className="max-w-6xl mx-auto relative z-10">
             <FadeInSection>
-              <div className="bg-[#0A0A0B]/80 backdrop-blur-xl border border-slate-800/80 rounded-[2.5rem] overflow-hidden shadow-2xl">
+              <div className="bg-[#0A0A0B] backdrop-blur-xl border border-slate-800/60 rounded-[2.5rem] overflow-hidden shadow-2xl">
                 <div className="flex flex-col lg:flex-row">
 
                   {/* Text Content Area */}
-                  <div className="w-full lg:w-1/2 p-10 sm:p-14 flex flex-col justify-center relative">
+                  <div className="w-full lg:w-1/2 p-8 md:p-12 lg:p-16 flex flex-col justify-center relative">
                     <div className="absolute top-0 right-0 w-32 h-32 bg-purple-500/10 blur-[60px] rounded-full pointer-events-none"></div>
 
-                    <h2 className="text-3xl sm:text-4xl lg:text-5xl font-extrabold text-white mb-8 leading-tight">
+                    <h2 className="text-3xl sm:text-4xl lg:text-5xl font-extrabold text-white mb-8 leading-[1.1] tracking-tight">
                       Será que carrosséis realmente atraem um público <span className="text-transparent bg-clip-text bg-gradient-to-r from-orange-400 to-amber-400">mais qualificado?</span> <br className="hidden sm:block" /> Será se <span className="text-transparent bg-clip-text bg-gradient-to-r from-purple-400 to-indigo-400">vale a pena</span> investir neles?
                     </h2>
 
@@ -207,7 +207,7 @@ export default function HomePage() {
                   </div>
 
                   {/* Visual Impact Area */}
-                  <div className="w-full lg:w-1/2 bg-gradient-to-br from-slate-900 via-[#0A0A0B] to-slate-900 border-l border-slate-800/50 p-10 sm:p-14 flex flex-col justify-center items-center relative overflow-hidden">
+                  <div className="w-full lg:w-1/2 bg-gradient-to-br from-slate-900/50 via-[#0A0A0B] to-slate-900/50 border-l border-slate-800/50 p-8 md:p-12 lg:p-16 flex flex-col justify-center items-center relative overflow-hidden">
                     {/* Glowing Accent Ring */}
                     <div className="absolute inset-0 flex items-center justify-center opacity-30 pointer-events-none">
                       <div className="w-[400px] h-[400px] border border-purple-500/30 rounded-full animate-[spin_20s_linear_infinite]"></div>
@@ -265,7 +265,7 @@ export default function HomePage() {
                 </div>
               </div>
 
-              <div className="bg-[#0A0A0B] border border-slate-800/80 rounded-[2rem] overflow-hidden flex flex-col md:flex-row mt-16 group hover:border-slate-700 transition-all duration-500 shadow-2xl max-w-5xl mx-auto">
+              <div className="bg-[#0A0A0B] border border-slate-800/60 rounded-[2.5rem] overflow-hidden flex flex-col md:flex-row mt-16 group hover:border-slate-700 transition-all duration-500 shadow-2xl max-w-6xl mx-auto">
                 <div className="w-full md:w-5/12 h-[350px] md:h-auto relative overflow-hidden shrink-0">
                   <Image
                     src="/images/mockup-hand.jpg"
@@ -279,9 +279,9 @@ export default function HomePage() {
                   <div className="absolute inset-0 bg-gradient-to-t from-[#0A0A0B] via-transparent to-transparent md:bg-gradient-to-l md:from-[#0A0A0B] md:via-transparent opacity-90 z-10"></div>
                 </div>
 
-                <div className="w-full md:w-7/12 p-8 md:p-10 lg:p-12 text-left flex flex-col justify-center relative z-20 bg-[#0A0A0B]">
-                  <h3 className="text-2xl md:text-3xl font-extrabold text-white mb-4 leading-snug tracking-tight">
-                    Com os modelos de carrosséis virais gerados com um clique por IA você acelera sua <span className="text-transparent bg-clip-text bg-gradient-to-r from-orange-400 to-amber-300">produção e seus resultados.</span>
+                <div className="w-full md:w-7/12 p-8 md:p-12 lg:p-14 text-left flex flex-col justify-center relative z-20 bg-[#0A0A0B]">
+                  <h3 className="text-2xl md:text-3xl lg:text-4xl font-extrabold text-white mb-6 leading-[1.2] tracking-tight">
+                    Com os modelos de carrosséis virais gerados com um clique por IA você acelera sua <span className="text-transparent bg-clip-text bg-gradient-to-r from-orange-400 to-amber-400">produção e seus resultados.</span>
                   </h3>
 
                   <ul className="space-y-4 mb-8">

@@ -1128,7 +1128,8 @@ export default function CarouselGenerator({ onLogout }: { onLogout: () => void }
                 </button>
                 <div className={`transition-all duration-300 ${activeStep === 1 ? 'max-h-[1500px] opacity-100 p-4 border-t border-slate-50 dark:border-border-dark' : 'max-h-0 opacity-0 p-0 pointer-events-none'}`}>
                   <div className="space-y-4">
-                    <div className="flex gap-2 p-1 bg-slate-50 dark:bg-surface-darker rounded-xl border border-slate-100 dark:border-border-dark">
+                    {/* Modo Iury Ocultado (Soft Delete) */}
+                    <div className="hidden flex gap-2 p-1 bg-slate-50 dark:bg-surface-darker rounded-xl border border-slate-100 dark:border-border-dark">
                       <button onClick={() => setIsIuryMode(true)} className={`flex-1 flex items-center justify-center gap-1.5 py-2 rounded-lg text-xs font-bold transition-all ${isIuryMode ? 'bg-white dark:bg-surface-dark shadow-sm text-primary ring-1 ring-slate-100 dark:ring-border-dark' : 'text-slate-500 hover:bg-white/50'}`}>
                         <span className="material-symbols-outlined text-[16px]">psychology</span> Modo Iury
                       </button>
@@ -1138,7 +1139,7 @@ export default function CarouselGenerator({ onLogout }: { onLogout: () => void }
                     </div>
 
                     {isIuryMode && (
-                      <div className="animate-in fade-in slide-in-from-top-2 duration-300">
+                      <div className="hidden animate-in fade-in slide-in-from-top-2 duration-300">
                         <select value={toneMode} onChange={(e) => setToneMode(e.target.value)} className="w-full bg-slate-50 dark:bg-surface-darker border border-slate-200 dark:border-border-dark text-slate-900 dark:text-white rounded-xl px-3 py-2.5 text-xs font-bold focus:ring-2 focus:ring-primary/20 outline-none transition-all">
                           {dbLabels.filter(l => l.key !== 'GLOBAL_INSTRUCTIONS').map((t) => (
                             <option key={t.key} value={t.key} className="bg-white dark:bg-surface-darker text-slate-900 dark:text-white">
@@ -1148,6 +1149,22 @@ export default function CarouselGenerator({ onLogout }: { onLogout: () => void }
                         </select>
                       </div>
                     )}
+
+                    {/* Painel de Agentes Externos */}
+                    <div className="bg-gradient-to-br from-indigo-50/50 to-purple-50/50 dark:from-indigo-500/5 dark:to-purple-500/5 border border-indigo-100/50 dark:border-indigo-500/20 rounded-2xl p-4 mb-2 shadow-sm">
+                      <h4 className="text-[10px] font-black text-indigo-600 dark:text-indigo-400 uppercase tracking-widest mb-3 flex items-center gap-2">
+                        <span className="material-symbols-outlined text-[16px]">verified</span>
+                        Acelere sua criação com nossos Agentes de IA
+                      </h4>
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                        <a href="#roteiros" target="_blank" className="flex items-center justify-center gap-2 py-2 px-3 bg-white dark:bg-surface-dark border border-indigo-100 dark:border-indigo-500/30 rounded-xl text-[11px] font-bold text-slate-700 dark:text-slate-200 hover:border-indigo-400 hover:text-indigo-600 dark:hover:text-indigo-400 transition-all shadow-sm">
+                          <span className="material-symbols-outlined text-[16px]">psychology</span> Agente de Roteiros
+                        </a>
+                        <a href="#imagens" target="_blank" className="flex items-center justify-center gap-2 py-2 px-3 bg-white dark:bg-surface-dark border border-indigo-100 dark:border-indigo-500/30 rounded-xl text-[11px] font-bold text-slate-700 dark:text-slate-200 hover:border-indigo-400 hover:text-indigo-600 dark:hover:text-indigo-400 transition-all shadow-sm">
+                          <span className="material-symbols-outlined text-[16px]">palette</span> Agente de Imagens
+                        </a>
+                      </div>
+                    </div>
 
                     <div className="space-y-2 relative group">
                       <div className="flex items-center justify-between px-1">
@@ -1215,7 +1232,8 @@ export default function CarouselGenerator({ onLogout }: { onLogout: () => void }
                       )}
                     </div>
                     {/* API Key Block - Moved to Step 1 */}
-                    <div className="space-y-3 pt-4 border-t border-slate-100 dark:border-border-dark mt-4">
+                    {/* Campo de API Key Ocultado (Soft Delete) */}
+                    <div className="hidden space-y-3 pt-4 border-t border-slate-100 dark:border-border-dark mt-4">
                       <div className="flex items-center justify-between">
                         <div className="flex flex-col gap-0.5">
                           <label className="text-[11px] font-black text-slate-400 uppercase tracking-widest leading-none">Sua Chave da API Gemini (Opcional)</label>
@@ -1408,7 +1426,8 @@ export default function CarouselGenerator({ onLogout }: { onLogout: () => void }
               </button>
               <div className={`transition-all duration-300 ${activeStep === 3 ? 'max-h-[1500px] opacity-100 p-4 border-t border-slate-50 dark:border-border-dark' : 'max-h-0 opacity-0 p-0 pointer-events-none'}`}>
                 <div className="space-y-4">
-                  <div className="flex items-center justify-between bg-orange-50 dark:bg-orange-500/10 p-3 rounded-xl border border-orange-100 dark:border-orange-500/20">
+                  {/* Geração de Imagem com IA Ocultada (Soft Delete) */}
+                  <div className="hidden flex items-center justify-between bg-orange-50 dark:bg-orange-500/10 p-3 rounded-xl border border-orange-100 dark:border-orange-500/20">
                     <span className="text-[10px] font-black text-orange-700 dark:text-orange-400 uppercase">Gerar com IA</span>
                     <label className="relative inline-flex items-center cursor-pointer">
                       <input type="checkbox" className="sr-only peer" checked={generateWithAI} onChange={(e) => setGenerateWithAI(e.target.checked)} />
@@ -1416,7 +1435,7 @@ export default function CarouselGenerator({ onLogout }: { onLogout: () => void }
                     </label>
                   </div>
                   {generateWithAI && (
-                    <div className="space-y-3 animate-in fade-in duration-300">
+                    <div className="hidden space-y-3 animate-in fade-in duration-300">
                       <select value={imageNiche} onChange={(e) => setImageNiche(e.target.value)} className="w-full bg-slate-50 dark:bg-surface-darker border border-slate-200 dark:border-border-dark text-slate-900 dark:text-white rounded-xl px-3 py-2 text-xs font-bold focus:ring-1 focus:ring-primary outline-none">
                         {dbImageLabels.filter(label => label.key !== 'GLOBAL_IMAGE').map(label => (
                           <option key={label.key} value={label.key} className="bg-white dark:bg-surface-darker text-slate-900 dark:text-white">
@@ -1471,9 +1490,9 @@ export default function CarouselGenerator({ onLogout }: { onLogout: () => void }
               {isGeneratingText || generatingImages.some(v => v) ? (
                 <span className="material-symbols-outlined animate-spin">progress_activity</span>
               ) : (
-                <span className="material-symbols-outlined">auto_fix_high</span>
+                <span className="material-symbols-outlined">layers</span>
               )}
-              {isGeneratingText ? 'IA Pensando...' : generatingImages.some(v => v) ? 'Gerando Imagens...' : 'Gerar Carrossel e Imagens'}
+              {isGeneratingText ? 'Processando...' : generatingImages.some(v => v) ? 'Gerando Imagens...' : 'Montar Carrossel'}
             </button>
           </div>
         </aside>
@@ -1750,10 +1769,11 @@ export default function CarouselGenerator({ onLogout }: { onLogout: () => void }
 
                             <div className="flex flex-col gap-2 w-1/2 max-w-[160px] pointer-events-none">
                               <span className="text-[10px] text-white/50 font-bold uppercase tracking-wider mb-1">Mídia</span>
+                              {/* Regerar IA Ocultado (Soft Delete) */}
                               <button
                                 onClick={(e) => { e.stopPropagation(); regenerateImageForSlide(index); }}
                                 disabled={generatingImages[index]}
-                                className="pointer-events-auto flex items-center justify-start gap-3 bg-indigo-600/90 text-white hover:bg-indigo-500 px-4 py-2.5 rounded-xl text-xs font-bold transition-all border border-indigo-500/30 disabled:opacity-50">
+                                className="hidden pointer-events-auto flex items-center justify-start gap-3 bg-indigo-600/90 text-white hover:bg-indigo-500 px-4 py-2.5 rounded-xl text-xs font-bold transition-all border border-indigo-500/30 disabled:opacity-50">
                                 <span className={`material-symbols-outlined text-[16px] ${generatingImages[index] ? 'animate-spin' : ''}`}>
                                   {generatingImages[index] ? 'progress_activity' : 'auto_awesome'}
                                 </span> Regerar IA

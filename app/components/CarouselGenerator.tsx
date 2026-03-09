@@ -748,7 +748,7 @@ export default function CarouselGenerator({ onLogout }: { onLogout: () => void }
       const prompt = getImagePrompt(imageNiche, dbImagePrompts, slide.title, slide.subtitle);
 
       const response = await ai.models.generateImages({
-        model: 'imagen-3',
+        model: 'imagen-3.0-generate-001',
         prompt: prompt,
         config: {
           aspectRatio: aspectRatio === '9:16' ? '9:16' : '3:4',
@@ -841,7 +841,7 @@ export default function CarouselGenerator({ onLogout }: { onLogout: () => void }
           const prompt = getImagePrompt(imageNiche, dbImagePrompts, newSlides[i].title, newSlides[i].subtitle);
 
           const response = await ai.models.generateImages({
-            model: 'imagen-3',
+            model: 'imagen-3.0-generate-001',
             prompt: prompt,
             config: {
               aspectRatio: aspectRatio === '9:16' ? '9:16' : '3:4',

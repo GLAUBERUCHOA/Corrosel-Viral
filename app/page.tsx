@@ -100,7 +100,127 @@ export default function HomePage() {
           </FadeInSection>
         </section>
 
-        {/* HOW IT WORKS SECTION - DARK THEME REFACTORED */}
+        {/* 1. SEÇÃO DE ATERRISSAGEM (AGITAÇÃO DA DOR) */}
+        <section className="py-24 px-6 bg-slate-950 relative overflow-hidden">
+          <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[800px] h-[500px] bg-purple-600/5 blur-[120px] rounded-full pointer-events-none"></div>
+
+          <div className="max-w-4xl mx-auto relative z-10">
+            <FadeInSection>
+              <h2 className="text-3xl md:text-5xl font-extrabold text-white tracking-tight leading-tight mb-12 text-center">
+                Eu sei como é frustrante postar e não ter alcance, <span className="text-transparent bg-clip-text bg-gradient-to-r from-orange-400 to-amber-400 text-nowrap whitespace-nowrap">acredite!</span>
+              </h2>
+
+              <div className="space-y-8 text-lg sm:text-xl text-slate-300 leading-relaxed max-w-3xl mx-auto uppercase-none">
+                <p>
+                  E sei disso porque eu mesmo superei o cansaço de passar horas encarando a tela em branco do Canva, tentando espremer uma ideia que preste...
+                </p>
+                <p>
+                  E o pior: depois de perder a tarde inteira ajustando caixas de texto, postar o carrossel e receber 15 curtidas, 2 comentários e <strong className="text-white">ZERO vendas.</strong>
+                </p>
+                <div className="bg-slate-900/60 border-l-4 border-purple-500 p-8 rounded-r-3xl italic text-slate-200 font-medium my-10 shadow-xl backdrop-blur-sm">
+                  "É frustrante demais. Mas deixa eu te falar, a culpa não é sua necessariamente. A verdade é que existem padrões que fazem a pessoa parar para ler o seu post, e só com muito teste eu descobri esses padrões."
+                </div>
+                <p>
+                  Hoje, com mais de <span className="text-orange-400 font-bold">1,5 milhões de seguidores</span> eu posso te afirmar: se você usar essas técnicas e o nosso sistema inteligente de produção com IA que cria tudo para você, <strong className="text-white">não tem como não ter resultados!</strong>
+                </p>
+                <p className="font-bold text-white text-2xl mt-12 bg-clip-text text-transparent bg-gradient-to-r from-white to-slate-400">
+                  Seja você nutricionista, advogado, mentor ou lojista: quem não tem velocidade de produção e não domina as narrativas, fica para trás.
+                </p>
+              </div>
+
+              <div className="mt-20 p-10 bg-[#0A0A0B] border border-slate-800/60 rounded-[3rem] shadow-2xl relative">
+                <div className="absolute top-0 left-0 w-32 h-32 bg-orange-500/5 blur-[60px] rounded-full pointer-events-none"></div>
+
+                <h3 className="text-xl md:text-2xl font-bold text-white mb-8 text-center sm:text-left">
+                  É por isso que criei mais do que uma ferramenta. <br className="hidden sm:block" />
+                  <span className="text-purple-400">Criei um ecossistema.</span>
+                </h3>
+
+                <p className="text-slate-400 mb-10 text-lg">
+                  Com o Carrossel Viral Lab + Nossos Agente de IA <strong className="text-white">Homero</strong> e <strong className="text-white">Da Vinci</strong>, você substitui a "inspiração" por um processo de montagem industrial.
+                </p>
+
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                  {[
+                    { emoji: "🚀", title: "Velocidade Absoluta", text: "Produza 10x mais rápido copiando e colando." },
+                    { emoji: "🧩", title: "À Prova de Nicho", text: "Funciona para qualquer mercado." },
+                    { emoji: "🤖", title: "O Fim do Bloqueio", text: "Nossos Agentes criam o texto e as imagens em minutos." }
+                  ].map((item, i) => (
+                    <div key={i} className="bg-slate-950/50 p-6 rounded-2xl border border-white/5 hover:border-slate-700 transition-colors">
+                      <span className="text-3xl block mb-4">{item.emoji}</span>
+                      <h4 className="text-white font-bold mb-2">{item.title}</h4>
+                      <p className="text-slate-400 text-sm leading-relaxed">{item.text}</p>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </FadeInSection>
+          </div>
+        </section>
+
+        {/* 2. SEÇÃO: COM O LAB VS SEM O LAB */}
+        <section className="py-24 px-6 bg-slate-950/50 relative overflow-hidden">
+          <div className="max-w-6xl mx-auto relative z-10">
+            <FadeInSection>
+              <div className="text-center mb-16">
+                <h2 className="text-3xl md:text-5xl font-extrabold text-white mb-6">
+                  A diferença entre tentar <span className="text-red-400">na raça</span> <br className="hidden sm:block" />
+                  e usar a <span className="text-transparent bg-clip-text bg-gradient-to-r from-orange-400 to-amber-400">automação do Lab</span>
+                </h2>
+              </div>
+
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 items-stretch">
+                {/* Jeito Antigo */}
+                <div className="bg-slate-900/30 border border-slate-800/50 rounded-[2.5rem] p-8 sm:p-12 relative group overflow-hidden">
+                  <div className="absolute top-0 right-0 p-8 opacity-5 text-red-500 scale-150 rotate-12 group-hover:scale-[2] transition-transform duration-700">❌</div>
+                  <h3 className="text-2xl font-bold text-red-400 mb-8 flex items-center gap-3">
+                    <span className="w-10 h-10 rounded-full bg-red-400/10 flex items-center justify-center text-sm">❌</span>
+                    O Jeito Antigo (Amador)
+                  </h3>
+                  <ul className="space-y-6">
+                    {[
+                      { t: "Bloqueio Criativo", d: "Horas encarando a tela sem saber o que escrever." },
+                      { t: "Design Manual", d: "Perder muito tempo alinhando textos e imagens no Canva." },
+                      { t: "Textos Genéricos", d: "Copys fracas que não retêm a atenção do seguidor." },
+                      { t: "Fadiga de Criação", d: "Fazer um único post consome a energia do seu dia." },
+                      { t: "Resultados", d: "Muitas curtidas de amigos, zero vendas reais." }
+                    ].map((item, i) => (
+                      <li key={i} className="flex flex-col border-b border-white/5 pb-4 last:border-0">
+                        <span className="text-red-200/60 font-bold mb-1 uppercase text-xs tracking-widest">{item.t}</span>
+                        <span className="text-slate-500">{item.d}</span>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+
+                {/* Jeito Lab */}
+                <div className="bg-[#0A0A0B] border-2 border-orange-500/20 rounded-[2.5rem] p-8 sm:p-12 relative group overflow-hidden shadow-[0_0_50px_rgba(249,115,22,0.1)]">
+                  <div className="absolute top-0 right-0 p-8 opacity-5 text-orange-500 scale-150 -rotate-12 group-hover:scale-[2] transition-transform duration-700">✅</div>
+                  <h3 className="text-2xl font-bold text-orange-400 mb-8 flex items-center gap-3">
+                    <span className="w-10 h-10 rounded-full bg-orange-400/10 flex items-center justify-center text-sm">✅</span>
+                    O Jeito Lab (Profissional)
+                  </h3>
+                  <ul className="space-y-6">
+                    {[
+                      { t: "Roteiro em Segundos", d: "O Agente Homero escreve a copy validada para você." },
+                      { t: "Design Automático", d: "Colou o texto? O sistema gera os slides perfeitamente." },
+                      { t: "Narrativas Virais", d: "Textos com gatilhos mentais aplicados." },
+                      { t: "Produção em Lote", d: "Crie conteúdo para a semana inteira em menos de 20 min." },
+                      { t: "Resultados", d: "Autoridade construída e Instagram virando máquina de vendas." }
+                    ].map((item, i) => (
+                      <li key={i} className="flex flex-col border-b border-orange-500/5 pb-4 last:border-0 hover:translate-x-1 transition-transform">
+                        <span className="text-orange-400 font-bold mb-1 uppercase text-xs tracking-widest">{item.t}</span>
+                        <span className="text-slate-200">{item.d}</span>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              </div>
+            </FadeInSection>
+          </div>
+        </section>
+
+        {/* HOW IT WORKS SECTION - MOVING BELOW */}
         <section className="py-32 bg-slate-950 px-6 relative overflow-hidden">
           {/* Fundo com brilho sutil */}
           <div className="absolute top-0 left-1/2 -translate-x-1/2 w-full max-w-4xl h-[400px] bg-purple-600/5 blur-[120px] rounded-full pointer-events-none"></div>
@@ -242,77 +362,7 @@ export default function HomePage() {
           </div>
         </section>
 
-        {/* PAIN & AGITATION */}
-        <section className="py-24 px-6">
-          <div className="max-w-6xl mx-auto text-center">
-            <FadeInSection>
-              <h2 className="text-3xl sm:text-4xl md:text-5xl font-extrabold text-white tracking-tight mb-16 px-4">
-                Você se sente um <span className="text-purple-400 relative">"escravo"<svg className="absolute w-full h-3 -bottom-1 left-0 text-purple-500 opacity-50" viewBox="0 0 100 10" preserveAspectRatio="none"><path d="M0 5 Q 50 10 100 5" stroke="currentColor" strokeWidth="4" fill="transparent" /></svg></span> do Instagram?
-              </h2>
 
-              <div className="grid grid-cols-1 sm:grid-cols-3 gap-6 mb-20 px-2">
-                <div className="bg-slate-950/40 border border-slate-800/50 p-8 rounded-3xl flex flex-col items-center gap-5 hover:-translate-y-2 hover:bg-slate-900/60 transition-all duration-300 shadow-xl group">
-                  <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-purple-500/20 to-orange-500/20 text-orange-400 flex items-center justify-center group-hover:bg-orange-500/10 transition-colors border border-orange-500/20"><Zap size={24} /></div>
-                  <p className="text-slate-300 font-medium text-center leading-relaxed">Você passa horas tentando ter uma ideia, sofre olhando para a tela em branco do Canva...</p>
-                </div>
-                <div className="bg-slate-950/40 border border-slate-800/50 p-8 rounded-3xl flex flex-col items-center gap-5 hover:-translate-y-2 hover:bg-slate-900/60 transition-all duration-300 shadow-xl group">
-                  <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-purple-500/20 to-orange-500/20 text-orange-400 flex items-center justify-center group-hover:bg-orange-500/10 transition-colors border border-orange-500/20"><Infinity size={24} /></div>
-                  <p className="text-slate-300 font-medium text-center leading-relaxed">E quando finalmente posta o seu Carrossel, recebe apenas 15 curtidas e zero vendas.</p>
-                </div>
-                <div className="bg-slate-950/40 border border-slate-800/50 p-8 rounded-3xl flex flex-col items-center gap-5 hover:-translate-y-2 hover:bg-slate-900/60 transition-all duration-300 shadow-xl group">
-                  <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-purple-500/20 to-orange-500/20 text-orange-400 flex items-center justify-center group-hover:bg-orange-500/10 transition-colors border border-orange-500/20"><ShieldCheck size={24} /></div>
-                  <p className="text-slate-300 font-medium text-center leading-relaxed">Enquanto você patina no amadorismo, seus concorrentes estão usando Sistemas Inteligentes.</p>
-                </div>
-              </div>
-
-              <div className="bg-[#0A0A0B] border border-slate-800/60 rounded-[2.5rem] overflow-hidden flex flex-col md:flex-row mt-16 group hover:border-slate-700 transition-all duration-500 shadow-2xl max-w-6xl mx-auto">
-                <div className="w-full md:w-5/12 h-[350px] md:h-auto relative overflow-hidden shrink-0">
-                  <Image
-                    src="/images/mockup-hand.jpg"
-                    alt="Pessoa usando o Carrossel Viral Lab no celular"
-                    fill
-                    className="object-cover object-center transition-transform duration-700 group-hover:scale-110"
-                    sizes="(max-width: 768px) 100vw, 40vw"
-                    quality={90}
-                    priority
-                  />
-                  <div className="absolute inset-0 bg-gradient-to-t from-[#0A0A0B] via-transparent to-transparent md:bg-gradient-to-l md:from-[#0A0A0B] md:via-transparent opacity-90 z-10"></div>
-                </div>
-
-                <div className="w-full md:w-7/12 p-8 md:p-12 lg:p-14 text-left flex flex-col justify-center relative z-20 bg-[#0A0A0B]">
-                  <h3 className="text-2xl md:text-3xl lg:text-4xl font-extrabold text-white mb-6 leading-[1.2] tracking-tight">
-                    Com os modelos de carrosséis virais gerados com um clique por IA você acelera sua <span className="text-transparent bg-clip-text bg-gradient-to-r from-orange-400 to-amber-400">produção e seus resultados.</span>
-                  </h3>
-
-                  <ul className="space-y-4 mb-8">
-                    <li className="flex items-center gap-3">
-                      <span className="text-xl bg-slate-900/50 p-2 rounded-xl">🚀</span>
-                      <span className="text-slate-200 font-medium">Aulas práticas de como usar a ferramenta</span>
-                    </li>
-                    <li className="flex items-center gap-3">
-                      <span className="text-xl bg-slate-900/50 p-2 rounded-xl">🧩</span>
-                      <span className="text-slate-200 font-medium">Serve para qualquer nicho</span>
-                    </li>
-                    <li className="flex items-center gap-3">
-                      <span className="text-xl bg-slate-900/50 p-2 rounded-xl">🤖</span>
-                      <span className="text-slate-200 font-medium">Inteligência Artificial que faz o trabalho duro por você</span>
-                    </li>
-                  </ul>
-
-                  <div className="text-slate-200 font-medium mb-8 space-y-3 leading-relaxed text-sm lg:text-base">
-                    <p>Seja você nutricionista, psicólogo, advogado, empreendedor digital ou de qualquer outro nicho: <strong className="text-white">se você não tem velocidade, você está perdendo dinheiro.</strong></p>
-                    <p>Se você não sabe criar narrativas, <strong className="text-white">você está perdendo dinheiro.</strong></p>
-                    <p>Se você ainda não usa IA no seu processo produtivo, <strong className="text-purple-400">vai ficar pra trás.</strong></p>
-                  </div>
-
-                  <p className="text-orange-400 font-bold text-sm md:text-base tracking-wide mt-auto">
-                    Esqueça o trabalho manual, o Canva... Nossos modelos são validados em diversos nichos!
-                  </p>
-                </div>
-              </div>
-            </FadeInSection>
-          </div>
-        </section>
 
         {/* SOLUTION 3 STEPS */}
         <section className="py-24 bg-slate-900/20 border-y border-slate-800/50 relative overflow-hidden">

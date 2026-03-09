@@ -850,7 +850,7 @@ export default function CarouselGenerator({ onLogout }: { onLogout: () => void }
               const imageUrl = `data:${part.inlineData.mimeType || 'image/png'};base64,${base64}`;
               setUploadedImages(prev => {
                 const updated = [...prev];
-                while (updated.length < newSlides.length) updated.push(null);
+                while (updated.length <= i) updated.push(null);
                 updated[i] = imageUrl;
                 return updated;
               });

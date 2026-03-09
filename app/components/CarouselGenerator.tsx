@@ -747,29 +747,23 @@ export default function CarouselGenerator({ onLogout }: { onLogout: () => void }
       const ai = new GoogleGenAI({ apiKey });
       const prompt = getImagePrompt(imageNiche, dbImagePrompts, slide.title, slide.subtitle);
 
-      const response = await ai.models.generateContent({
-        model: 'gemini-1.5-flash-image',
-        contents: prompt,
+      const response = await ai.models.generateImages({
+        model: 'imagen-3.0-generate-002',
+        prompt: prompt,
         config: {
-          imageConfig: {
-            aspectRatio: aspectRatio === '9:16' ? '9:16' : '3:4',
-          }
+          aspectRatio: aspectRatio === '9:16' ? '9:16' : '3:4',
+          numberOfImages: 1,
+          outputMimeType: 'image/png'
         }
       });
-
-      for (const part of response.candidates?.[0]?.content?.parts || []) {
-        if (part.inlineData) {
-          const base64 = part.inlineData.data;
-          const imageUrl = `data:${part.inlineData.mimeType || 'image/png'};base64,${base64}`;
-          setUploadedImages(prev => {
-            const updated = [...prev];
-            while (updated.length <= index) updated.push(null);
-            updated[index] = imageUrl;
-            return updated;
-          });
-          break;
-        }
-      }
+      const base64 = response.generatedImages[0].image.imageBytes;
+      const imageUrl = `data:image/png;base64,${base64}`;
+      setUploadedImages(prev => {
+        const updated = [...prev];
+        while (updated.length <= index) updated.push(null);
+        updated[index] = imageUrl;
+        return updated;
+      });
     } catch (error) {
       console.error("Erro ao regerar imagem:", error);
       alert("Falha ao regerar a imagem. Tente novamente.");
@@ -842,29 +836,23 @@ export default function CarouselGenerator({ onLogout }: { onLogout: () => void }
         try {
           const prompt = getImagePrompt(imageNiche, dbImagePrompts, newSlides[i].title, newSlides[i].subtitle);
 
-          const response = await ai.models.generateContent({
-            model: 'gemini-1.5-flash-image',
-            contents: prompt,
+          const response = await ai.models.generateImages({
+            model: 'imagen-3.0-generate-002',
+            prompt: prompt,
             config: {
-              imageConfig: {
-                aspectRatio: aspectRatio === '9:16' ? '9:16' : '3:4',
-              }
+              aspectRatio: aspectRatio === '9:16' ? '9:16' : '3:4',
+              numberOfImages: 1,
+              outputMimeType: 'image/png'
             }
           });
-
-          for (const part of response.candidates?.[0]?.content?.parts || []) {
-            if (part.inlineData) {
-              const base64 = part.inlineData.data;
-              const imageUrl = `data:${part.inlineData.mimeType || 'image/png'};base64,${base64}`;
-              setUploadedImages(prev => {
-                const updated = [...prev];
-                while (updated.length < newSlides.length) updated.push(null);
-                updated[i] = imageUrl;
-                return updated;
-              });
-              break;
-            }
-          }
+          const base64 = response.generatedImages[0].image.imageBytes;
+          const imageUrl = `data:image/png;base64,${base64}`;
+          setUploadedImages(prev => {
+            const updated = [...prev];
+            while (updated.length < newSlides.length) updated.push(null);
+            updated[i] = imageUrl;
+            return updated;
+          });
         } catch (error) {
           console.error(`Error generating image for slide ${i}:`, error);
         } finally {

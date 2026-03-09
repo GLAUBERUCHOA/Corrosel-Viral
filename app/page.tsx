@@ -55,16 +55,16 @@ export default function HomePage() {
         <section className="pt-10 pb-12 sm:pt-20 sm:pb-24 px-6 max-w-5xl mx-auto text-center flex flex-col items-center">
           <FadeInSection>
 
-            <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-extrabold text-white tracking-tight leading-tight mb-4">
-              Crie Carrosséis virais <br className="hidden lg:block" />
+            <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-7xl font-extrabold text-white tracking-tight leading-tight mb-4">
+              Crie carrosséis virais com <br className="hidden lg:block" />
               <span className="text-transparent bg-clip-text bg-gradient-to-r from-orange-400 to-amber-400">
-                COM APENAS 1 CLIQUE
+                Agentes de IA em apenas 3 passos
               </span><br className="hidden md:block" />
-              <span className="mt-2 block">e transforme seu Instagram em uma máquina de vendas automáticas</span>
+              <span className="mt-2 block">e transforme seu Instagram em uma máquina de vendas</span>
             </h1>
 
-            <p className="text-sm sm:text-base md:text-lg text-slate-400 max-w-2xl mx-auto leading-relaxed mb-8 px-2 font-medium">
-              A nossa ferramenta Carrossel Viral Labs e nossas IAs fazem o trabalho todo por você.
+            <p className="text-xs sm:text-sm text-slate-500 max-w-xl mx-auto leading-relaxed mb-10 px-4 font-normal tracking-wide italic opacity-80 mt-1">
+              Com a nossa ferramenta você usa modelos prontos de geração dos carrosséis com IA e produz 10x mais rápido
             </p>
 
             {/* ESPAÇO PARA O VÍDEO DE VENDAS */}

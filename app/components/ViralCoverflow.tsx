@@ -15,7 +15,8 @@ const viralImages = [
 
 export default function ViralCoverflow() {
     const scrollRef = useRef<HTMLDivElement>(null);
-    const [activeIndex, setActiveIndex] = useState(0);
+    // Começa no meio do carrossel para balancear visualmente
+    const [activeIndex, setActiveIndex] = useState(Math.floor(viralImages.length / 2));
 
     useEffect(() => {
         const handleScroll = () => {
@@ -43,9 +44,15 @@ export default function ViralCoverflow() {
         const scrollEl = scrollRef.current;
         if (scrollEl) {
             scrollEl.addEventListener('scroll', handleScroll, { passive: true });
+
+            // Força a centralização inicial no meio após o carregamento
+            setTimeout(() => {
+                scrollToIndex(Math.floor(viralImages.length / 2));
+            }, 100);
+
             handleScroll();
             // Refazer após o mount pleno
-            setTimeout(handleScroll, 200);
+            setTimeout(handleScroll, 500);
         }
         return () => scrollEl?.removeEventListener('scroll', handleScroll);
     }, []);
@@ -108,9 +115,14 @@ export default function ViralCoverflow() {
                                         (e.target as HTMLImageElement).nextElementSibling?.classList.remove('hidden');
                                     }}
                                 />
-                                <div className="hidden absolute inset-0 flex flex-col items-center justify-center p-6 text-center text-slate-500 bg-slate-900 border-2 border-dashed border-slate-700 rounded-[2rem]">
-                                    <span className="material-symbols-outlined text-4xl mb-2 opacity-50">image</span>
-                                    <span className="text-[10px] font-black uppercase tracking-widest leading-tight">Slide: {img.id}<br />Aguardando Imagem</span>
+                                <div className="hidden absolute inset-0 flex flex-col items-center justify-center p-6 text-center bg-slate-900 border-2 border-dashed border-slate-700/50 rounded-[2rem]">
+                                    <div className="w-16 h-16 bg-purple-500/10 rounded-full flex items-center justify-center mb-4 animate-pulse">
+                                        <span className="material-symbols-outlined text-4xl text-purple-400 opacity-80">image_not_supported</span>
+                                    </div>
+                                    <span className="text-[11px] font-bold text-slate-400 uppercase tracking-widest leading-tight">
+                                        Slide: {img.id}<br />
+                                        <span className="text-purple-400/80">Aguardando seu Upload</span>
+                                    </span>
                                 </div>
                                 <div className={`absolute inset-0 bg-gradient-to-t from-slate-950/80 to-transparent transition-opacity duration-500 ${isActive ? 'opacity-100' : 'opacity-0'}`}></div>
                             </div>

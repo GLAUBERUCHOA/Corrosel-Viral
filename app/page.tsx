@@ -52,7 +52,7 @@ export default function HomePage() {
       <div className="relative z-10">
 
         {/* HEADER / HERO SECTION */}
-        <section className="pt-10 pb-12 sm:pt-20 sm:pb-24 px-6 max-w-5xl mx-auto text-center flex flex-col items-center">
+        <section className="pt-10 pb-12 sm:pt-20 sm:pb-24 px-6 max-w-6xl mx-auto text-center flex flex-col items-center">
           <FadeInSection>
 
             <h1 className="text-4xl sm:text-5xl md:text-6xl lg:text-[76px] font-extrabold text-white tracking-tight leading-[1.1] mb-8 max-w-5xl mx-auto px-2">
@@ -370,7 +370,7 @@ export default function HomePage() {
             <FadeInSection>
               <div className="text-center mb-16">
                 <h2 className="text-3xl sm:text-4xl md:text-5xl font-extrabold text-white tracking-tight mb-6">Conheça o seu novo <span className="text-purple-400">"Time de Elite" de IA</span> 🤖</h2>
-                <p className="text-lg sm:text-xl text-slate-400 max-w-2xl mx-auto leading-relaxed mb-8 px-4">Dentro do Carrossel Viral Lab, você não ganha abra ganha um curso, você ganha agentes treinados para trabalhar por você:</p>
+                <p className="text-lg sm:text-xl text-slate-400 max-w-2xl mx-auto leading-relaxed mb-8 px-4">Dentro do Carrossel Viral Lab, você não ganha apenas um curso, você ganha agentes treinados para trabalhar por você:</p>
               </div>
 
               {/* MOCKUP DO LABORATÓRIO */}
@@ -378,20 +378,20 @@ export default function HomePage() {
                 <div className="absolute inset-0 bg-indigo-500/10 blur-[120px] rounded-full mix-blend-screen opacity-0 group-hover:opacity-100 transition-opacity duration-1000 z-0 pointer-events-none"></div>
                 <div className="relative z-10 w-full h-auto flex justify-center">
                   <Image
-                    src="/images/mockup-elite.jpg"
+                    src="/images/mockup-elite.png"
                     alt="Mockup do Carrossel Viral Lab em smartphones"
-                    width={1200}
-                    height={1200}
+                    width={1000}
+                    height={1000}
                     quality={100}
-                    className="w-full h-auto max-w-full sm:max-w-[800px] object-contain mix-blend-screen hover:-translate-y-2 hover:scale-[1.02] transition-transform duration-700 ease-out"
+                    className="w-full h-auto max-w-full sm:max-w-[800px] object-contain hover:-translate-y-2 hover:scale-[1.02] transition-transform duration-700 ease-out"
                   />
                 </div>
               </div>
 
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-8 relative max-w-5xl mx-auto">
                 {[
-                  { icon: BookOpen, title: "🎙️ Agente Iury (Roteiros)", desc: "Esqueça o bloqueio criativo. O Iury cria roteiros magnéticos, automáticos e persuasivos. Ele entende o que faz o dedo do usuário parar o scroll e clicar no 'saiba mais'." },
-                  { icon: ImageIcon, title: "🎨 Agente DaVinci (Imagens)", desc: "Chega de fotos de banco de imagem genéricas. O DaVinci gera imagens com IA de altíssimo nível, de forma automática, para deixar seu perfil com cara de agência de luxo." },
+                  { icon: BookOpen, title: "🎙️ Agente Homero (Roteiros)", desc: "Esqueça o bloqueio criativo. O Homero cria roteiros magnéticos, automáticos e persuasivos. Ele entende o que faz o dedo do usuário parar o scroll e clicar no 'saiba mais'." },
+                  { icon: ImageIcon, title: "🎨 Agente Da Vinci (Imagens)", desc: "Chega de fotos de banco de imagem genéricas. O Da Vinci gera imagens com IA de altíssimo nível, de forma automática, para deixar seu perfil com cara de agência de luxo." },
                   { icon: Video, title: "🎬 Aulas Passo a Passo", desc: "Você vai aprender a apertar os botões certos. Sem enrolação, direto ao ponto." },
                   { icon: Sparkles, title: "🧠 Segredos da Viralização", desc: "A ciência por trás dos posts que explodem. O que postar, quando postar e como forçar o algoritmo a te entregar para milhares de pessoas." }
                 ].map((item, i) => (
@@ -437,10 +437,11 @@ export default function HomePage() {
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                 {[
                   { icon: LayoutTemplate, title: "Plataforma Carrossel Viral Lab", val: "R$ 197" },
-                  { icon: BookOpen, title: "Agente Iury - Roteiros Automáticos", val: "R$ 97" },
-                  { icon: ImageIcon, title: "Agente DaVinci - Imagens com IA", val: "R$ 97" },
+                  { icon: BookOpen, title: "Agente Homero - Roteiros Automáticos", val: "R$ 97" },
+                  { icon: ImageIcon, title: "Agente Da Vinci - Imagens com IA", val: "R$ 97" },
                   { icon: Sparkles, title: "Workshop Segredos da Viralização", val: "R$ 147" },
-                  { icon: Video, title: "Aulas Passo a Passo de Implementação", val: "R$ 97" }
+                  { icon: Video, title: "Aulas Passo a Passo de Implementação", val: "R$ 97" },
+                  { icon: Magnet, title: "Grupo de Suporte para clientes", val: "R$ 197" }
                 ].map((feature, i) => (
                   <div key={i} className={`bg-slate-900/50 border border-slate-800 p-8 rounded-3xl transition-all duration-300 flex flex-col items-center text-center ${cardGlowingShadow} group`}>
                     <div className="w-12 h-12 rounded-xl bg-slate-800/50 border border-slate-700 flex items-center justify-center text-amber-500 mb-6 group-hover:bg-amber-500/20 transition-colors">
@@ -543,7 +544,7 @@ export default function HomePage() {
               </div>
               <h2 className="text-3xl sm:text-4xl md:text-5xl font-extrabold text-white tracking-tight mb-6">Risco Zero: 15 Dias de Garantia Blindada</h2>
               <p className="text-lg sm:text-xl text-slate-400 leading-relaxed max-w-2xl mx-auto">
-                Teste o sistema, use o Iury e o DaVinci. Se em 15 dias você não achar que esse é o sistema mais rápido de criação de conteúdo que já viu, eu devolvo seu dinheiro integralmente.
+                Teste o sistema, use o Homero e o Da Vinci. Se em 15 dias você não achar que esse é o sistema mais rápido de criação de conteúdo que já viu, eu devolvo seu dinheiro integralmente.
               </p>
             </FadeInSection>
           </div>
@@ -558,7 +559,7 @@ export default function HomePage() {
               <div className="space-y-4">
                 {[
                   { q: "Serve para o meu nicho?", a: "Sim, se você precisa de atenção e vendas no Instagram, o sistema se adapta a qualquer área." },
-                  { q: "Preciso ser designer?", a: "Não. O DaVinci e os templates fazem tudo com um clique." },
+                  { q: "Preciso ser designer?", a: "Não. O Da Vinci e os templates fazem tudo com um clique." },
                   { q: "O acesso é vitalício mesmo?", a: "Sim, para quem comprar nesta oferta atual." }
                 ].map((faq, i) => (
                   <details key={i} className="bg-slate-900/40 border border-slate-800 rounded-2xl group overflow-hidden">

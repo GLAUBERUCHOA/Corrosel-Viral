@@ -55,12 +55,12 @@ export default function HomePage() {
         <section className="pt-10 pb-12 sm:pt-20 sm:pb-24 px-6 max-w-5xl mx-auto text-center flex flex-col items-center">
           <FadeInSection>
 
-            <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-7xl font-extrabold text-white tracking-tight leading-tight mb-4">
-              Crie carrosséis virais com <br className="hidden lg:block" />
+            <h1 className="text-4xl sm:text-5xl md:text-6xl lg:text-[76px] font-extrabold text-white tracking-tight leading-[1.1] mb-8 max-w-5xl mx-auto px-2">
+              Crie carrosséis virais com <br className="hidden sm:block" />
               <span className="text-transparent bg-clip-text bg-gradient-to-r from-orange-400 to-amber-400">
                 Agentes de IA em apenas 3 passos
-              </span><br className="hidden md:block" />
-              <span className="mt-2 block">e transforme seu Instagram em uma máquina de vendas</span>
+              </span> <br className="hidden sm:block" />
+              e transforme seu Instagram em uma máquina de vendas
             </h1>
 
             <p className="text-xs sm:text-sm text-slate-500 max-w-xl mx-auto leading-relaxed mb-10 px-4 font-normal tracking-wide italic opacity-80 mt-1">

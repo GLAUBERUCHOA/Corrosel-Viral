@@ -57,9 +57,13 @@ const SimpleRichTextEditor = ({ value, onChange, placeholder }: { value: string,
   const savedSelectionRef = useRef<Range | null>(null);
 
   useEffect(() => {
+    // Somente atualiza se o valor externo mudou E não somos nós que estamos editando no momento
+    // Isso evita que o cursor pule para o início (causando o erro de digitar 'de trás pra frente')
     if (editorRef.current && value !== lastHtmlRef.current) {
-      editorRef.current.innerHTML = value || '';
-      lastHtmlRef.current = value;
+      if (document.activeElement !== editorRef.current) {
+        editorRef.current.innerHTML = value || '';
+        lastHtmlRef.current = value;
+      }
     }
   }, [value]);
 
@@ -80,6 +84,8 @@ const SimpleRichTextEditor = ({ value, onChange, placeholder }: { value: string,
       sel?.removeAllRanges();
       sel?.addRange(savedSelectionRef.current);
     }
+    // Habilita estilo por CSS para usar <span> com style em vez de tags antigas
+    document.execCommand('styleWithCSS', false, 'true');
     document.execCommand(command, false, val);
     emitChange();
   };
@@ -133,6 +139,24 @@ const SimpleRichTextEditor = ({ value, onChange, placeholder }: { value: string,
             title="Cor de Fundo"
           />
         </div>
+
+        <div className="w-px h-5 bg-slate-300 dark:bg-slate-600 mx-1"></div>
+
+        <select
+          tabIndex={-1}
+          className="text-[10px] font-bold bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded px-1.5 py-1 outline-none text-slate-700 dark:text-slate-300 cursor-pointer"
+          onChange={(e) => executeCommand('fontName', e.target.value)}
+          defaultValue=""
+          title="Trocar Fonte"
+        >
+          <option value="">Fonte</option>
+          <option value="var(--font-poppins), sans-serif">Poppins</option>
+          <option value="'Playfair Display', serif">Playfair</option>
+          <option value="'Inter', sans-serif">Inter</option>
+          <option value="'Montserrat', sans-serif">Montserrat</option>
+          <option value="'Outfit', sans-serif">Outfit</option>
+          <option value="'Roboto', sans-serif">Roboto</option>
+        </select>
 
         <div className="w-px h-5 bg-slate-300 dark:bg-slate-600 mx-1"></div>
 

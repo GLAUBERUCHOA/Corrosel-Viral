@@ -100,7 +100,7 @@ export default function HomePage() {
           </FadeInSection>
         </section>
 
-        {/* HOW IT WORKS SECTION */}
+        {/* HOW IT WORKS SECTION - ESTRUTURA DE 3 PASSOS */}
         <section className="py-24 bg-white px-6 relative z-20">
           <div className="max-w-6xl mx-auto">
             <FadeInSection>

@@ -1,7 +1,7 @@
 ﻿'use client';
 
 import React, { useEffect, useRef } from 'react';
-import { Sparkles, Zap, Image as ImageIcon, LayoutTemplate, Calendar, Video, BookOpen, Infinity, CheckCircle2, ChevronDown, ShieldCheck, TrendingUp, Magnet, Target } from 'lucide-react';
+import { Sparkles, Zap, Image as ImageIcon, LayoutTemplate, Calendar, Video, BookOpen, Infinity, CheckCircle2, CheckCircle, ChevronDown, ShieldCheck, TrendingUp, Magnet, Target } from 'lucide-react';
 import ViralCoverflow from './components/ViralCoverflow';
 import Image from 'next/image';
 
@@ -40,6 +40,26 @@ export default function HomePage() {
   const primaryGlowingShadow = "shadow-[0_0_30px_rgba(139,92,246,0.3)]";
   const cardGlowingShadow = "hover:shadow-[0_0_20px_rgba(139,92,246,0.2)]";
 
+  const MainCTA = ({ text = "SIM, EU QUERO VIRALIZAR HOJE!", subtext = "Acesso Vitalício + Bônus Exclusivos" }: { text?: string; subtext?: string }) => (
+    <div className="flex flex-col items-center justify-center relative my-12">
+      <div className="absolute top-0 left-0 w-full h-full border border-orange-500/50 rounded-full animate-[ping_2s_cubic-bezier(0,0,0.2,1)_infinite] z-0"></div>
+      <div className="absolute top-0 left-0 w-full h-full border border-amber-500/30 rounded-full animate-[ping_2.5s_cubic-bezier(0,0,0.2,1)_infinite] delay-150 z-0"></div>
+
+      <a
+        href="https://pay.kiwify.com.br/RhfJ7jL"
+        className="relative z-10 inline-flex flex-col sm:flex-row items-center justify-center gap-1 sm:gap-3 bg-gradient-to-r from-orange-500 to-amber-500 text-white font-black uppercase tracking-wide text-base sm:text-lg px-8 py-4 sm:px-10 sm:py-5 rounded-full hover:scale-105 transition-all duration-300 shadow-[0_0_20px_rgba(245,158,11,0.5)] border border-orange-400/80 w-[95%] sm:w-auto text-center leading-snug"
+      >
+        <span>{text}</span>
+      </a>
+
+      {subtext && (
+        <span className="text-sm sm:text-base font-medium text-amber-200/80 mt-4 relative z-10 flex items-center gap-2">
+          <ShieldCheck size={16} className="text-green-400" /> {subtext}
+        </span>
+      )}
+    </div>
+  );
+
   return (
     <div className="min-h-screen bg-slate-950 text-slate-200 font-sans selection:bg-purple-500/30 selection:text-purple-200 overflow-x-hidden">
 
@@ -74,21 +94,7 @@ export default function HomePage() {
               <p className="font-medium z-20 text-center px-4">[ESPAÇO DO VÍDEO] <br className="sm:hidden" /> Inserir iFrame do YouTube ou Vimeo aqui.</p>
             </div>
 
-            <div className="flex flex-col items-center justify-center relative">
-              <div className="absolute top-0 left-0 w-full h-full border border-orange-500/50 rounded-full animate-[ping_2s_cubic-bezier(0,0,0.2,1)_infinite] z-0"></div>
-              <div className="absolute top-0 left-0 w-full h-full border border-amber-500/30 rounded-full animate-[ping_2.5s_cubic-bezier(0,0,0.2,1)_infinite] delay-150 z-0"></div>
-
-              <a
-                href="https://pay.kiwify.com.br/RhfJ7jL"
-                className="relative z-10 inline-flex flex-col sm:flex-row items-center justify-center gap-1 sm:gap-3 bg-gradient-to-r from-orange-500 to-amber-500 text-white font-black uppercase tracking-wide text-base sm:text-lg px-8 py-4 sm:px-10 sm:py-5 rounded-full hover:scale-105 transition-all duration-300 shadow-[0_0_20px_rgba(245,158,11,0.5)] border border-orange-400/80 w-[95%] sm:w-auto text-center leading-snug"
-              >
-                <span>SIM, EU QUERO VIRALIZAR HOJE!</span>
-              </a>
-
-              <span className="text-sm sm:text-base font-medium text-amber-200/80 mt-4 relative z-10 flex items-center gap-2">
-                <ShieldCheck size={16} className="text-green-400" /> Acesso Vitalício + Bônus Exclusivos
-              </span>
-            </div>
+            <MainCTA />
 
             {/* ESPAÇO PARA A IMAGEM PRINCIPAL DO HERO (Produto/Mockups ou Autor) */}
             <div className="mt-20 w-full max-w-4xl mx-auto h-[400px] border border-slate-800 border-dashed rounded-[2rem] bg-slate-900/40 backdrop-blur-sm flex flex-col items-center justify-center text-slate-500 gap-4 group hover:border-slate-600 transition-colors relative overflow-hidden hidden">
@@ -112,7 +118,7 @@ export default function HomePage() {
 
               <div className="space-y-8 text-lg sm:text-xl text-slate-300 leading-relaxed max-w-3xl mx-auto uppercase-none">
                 <p>
-                  E sei disso porque eu mesmo superei o cansaço de passar horas encarando a tela em branco do Canva, tentando espremer uma ideia que preste...
+                  E sei disso porque eu mesmo superei o cansaço de passar hours encarando a tela em branco do Canva, tentando espremer uma ideia que preste...
                 </p>
                 <p>
                   E o pior: depois de perder a tarde inteira ajustando caixas de texto, postar o carrossel e receber 15 curtidas, 2 comentários e <strong className="text-white">ZERO vendas.</strong>
@@ -216,11 +222,12 @@ export default function HomePage() {
                   </ul>
                 </div>
               </div>
+              <MainCTA text="QUERO SAIR DO AMADORISMO AGORA!" />
             </FadeInSection>
           </div>
         </section>
 
-        {/* HOW IT WORKS SECTION - MOVING BELOW */}
+        {/* HOW IT WORKS SECTION */}
         <section className="py-32 bg-slate-950 px-6 relative overflow-hidden">
           {/* Fundo com brilho sutil */}
           <div className="absolute top-0 left-1/2 -translate-x-1/2 w-full max-w-4xl h-[400px] bg-purple-600/5 blur-[120px] rounded-full pointer-events-none"></div>
@@ -404,6 +411,7 @@ export default function HomePage() {
                   </div>
                 ))}
               </div>
+              <MainCTA text="QUERO MEU TIME DE IA AGORA!" />
             </FadeInSection>
           </div>
         </section>
@@ -516,16 +524,7 @@ export default function HomePage() {
                     <div className="text-white/90 font-semibold text-lg bg-white/5 px-4 py-1 rounded-full border border-white/10">ou R$ 97,00 à vista no PIX</div>
                   </div>
 
-                  <div className="flex flex-col items-center justify-center relative w-[95%] sm:w-auto mx-auto mb-6">
-                    <div className="absolute top-0 left-0 w-full h-full border border-orange-500/50 rounded-full animate-[ping_2s_cubic-bezier(0,0,0.2,1)_infinite] z-0"></div>
-                    <div className="absolute top-0 left-0 w-full h-full border border-amber-500/30 rounded-full animate-[ping_2.5s_cubic-bezier(0,0,0.2,1)_infinite] delay-150 z-0"></div>
-                    <a
-                      href="https://pay.kiwify.com.br/RhfJ7jL"
-                      className="relative z-10 block w-full bg-gradient-to-r from-orange-500 to-amber-500 text-white font-black uppercase tracking-widest text-base sm:text-lg px-8 py-5 rounded-full hover:scale-105 transition-transform shadow-[0_0_20px_rgba(245,158,11,0.5)] border border-orange-400/50 leading-snug"
-                    >
-                      QUERO MEU ACESSO VITALÍCIO AGORA
-                    </a>
-                  </div>
+                  <MainCTA text="QUERO MEU ACESSO VITALÍCIO AGORA" subtext="" />
                   <p className="text-sm text-slate-500 flex items-center justify-center gap-2">
                     <ShieldCheck className="w-4 h-4 text-green-400" /> Acesso liberado no seu e-mail imediatamente logo após a compra.
                   </p>
@@ -558,7 +557,7 @@ export default function HomePage() {
 
               <div className="space-y-4">
                 {[
-                  { q: "Serve para o meu nicho?", a: "Sim, se você precisa de atenção e vendas no Instagram, o sistema se adapta a qualquer área." },
+                  { q: "Serve para o meu nicho?", a: "Sim, se você precisa de attention e vendas no Instagram, o sistema se adapta a qualquer área." },
                   { q: "Preciso ser designer?", a: "Não. O Da Vinci e os templates fazem tudo com um clique." },
                   { q: "O acesso é vitalício mesmo?", a: "Sim, para quem comprar nesta oferta atual." }
                 ].map((faq, i) => (
@@ -622,16 +621,7 @@ export default function HomePage() {
               </div>
             </div>
 
-            <div className="flex flex-col items-center justify-center relative mb-16 w-[95%] sm:w-auto mx-auto">
-              <div className="absolute top-0 left-0 w-full h-full border border-orange-500/50 rounded-full animate-[ping_2s_cubic-bezier(0,0,0.2,1)_infinite] z-0"></div>
-              <div className="absolute top-0 left-0 w-full h-full border border-amber-500/30 rounded-full animate-[ping_2.5s_cubic-bezier(0,0,0.2,1)_infinite] delay-150 z-0"></div>
-              <a
-                href="https://pay.kiwify.com.br/RhfJ7jL"
-                className="relative z-10 block w-full bg-gradient-to-r from-orange-500 to-amber-500 text-white font-black uppercase tracking-widest text-base sm:text-lg px-8 py-5 rounded-full hover:scale-105 transition-transform shadow-[0_0_20px_rgba(245,158,11,0.5)] border border-orange-400/50 leading-snug"
-              >
-                APROVEITE O DESCONTO E GARANTA SUA VAGA
-              </a>
-            </div>
+            <MainCTA text="APROVEITE O DESCONTO E GARANTA SUA VAGA" subtext="" />
 
             <div className="text-slate-600 text-sm flex flex-col items-center gap-2">
               <p>© 2026 Carrossel Viral Lab. Todos os direitos reservados.</p>

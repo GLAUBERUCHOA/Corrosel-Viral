@@ -244,23 +244,23 @@ export default function HomePage() {
 
         {/* PAIN & AGITATION */}
         <section className="py-24 px-6">
-          <div className="max-w-4xl mx-auto text-center">
+          <div className="max-w-6xl mx-auto text-center">
             <FadeInSection>
-              <h2 className="text-3xl sm:text-4xl md:text-5xl font-extrabold text-white tracking-tight mb-16">
-                Você se sente um <span className="text-red-400 relative">"escravo"<svg className="absolute w-full h-3 -bottom-1 left-0 text-red-500 opacity-50" viewBox="0 0 100 10" preserveAspectRatio="none"><path d="M0 5 Q 50 10 100 5" stroke="currentColor" strokeWidth="4" fill="transparent" /></svg></span> do Instagram?
+              <h2 className="text-3xl sm:text-4xl md:text-5xl font-extrabold text-white tracking-tight mb-16 px-4">
+                Você se sente um <span className="text-purple-400 relative">"escravo"<svg className="absolute w-full h-3 -bottom-1 left-0 text-purple-500 opacity-50" viewBox="0 0 100 10" preserveAspectRatio="none"><path d="M0 5 Q 50 10 100 5" stroke="currentColor" strokeWidth="4" fill="transparent" /></svg></span> do Instagram?
               </h2>
 
-              <div className="grid grid-cols-1 sm:grid-cols-3 gap-6 mb-20">
-                <div className="bg-slate-950/40 border border-slate-800/50 p-8 rounded-3xl flex flex-col items-center gap-5 hover:-translate-y-2 hover:bg-slate-900/60 transition-all duration-300 shadow-xl">
-                  <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-red-500/20 to-orange-500/20 text-red-400 flex items-center justify-center"><Zap size={24} /></div>
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-6 mb-20 px-2">
+                <div className="bg-slate-950/40 border border-slate-800/50 p-8 rounded-3xl flex flex-col items-center gap-5 hover:-translate-y-2 hover:bg-slate-900/60 transition-all duration-300 shadow-xl group">
+                  <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-purple-500/20 to-orange-500/20 text-orange-400 flex items-center justify-center group-hover:bg-orange-500/10 transition-colors border border-orange-500/20"><Zap size={24} /></div>
                   <p className="text-slate-300 font-medium text-center leading-relaxed">Você passa horas tentando ter uma ideia, sofre olhando para a tela em branco do Canva...</p>
                 </div>
-                <div className="bg-slate-950/40 border border-slate-800/50 p-8 rounded-3xl flex flex-col items-center gap-5 hover:-translate-y-2 hover:bg-slate-900/60 transition-all duration-300 shadow-xl">
-                  <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-red-500/20 to-orange-500/20 text-red-400 flex items-center justify-center"><Infinity size={24} /></div>
+                <div className="bg-slate-950/40 border border-slate-800/50 p-8 rounded-3xl flex flex-col items-center gap-5 hover:-translate-y-2 hover:bg-slate-900/60 transition-all duration-300 shadow-xl group">
+                  <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-purple-500/20 to-orange-500/20 text-orange-400 flex items-center justify-center group-hover:bg-orange-500/10 transition-colors border border-orange-500/20"><Infinity size={24} /></div>
                   <p className="text-slate-300 font-medium text-center leading-relaxed">E quando finalmente posta o seu Carrossel, recebe apenas 15 curtidas e zero vendas.</p>
                 </div>
-                <div className="bg-slate-950/40 border border-slate-800/50 p-8 rounded-3xl flex flex-col items-center gap-5 hover:-translate-y-2 hover:bg-slate-900/60 transition-all duration-300 shadow-xl">
-                  <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-red-500/20 to-orange-500/20 text-red-400 flex items-center justify-center"><ShieldCheck size={24} /></div>
+                <div className="bg-slate-950/40 border border-slate-800/50 p-8 rounded-3xl flex flex-col items-center gap-5 hover:-translate-y-2 hover:bg-slate-900/60 transition-all duration-300 shadow-xl group">
+                  <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-purple-500/20 to-orange-500/20 text-orange-400 flex items-center justify-center group-hover:bg-orange-500/10 transition-colors border border-orange-500/20"><ShieldCheck size={24} /></div>
                   <p className="text-slate-300 font-medium text-center leading-relaxed">Enquanto você patina no amadorismo, seus concorrentes estão usando Sistemas Inteligentes.</p>
                 </div>
               </div>
@@ -316,11 +316,11 @@ export default function HomePage() {
 
         {/* SOLUTION 3 STEPS */}
         <section className="py-24 bg-slate-900/20 border-y border-slate-800/50 relative overflow-hidden">
-          <div className="max-w-5xl mx-auto px-6">
+          <div className="max-w-6xl mx-auto px-6">
             <FadeInSection>
               <div className="text-center mb-16">
                 <h2 className="text-3xl sm:text-4xl md:text-5xl font-extrabold text-white tracking-tight mb-6">Conheça o seu novo <span className="text-purple-400">"Time de Elite" de IA</span> 🤖</h2>
-                <p className="text-lg sm:text-xl text-slate-400 max-w-2xl mx-auto leading-relaxed mb-8">Dentro do Carrossel Viral Lab, você não ganha apenas um curso, você ganha agentes treinados para trabalhar por você:</p>
+                <p className="text-lg sm:text-xl text-slate-400 max-w-2xl mx-auto leading-relaxed mb-8 px-4">Dentro do Carrossel Viral Lab, você não ganha abra ganha um curso, você ganha agentes treinados para trabalhar por você:</p>
               </div>
 
               {/* MOCKUP DO LABORATÓRIO */}

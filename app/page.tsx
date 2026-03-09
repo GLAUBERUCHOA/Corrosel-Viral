@@ -41,7 +41,7 @@ export default function HomePage() {
   const cardGlowingShadow = "hover:shadow-[0_0_20px_rgba(139,92,246,0.2)]";
 
   const MainCTA = ({ text = "SIM, EU QUERO VIRALIZAR HOJE!", subtext = "Acesso Vitalício + Bônus Exclusivos" }: { text?: string; subtext?: string }) => (
-    <div className="flex flex-col items-center justify-center relative my-12">
+    <div className="flex flex-col items-center justify-center relative my-8">
       <div className="absolute top-0 left-0 w-full h-full border border-orange-500/50 rounded-full animate-[ping_2s_cubic-bezier(0,0,0.2,1)_infinite] z-0"></div>
       <div className="absolute top-0 left-0 w-full h-full border border-amber-500/30 rounded-full animate-[ping_2.5s_cubic-bezier(0,0,0.2,1)_infinite] delay-150 z-0"></div>
 
@@ -72,23 +72,23 @@ export default function HomePage() {
       <div className="relative z-10">
 
         {/* HEADER / HERO SECTION */}
-        <section className="pt-10 pb-12 sm:pt-20 sm:pb-24 px-6 max-w-6xl mx-auto text-center flex flex-col items-center">
+        <section className="pt-6 pb-8 sm:pt-12 sm:pb-16 px-6 max-w-6xl mx-auto text-center flex flex-col items-center">
           <FadeInSection>
 
-            <h1 className="text-4xl sm:text-5xl md:text-6xl lg:text-[76px] font-extrabold text-white tracking-tight leading-[1.1] mb-8 max-w-5xl mx-auto px-2">
+            <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-extrabold text-white tracking-tight leading-[1.15] mb-6 max-w-4xl mx-auto px-2">
               Crie carrosséis virais com <br className="hidden sm:block" />
               <span className="text-transparent bg-clip-text bg-gradient-to-r from-orange-400 to-amber-400">
                 Agentes de IA em apenas 3 passos
               </span> <br className="hidden sm:block" />
-              e transforme seu Instagram em uma máquina de vendas
+              e coloque seu Instagram para vender
             </h1>
 
-            <p className="text-xs sm:text-sm text-slate-500 max-w-xl mx-auto leading-relaxed mb-10 px-4 font-normal tracking-wide italic opacity-80 mt-1">
-              Com a nossa ferramenta você usa modelos prontos de geração dos carrosséis com IA e produz 10x mais rápido
+            <p className="text-xs sm:text-sm text-slate-500 max-w-xl mx-auto leading-relaxed mb-8 px-4 font-normal tracking-wide italic opacity-80 mt-0">
+              Uso modelos prontos de geração de carrosséis com IA e produza 10x mais rápido.
             </p>
 
             {/* ESPAÇO PARA O VÍDEO DE VENDAS */}
-            <div className="w-full max-w-4xl mx-auto h-[250px] sm:h-[350px] md:h-[450px] lg:h-[500px] border-2 border-slate-800 border-dashed rounded-[2rem] bg-slate-900/60 backdrop-blur-md flex flex-col items-center justify-center text-slate-500 gap-4 group hover:border-slate-600 transition-colors relative overflow-hidden mb-12 shadow-2xl">
+            <div className="w-full max-w-4xl mx-auto h-[220px] sm:h-[300px] md:h-[400px] lg:h-[480px] border-2 border-slate-800 border-dashed rounded-[2rem] bg-slate-900/60 backdrop-blur-md flex flex-col items-center justify-center text-slate-500 gap-4 group hover:border-slate-600 transition-colors relative overflow-hidden mb-8 shadow-2xl">
               <div className="absolute inset-0 bg-black/40 z-10"></div>
               <Video size={56} className="text-slate-600 group-hover:text-slate-400 transition-colors z-20" />
               <p className="font-medium z-20 text-center px-4">[ESPAÇO DO VÍDEO] <br className="sm:hidden" /> Inserir iFrame do YouTube ou Vimeo aqui.</p>

@@ -756,14 +756,18 @@ export default function CarouselGenerator({ onLogout }: { onLogout: () => void }
           outputMimeType: 'image/png'
         }
       });
-      const base64 = response.generatedImages[0].image.imageBytes;
-      const imageUrl = `data:image/png;base64,${base64}`;
-      setUploadedImages(prev => {
-        const updated = [...prev];
-        while (updated.length <= index) updated.push(null);
-        updated[index] = imageUrl;
-        return updated;
-      });
+      const base64 = response.generatedImages?.[0]?.image?.imageBytes;
+      if (base64) {
+        const imageUrl = `data:image/png;base64,${base64}`;
+        setUploadedImages(prev => {
+          const updated = [...prev];
+          while (updated.length <= index) updated.push(null);
+          updated[index] = imageUrl;
+          return updated;
+        });
+      } else {
+        console.error("Falha: A API não retornou a imagem (possível bloqueio de segurança).");
+      }
     } catch (error) {
       console.error("Erro ao regerar imagem:", error);
       alert("Falha ao regerar a imagem. Tente novamente.");
@@ -845,14 +849,18 @@ export default function CarouselGenerator({ onLogout }: { onLogout: () => void }
               outputMimeType: 'image/png'
             }
           });
-          const base64 = response.generatedImages[0].image.imageBytes;
-          const imageUrl = `data:image/png;base64,${base64}`;
-          setUploadedImages(prev => {
-            const updated = [...prev];
-            while (updated.length < newSlides.length) updated.push(null);
-            updated[i] = imageUrl;
-            return updated;
-          });
+          const base64 = response.generatedImages?.[0]?.image?.imageBytes;
+          if (base64) {
+            const imageUrl = `data:image/png;base64,${base64}`;
+            setUploadedImages(prev => {
+              const updated = [...prev];
+              while (updated.length < newSlides.length) updated.push(null);
+              updated[i] = imageUrl;
+              return updated;
+            });
+          } else {
+            console.error(`Falha no slide ${i}: A API não retornou a imagem.`);
+          }
         } catch (error) {
           console.error(`Error generating image for slide ${i}:`, error);
         } finally {

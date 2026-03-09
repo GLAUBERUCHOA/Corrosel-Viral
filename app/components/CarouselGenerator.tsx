@@ -1160,7 +1160,7 @@ export default function CarouselGenerator({ onLogout }: { onLogout: () => void }
                         <a href="https://gemini.google.com/gem/1iQPq18-mjh8IWq4tGpGuD3e4wn46BEPG?usp=sharing" target="_blank" className="flex items-center justify-center gap-2 py-2 px-3 bg-white dark:bg-surface-dark border border-indigo-100 dark:border-indigo-500/30 rounded-xl text-[11px] font-bold text-slate-700 dark:text-slate-200 hover:border-indigo-400 hover:text-indigo-600 dark:hover:text-indigo-400 transition-all shadow-sm">
                           <span className="material-symbols-outlined text-[16px]">psychology</span> Agente de Roteiros
                         </a>
-                        <a href="#imagens" target="_blank" className="flex items-center justify-center gap-2 py-2 px-3 bg-white dark:bg-surface-dark border border-indigo-100 dark:border-indigo-500/30 rounded-xl text-[11px] font-bold text-slate-700 dark:text-slate-200 hover:border-indigo-400 hover:text-indigo-600 dark:hover:text-indigo-400 transition-all shadow-sm">
+                        <a href="https://gemini.google.com/gem/1SJm7_JjDoeyhxtbTQG3s789RlLad58z7?usp=sharing" target="_blank" className="flex items-center justify-center gap-2 py-2 px-3 bg-white dark:bg-surface-dark border border-indigo-100 dark:border-indigo-500/30 rounded-xl text-[11px] font-bold text-slate-700 dark:text-slate-200 hover:border-indigo-400 hover:text-indigo-600 dark:hover:text-indigo-400 transition-all shadow-sm">
                           <span className="material-symbols-outlined text-[16px]">palette</span> Agente de Imagens
                         </a>
                       </div>

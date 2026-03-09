@@ -100,6 +100,51 @@ export default function HomePage() {
           </FadeInSection>
         </section>
 
+        {/* HOW IT WORKS SECTION */}
+        <section className="py-24 bg-white px-6 relative z-20">
+          <div className="max-w-6xl mx-auto">
+            <FadeInSection>
+              <div className="text-center mb-16">
+                <h2 className="text-3xl md:text-5xl font-black text-slate-900 tracking-tight leading-tight mb-6 max-w-4xl mx-auto">
+                  Crie carrosséis virais com agentes de IA em apenas 3 passos e transforme seu Instagram em uma máquina de vendas
+                </h2>
+                <p className="text-lg md:text-xl text-gray-600 max-w-2xl mx-auto leading-relaxed font-medium">
+                  Com a nossa ferramenta você usa modelos prontos de geração dos carrosséis com IA e produz 10x mais rápido
+                </p>
+              </div>
+
+              <div className="grid grid-cols-1 lg:grid-cols-3 gap-10">
+                {/* Passo 1 */}
+                <div className="group bg-white border border-gray-100 shadow-xl rounded-[2.5rem] p-10 hover:-translate-y-2 transition-all duration-300">
+                  <div className="text-5xl mb-6">🤖</div>
+                  <h3 className="text-2xl font-bold text-slate-900 mb-4 tracking-tight">1. Gere o Roteiro com o Agente Homero</h3>
+                  <p className="text-gray-600 leading-relaxed font-medium">
+                    Sem bloqueio criativo. Com um clique, você abre nosso Agente Especialista em Copywriting, escolhe o estilo e ele entrega o texto perfeitamente formatado. É só copiar e colar na plataforma.
+                  </p>
+                </div>
+
+                {/* Passo 2 */}
+                <div className="group bg-white border border-gray-100 shadow-xl rounded-[2.5rem] p-10 hover:-translate-y-2 transition-all duration-300">
+                  <div className="text-5xl mb-6">✨</div>
+                  <h3 className="text-2xl font-bold text-slate-900 mb-4 tracking-tight">2. Personalize com a Sua Marca</h3>
+                  <p className="text-gray-600 leading-relaxed font-medium">
+                    Esqueça perder horas alinhando caixas de texto. Nossa engine ajusta o layout automaticamente. Você só precisa escolher suas cores, fontes e adicionar sua foto para criar autoridade instantânea.
+                  </p>
+                </div>
+
+                {/* Passo 3 */}
+                <div className="group bg-white border border-gray-100 shadow-xl rounded-[2.5rem] p-10 hover:-translate-y-2 transition-all duration-300">
+                  <div className="text-5xl mb-6">🚀</div>
+                  <h3 className="text-2xl font-bold text-slate-900 mb-4 tracking-tight">3. Imagens de Alto Impacto e Download</h3>
+                  <p className="text-gray-600 leading-relaxed font-medium">
+                    Arraste suas imagens favoritas para dentro dos slides. Quer usar IA para as fotos? Copie nossos prompts prontos, gere imagens hiper-realistas e jogue no carrossel. Depois, é só baixar e postar!
+                  </p>
+                </div>
+              </div>
+            </FadeInSection>
+          </div>
+        </section>
+
         {/* VIRAL CAROUSEL SHOWCASE */}
         <section className="py-24 relative overflow-hidden bg-slate-950/50">
           <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,rgba(168,85,247,0.05)_0%,transparent_70%)] pointer-events-none"></div>

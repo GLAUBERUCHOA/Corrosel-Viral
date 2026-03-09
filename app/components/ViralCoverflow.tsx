@@ -72,10 +72,10 @@ export default function ViralCoverflow() {
     };
 
     return (
-        <div className="w-full relative overflow-hidden py-8 sm:py-12">
+        <div className="w-full relative py-16 sm:py-24">
             <div
                 ref={scrollRef}
-                className="flex overflow-x-auto snap-x snap-mandatory no-scrollbar pb-10 pt-4"
+                className="flex overflow-x-auto snap-x snap-mandatory no-scrollbar pb-16 pt-8 relative z-20"
                 style={{
                     paddingLeft: 'calc(50% - 150px)',
                     paddingRight: 'calc(50% - 150px)'
@@ -90,32 +90,33 @@ export default function ViralCoverflow() {
                         <div
                             key={img.id}
                             onClick={() => scrollToIndex(idx)}
-                            className={`shrink-0 snap-center transition-all duration-700 ease-out cursor-pointer mx-2 sm:mx-4 relative
+                            className={`shrink-0 snap-center transition-all duration-700 ease-out cursor-pointer mx-2 sm:mx-6 relative
                 ${isActive
-                                    ? 'z-30 scale-110 opacity-100 shadow-[0_30px_60px_rgba(168,85,247,0.5)] blur-none rotate-0'
+                                    ? 'z-30 scale-110 opacity-100 shadow-[0_0_100px_rgba(168,85,247,0.5)]'
                                     : isAdjacent
-                                        ? 'z-20 scale-90 opacity-60 shadow-xl blur-[0.5px]'
-                                        : 'z-10 scale-[0.75] opacity-20 shadow-md blur-[2px]'
+                                        ? 'z-20 scale-90 opacity-40'
+                                        : 'z-10 scale-[0.75] opacity-10'
                                 }
               `}
                             style={{
                                 width: '300px',
-                                height: '450px',
-                                borderRadius: '2rem',
-                                transform: isActive ? 'scale(1.1)' : `scale(0.9) ${idx < activeIndex ? 'rotateY(10deg)' : 'rotateY(-10deg)'}`
+                                height: '533px',
+                                borderRadius: '1.5rem',
+                                transform: isActive ? 'scale(1.1)' : `scale(0.9) ${idx < activeIndex ? 'rotateY(15deg)' : 'rotateY(-15deg)'}`,
+                                perspective: '1000px'
                             }}
                         >
-                            <div className="w-full h-full bg-slate-900 rounded-[2rem] overflow-hidden border-2 border-slate-700/50 relative group">
+                            <div className="w-full h-full bg-slate-900 rounded-[1.5rem] overflow-hidden border-2 border-slate-700/30 relative group shadow-2xl">
                                 <img
                                     src={img.src}
                                     alt={img.alt}
-                                    className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
+                                    className="w-full h-full object-contain bg-black transition-transform duration-700 group-hover:scale-105"
                                     onError={(e) => {
                                         (e.target as HTMLImageElement).style.display = 'none';
                                         (e.target as HTMLImageElement).nextElementSibling?.classList.remove('hidden');
                                     }}
                                 />
-                                <div className="hidden absolute inset-0 flex flex-col items-center justify-center p-6 text-center bg-slate-900 border-2 border-dashed border-slate-700/50 rounded-[2rem]">
+                                <div className="hidden absolute inset-0 flex flex-col items-center justify-center p-6 text-center bg-slate-900 border-2 border-dashed border-slate-700/50 rounded-[1.5rem]">
                                     <div className="w-16 h-16 bg-purple-500/10 rounded-full flex items-center justify-center mb-4 animate-pulse">
                                         <span className="material-symbols-outlined text-4xl text-purple-400 opacity-80">image_not_supported</span>
                                     </div>
@@ -124,7 +125,6 @@ export default function ViralCoverflow() {
                                         <span className="text-purple-400/80">Aguardando seu Upload</span>
                                     </span>
                                 </div>
-                                <div className={`absolute inset-0 bg-gradient-to-t from-slate-950/80 to-transparent transition-opacity duration-500 ${isActive ? 'opacity-100' : 'opacity-0'}`}></div>
                             </div>
                         </div>
                     );

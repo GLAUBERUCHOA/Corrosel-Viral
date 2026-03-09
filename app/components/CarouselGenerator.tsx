@@ -747,17 +747,17 @@ export default function CarouselGenerator({ onLogout }: { onLogout: () => void }
       const ai = new GoogleGenAI({ apiKey });
       const prompt = getImagePrompt(imageNiche, dbImagePrompts, slide.title, slide.subtitle);
 
-      const response = await ai.models.generateImages({
-        model: 'imagen-3.0-generate-001',
-        prompt: prompt,
-        config: {
-          aspectRatio: aspectRatio === '9:16' ? '9:16' : '3:4',
-          numberOfImages: 1,
-          outputMimeType: 'image/png'
+      const response = await ai.models.generateContent({
+        model: 'gemini-2.5-flash',
+        contents: [{ role: 'user', parts: [{ text: prompt }] }],
+        generationConfig: {
+          responseMimeType: "image/png"
         }
-      });
-      const base64 = response.generatedImages?.[0]?.image?.imageBytes;
-      if (base64) {
+      }) as any;
+
+      const part = response.candidates?.[0]?.content?.parts?.find((p: any) => p.inlineData);
+      if (part) {
+        const base64 = part.inlineData.data;
         const imageUrl = `data:image/png;base64,${base64}`;
         setUploadedImages(prev => {
           const updated = [...prev];
@@ -840,17 +840,17 @@ export default function CarouselGenerator({ onLogout }: { onLogout: () => void }
         try {
           const prompt = getImagePrompt(imageNiche, dbImagePrompts, newSlides[i].title, newSlides[i].subtitle);
 
-          const response = await ai.models.generateImages({
-            model: 'imagen-3.0-generate-001',
-            prompt: prompt,
-            config: {
-              aspectRatio: aspectRatio === '9:16' ? '9:16' : '3:4',
-              numberOfImages: 1,
-              outputMimeType: 'image/png'
+          const response = await ai.models.generateContent({
+            model: 'gemini-2.5-flash',
+            contents: [{ role: 'user', parts: [{ text: prompt }] }],
+            generationConfig: {
+              responseMimeType: "image/png"
             }
-          });
-          const base64 = response.generatedImages?.[0]?.image?.imageBytes;
-          if (base64) {
+          }) as any;
+
+          const part = response.candidates?.[0]?.content?.parts?.find((p: any) => p.inlineData);
+          if (part) {
+            const base64 = part.inlineData.data;
             const imageUrl = `data:image/png;base64,${base64}`;
             setUploadedImages(prev => {
               const updated = [...prev];

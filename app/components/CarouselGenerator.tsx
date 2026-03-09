@@ -750,23 +750,21 @@ export default function CarouselGenerator({ onLogout }: { onLogout: () => void }
       const response = await ai.models.generateContent({
         model: 'gemini-2.5-flash',
         contents: [{ role: 'user', parts: [{ text: prompt }] }],
-        generationConfig: {
-          responseMimeType: "image/png"
-        }
       }) as any;
 
-      const part = response.candidates?.[0]?.content?.parts?.find((p: any) => p.inlineData);
-      if (part) {
-        const base64 = part.inlineData.data;
-        const imageUrl = `data:image/png;base64,${base64}`;
-        setUploadedImages(prev => {
-          const updated = [...prev];
-          while (updated.length <= index) updated.push(null);
-          updated[index] = imageUrl;
-          return updated;
-        });
-      } else {
-        console.error("Falha: A API não retornou a imagem (possível bloqueio de segurança).");
+      const parts = response.response?.candidates?.[0]?.content?.parts || [];
+      for (const part of parts) {
+        if (part.inlineData) {
+          const base64 = part.inlineData.data;
+          const imageUrl = `data:${part.inlineData.mimeType || 'image/png'};base64,${base64}`;
+          setUploadedImages(prev => {
+            const updated = [...prev];
+            while (updated.length <= index) updated.push(null);
+            updated[index] = imageUrl;
+            return updated;
+          });
+          break;
+        }
       }
     } catch (error) {
       console.error("Erro ao regerar imagem:", error);
@@ -843,23 +841,21 @@ export default function CarouselGenerator({ onLogout }: { onLogout: () => void }
           const response = await ai.models.generateContent({
             model: 'gemini-2.5-flash',
             contents: [{ role: 'user', parts: [{ text: prompt }] }],
-            generationConfig: {
-              responseMimeType: "image/png"
-            }
           }) as any;
 
-          const part = response.candidates?.[0]?.content?.parts?.find((p: any) => p.inlineData);
-          if (part) {
-            const base64 = part.inlineData.data;
-            const imageUrl = `data:image/png;base64,${base64}`;
-            setUploadedImages(prev => {
-              const updated = [...prev];
-              while (updated.length < newSlides.length) updated.push(null);
-              updated[i] = imageUrl;
-              return updated;
-            });
-          } else {
-            console.error(`Falha no slide ${i}: A API não retornou a imagem.`);
+          const parts = response.response?.candidates?.[0]?.content?.parts || [];
+          for (const part of parts) {
+            if (part.inlineData) {
+              const base64 = part.inlineData.data;
+              const imageUrl = `data:${part.inlineData.mimeType || 'image/png'};base64,${base64}`;
+              setUploadedImages(prev => {
+                const updated = [...prev];
+                while (updated.length < newSlides.length) updated.push(null);
+                updated[i] = imageUrl;
+                return updated;
+              });
+              break;
+            }
           }
         } catch (error) {
           console.error(`Error generating image for slide ${i}:`, error);

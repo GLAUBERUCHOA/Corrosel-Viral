@@ -1,4 +1,4 @@
-﻿'use client';
+'use client';
 
 import React, { useEffect, useRef } from 'react';
 import { Sparkles, Zap, Image as ImageIcon, LayoutTemplate, Calendar, Video, BookOpen, Infinity, CheckCircle2, CheckCircle, ChevronDown, ShieldCheck, TrendingUp, Magnet, Target } from 'lucide-react';
@@ -75,7 +75,7 @@ export default function HomePage() {
         <section className="pt-2 pb-4 sm:pt-6 sm:pb-8 px-6 max-w-6xl mx-auto text-center flex flex-col items-center">
           <FadeInSection>
 
-            <h1 className="text-xl sm:text-2xl md:text-3xl lg:text-4xl font-extrabold text-white tracking-tight leading-[1.2] mb-3 max-w-4xl mx-auto px-2">
+            <h1 className="text-2xl sm:text-2xl md:text-3xl lg:text-4xl font-extrabold text-white tracking-tight leading-[1.2] mb-3 max-w-4xl mx-auto px-2">
               Quer crescer no Instagram? Crie carrosséis virais no automático com <br className="hidden sm:block" />
               <span className="text-transparent bg-clip-text bg-gradient-to-r from-orange-400 to-amber-400">
                 Inteligência Artificial com o Carrossel Viral Lab
@@ -118,7 +118,7 @@ export default function HomePage() {
 
           <div className="max-w-4xl mx-auto relative z-10">
             <FadeInSection>
-              <h2 className="text-3xl md:text-5xl font-extrabold text-white tracking-tight leading-tight mb-12 text-center">
+              <h2 className="text-4xl md:text-5xl font-extrabold text-white tracking-tight leading-tight mb-12 text-center">
                 Eu sei como é frustrante postar e não ter alcance, <span className="text-transparent bg-clip-text bg-gradient-to-r from-orange-400 to-amber-400 text-nowrap whitespace-nowrap">acredite!</span>
               </h2>
 
@@ -175,7 +175,7 @@ export default function HomePage() {
           <div className="max-w-6xl mx-auto relative z-10">
             <FadeInSection>
               <div className="text-center mb-16">
-                <h2 className="text-3xl md:text-5xl font-extrabold text-white mb-6">
+                <h2 className="text-4xl md:text-5xl font-extrabold text-white mb-6">
                   A diferença entre tentar <span className="text-red-400">na raça</span> <br className="hidden sm:block" />
                   e usar a <span className="text-transparent bg-clip-text bg-gradient-to-r from-orange-400 to-amber-400">automação do Lab</span>
                 </h2>
@@ -241,7 +241,7 @@ export default function HomePage() {
           <div className="max-w-6xl mx-auto relative z-10">
             <FadeInSection>
               <div className="text-center mb-20">
-                <h2 className="text-3xl md:text-5xl font-extrabold text-white tracking-tight leading-tight mb-6">
+                <h2 className="text-4xl md:text-5xl font-extrabold text-white tracking-tight leading-tight mb-6">
                   A ciência por trás dos seus <br className="hidden sm:block" />
                   <span className="text-transparent bg-clip-text bg-gradient-to-r from-orange-400 to-amber-400">novos carrosséis virais</span>
                 </h2>
@@ -291,7 +291,7 @@ export default function HomePage() {
 
           <div className="max-w-6xl mx-auto px-6 mb-2 text-center relative z-10">
             <FadeInSection>
-              <h2 className="text-3xl sm:text-4xl md:text-5xl font-extrabold text-white tracking-tight mb-4">
+              <h2 className="text-4xl sm:text-4xl md:text-5xl font-extrabold text-white tracking-tight mb-4">
                 Veja o poder dos <span className="text-transparent bg-clip-text bg-gradient-to-r from-purple-400 to-indigo-400">Carrosséis Virais</span>
               </h2>
               <p className="text-lg sm:text-xl text-slate-400 max-w-2xl mx-auto leading-relaxed">
@@ -319,7 +319,7 @@ export default function HomePage() {
                   <div className="w-full lg:w-1/2 p-8 md:p-12 lg:p-16 flex flex-col justify-center relative">
                     <div className="absolute top-0 right-0 w-32 h-32 bg-purple-500/10 blur-[60px] rounded-full pointer-events-none"></div>
 
-                    <h2 className="text-3xl sm:text-4xl lg:text-5xl font-extrabold text-white mb-8 leading-[1.1] tracking-tight">
+                    <h2 className="text-4xl sm:text-4xl lg:text-5xl font-extrabold text-white mb-8 leading-[1.1] tracking-tight">
                       Será que carrosséis realmente atraem um público <span className="text-transparent bg-clip-text bg-gradient-to-r from-orange-400 to-amber-400">mais qualificado?</span> <br className="hidden sm:block" /> Será se <span className="text-transparent bg-clip-text bg-gradient-to-r from-purple-400 to-indigo-400">vale a pena</span> investir neles?
                     </h2>
 
@@ -382,7 +382,7 @@ export default function HomePage() {
           <div className="max-w-6xl mx-auto px-6">
             <FadeInSection>
               <div className="text-center mb-16">
-                <h2 className="text-3xl sm:text-4xl md:text-5xl font-extrabold text-white tracking-tight mb-6">Conheça o seu novo <span className="text-purple-400">"Time de Elite" de IA</span> 🤖</h2>
+                <h2 className="text-4xl sm:text-4xl md:text-5xl font-extrabold text-white tracking-tight mb-6">Conheça o seu novo <span className="text-purple-400">"Time de Elite" de IA</span> 🤖</h2>
                 <p className="text-lg sm:text-xl text-slate-400 max-w-2xl mx-auto leading-relaxed mb-8 px-4">Dentro do Carrossel Viral Lab, você não ganha apenas um curso, você ganha agentes treinados para trabalhar por você:</p>
               </div>
 
@@ -430,7 +430,7 @@ export default function HomePage() {
                 <div className="inline-flex items-center gap-2 px-3 py-1 bg-slate-800 rounded-full text-slate-300 text-xs font-semibold tracking-wide mb-6">
                   TUDO O QUE ESTÁ INCLUSO NO SEU ACESSO HOJE
                 </div>
-                <h2 className="text-3xl sm:text-4xl md:text-5xl font-extrabold text-white tracking-tight mb-6">O que você vai receber</h2>
+                <h2 className="text-4xl sm:text-4xl md:text-5xl font-extrabold text-white tracking-tight mb-6">O que você vai receber</h2>
               </div>
 
               {/* MOCKUP DO BUNDLE */}
@@ -477,7 +477,7 @@ export default function HomePage() {
         <section className="py-24 bg-gradient-to-b from-slate-950 to-indigo-950/20 border-t border-slate-800/50">
           <div className="max-w-4xl mx-auto px-6">
             <FadeInSection>
-              <h2 className="text-3xl sm:text-4xl md:text-5xl font-extrabold text-center text-white tracking-tight mb-12">ENTRE HOJE E LEVE TAMBÉM: 🎁 <span className="text-transparent bg-clip-text bg-gradient-to-r from-amber-200 to-yellow-500">Bônus Exclusivos</span></h2>
+              <h2 className="text-4xl sm:text-4xl md:text-5xl font-extrabold text-center text-white tracking-tight mb-12">ENTRE HOJE E LEVE TAMBÉM: 🎁 <span className="text-transparent bg-clip-text bg-gradient-to-r from-amber-200 to-yellow-500">Bônus Exclusivos</span></h2>
 
               <div className="space-y-4">
                 {[
@@ -547,7 +547,7 @@ export default function HomePage() {
               <div className="w-20 h-20 mx-auto bg-green-500/10 border border-green-500/20 flex items-center justify-center rounded-3xl text-green-400 mb-8">
                 <ShieldCheck size={40} />
               </div>
-              <h2 className="text-3xl sm:text-4xl md:text-5xl font-extrabold text-white tracking-tight mb-6">Risco Zero: 15 Dias de Garantia Blindada</h2>
+              <h2 className="text-4xl sm:text-4xl md:text-5xl font-extrabold text-white tracking-tight mb-6">Risco Zero: 15 Dias de Garantia Blindada</h2>
               <p className="text-lg sm:text-xl text-slate-400 leading-relaxed max-w-2xl mx-auto">
                 Teste o sistema, use o Homero e o Da Vinci. Se em 15 dias você não achar que esse é o sistema mais rápido de criação de conteúdo que já viu, eu devolvo seu dinheiro integralmente.
               </p>
@@ -559,7 +559,7 @@ export default function HomePage() {
         <section className="py-24 px-6">
           <div className="max-w-3xl mx-auto">
             <FadeInSection>
-              <h2 className="text-3xl sm:text-4xl md:text-5xl font-extrabold text-center text-white tracking-tight mb-16">Dúvidas Frequentes</h2>
+              <h2 className="text-4xl sm:text-4xl md:text-5xl font-extrabold text-center text-white tracking-tight mb-16">Dúvidas Frequentes</h2>
 
               <div className="space-y-4">
                 {[
@@ -597,7 +597,7 @@ export default function HomePage() {
                 <div className="inline-flex items-center gap-2 px-3 py-1 bg-slate-800 rounded-full text-slate-300 text-xs font-semibold tracking-wide mb-6">
                   SOBRE O AUTOR
                 </div>
-                <h2 className="text-3xl sm:text-4xl md:text-5xl font-extrabold text-white tracking-tight mb-6">Quem é Glauber Uchoa?</h2>
+                <h2 className="text-4xl sm:text-4xl md:text-5xl font-extrabold text-white tracking-tight mb-6">Quem é Glauber Uchoa?</h2>
                 <div className="text-slate-400 text-lg leading-relaxed space-y-4">
                   <p>
                     Estrategista digital e criador de ecossistemas que somam mais de 1,5 milhão de seguidores. Glauber transformou sua paixão por tecnologia e marketing em ferramentas práticas que eliminam o trabalho braçal de quem quer crescer na internet.
@@ -616,7 +616,7 @@ export default function HomePage() {
           <div className="absolute bottom-0 left-1/2 -translate-x-1/2 w-full max-w-3xl h-[300px] bg-purple-600/10 blur-[100px] rounded-t-full pointer-events-none"></div>
 
           <div className="max-w-3xl mx-auto relative z-10">
-            <h2 className="text-3xl sm:text-4xl md:text-5xl font-extrabold text-white tracking-tight mb-8 leading-tight">Sua decisão de <span className="text-purple-400">hoje</span> define seu Instagram <br className="hidden sm:block" />pelos próximos 12 meses.</h2>
+            <h2 className="text-4xl sm:text-4xl md:text-5xl font-extrabold text-white tracking-tight mb-8 leading-tight">Sua decisão de <span className="text-purple-400">hoje</span> define seu Instagram <br className="hidden sm:block" />pelos próximos 12 meses.</h2>
 
             <div className="flex flex-col sm:flex-row justify-center gap-4 sm:gap-8 mb-12 text-left sm:text-center text-lg">
               <div className="flex items-center gap-3 text-slate-400">

@@ -1,4 +1,4 @@
-﻿'use client';
+'use client';
 // Version: 1.1 - Added mobile download fixes and layout adjustments
 import React, { useState, useRef, useEffect } from 'react';
 import { GoogleGenAI } from "@google/genai";
@@ -57,8 +57,8 @@ const SimpleRichTextEditor = ({ value, onChange, placeholder }: { value: string,
   const savedSelectionRef = useRef<Range | null>(null);
 
   useEffect(() => {
-    // Somente atualiza se o valor externo mudou E não somos nós que estamos editando no momento
-    // Isso evita que o cursor pule para o início (causando o erro de digitar 'de trás pra frente')
+    // Atualiza o conteúdo se o valor externo mudar e o editor não estiver focado
+    // Isso evita o erro de 'digitar de trás pra frente' causado por re-renders do React
     if (editorRef.current && value !== lastHtmlRef.current) {
       if (document.activeElement !== editorRef.current) {
         editorRef.current.innerHTML = value || '';
@@ -66,6 +66,14 @@ const SimpleRichTextEditor = ({ value, onChange, placeholder }: { value: string,
       }
     }
   }, [value]);
+
+  // Sincroniza o valor inicial no componente ao montar para garantir que o conteúdo apareça
+  useEffect(() => {
+    if (editorRef.current && !editorRef.current.innerHTML && value) {
+      editorRef.current.innerHTML = value;
+      lastHtmlRef.current = value;
+    }
+  }, []);
 
   const emitChange = () => {
     if (editorRef.current) {
@@ -183,7 +191,7 @@ const SimpleRichTextEditor = ({ value, onChange, placeholder }: { value: string,
         onMouseLeave={saveSelection}
         onInput={(e) => { saveSelection(); emitChange(); }}
         onBlur={() => { emitChange(); }}
-        dangerouslySetInnerHTML={{ __html: lastHtmlRef.current }}
+        suppressContentEditableWarning={true}
       />
     </div>
   );
@@ -598,6 +606,38 @@ export default function CarouselGenerator({ onLogout }: { onLogout: () => void }
     setDraggedIndex(null);
   };
 
+  const handleDeleteSlide = (index: number) => {
+    if (parsedSlides.length <= 1) {
+      alert("O carrossel precisa de pelo menos 1 slide.");
+      return;
+    }
+
+    if (confirm("Deseja realmente excluir este slide?")) {
+      const isCta = parsedSlides[index].isCta;
+      if (isCta) {
+        setAddCtaSlide(false);
+      }
+
+      const newSlides = parsedSlides.filter((_, i) => i !== index);
+      setParsedSlides(newSlides);
+      setUploadedImages(prev => prev.filter((_, i) => i !== index));
+
+      // Se não estivermos no modo Iury e não for o CTA sendo excluído, atualizamos o conteúdo bruto
+      if (!isIuryMode && !isCta) {
+        const manualSlides = newSlides.filter(s => !s.isCta);
+        const newContent = manualSlides.map((s, i) => {
+          const slideNum = i + 1;
+          const numStr = slideNum < 10 ? `0${slideNum}` : slideNum;
+          return `SLIDE ${numStr}:\n[TÍTULO]: ${s.title}\n[SUBTÍTULO]: ${s.subtitle}`;
+        }).join('\n\n');
+        setContent(newContent);
+      }
+
+      setOpenSlideIndex(null);
+      setEditingSlideIndex(null);
+    }
+  };
+
   const handleMassUploadClick = () => {
     if (!generateWithAI && fileInputRef.current) {
       fileInputRef.current.click();
@@ -747,6 +787,13 @@ export default function CarouselGenerator({ onLogout }: { onLogout: () => void }
 
     return newSlides;
   };
+
+  // Efeito para atualização em tempo real do carrossel ao digitar no editor principal
+  useEffect(() => {
+    if (!isIuryMode && isInitialized.current) {
+      processTextIntoSlides(content, addCtaSlide, ctaContent);
+    }
+  }, [content, addCtaSlide, ctaContent, isIuryMode]);
 
 
 
@@ -1682,6 +1729,11 @@ export default function CarouselGenerator({ onLogout }: { onLogout: () => void }
                                 className="pointer-events-auto flex items-center justify-start gap-3 bg-white/10 text-white hover:bg-white/20 px-4 py-2.5 rounded-xl text-xs font-bold transition-all border border-white/10">
                                 <span className="material-symbols-outlined text-[16px]">download</span> Baixar
                               </button>
+                              <button
+                                onClick={(e) => { e.stopPropagation(); handleDeleteSlide(index); }}
+                                className="pointer-events-auto flex items-center justify-start gap-3 bg-red-500/20 text-red-100 hover:bg-red-500/40 px-4 py-2.5 rounded-xl text-xs font-bold transition-all border border-red-500/30">
+                                <span className="material-symbols-outlined text-[16px]">folder_delete</span> Excluir Slide
+                              </button>
                             </div>
                           </div>
                         </div>
@@ -1782,6 +1834,11 @@ export default function CarouselGenerator({ onLogout }: { onLogout: () => void }
                                 className="pointer-events-auto flex items-center justify-start gap-3 bg-white/10 text-white hover:bg-white/20 px-4 py-2.5 rounded-xl text-xs font-bold transition-all border border-white/10">
                                 <span className="material-symbols-outlined text-[16px]">download</span> Baixar
                               </button>
+                              <button
+                                onClick={(e) => { e.stopPropagation(); handleDeleteSlide(index); }}
+                                className="pointer-events-auto flex items-center justify-start gap-3 bg-red-500/20 text-red-100 hover:bg-red-500/40 px-4 py-2.5 rounded-xl text-xs font-bold transition-all border border-red-500/30">
+                                <span className="material-symbols-outlined text-[16px]">folder_delete</span> Excluir Slide
+                              </button>
                               {imageSrc && (
                                 <a href={imageSrc} target="_blank" rel="noopener noreferrer" onClick={(e) => e.stopPropagation()} className="pointer-events-auto flex items-center justify-start gap-3 bg-white/10 text-white hover:bg-white/20 px-4 py-2.5 rounded-xl text-xs font-bold transition-all border border-white/10">
                                   <span className="material-symbols-outlined text-[16px]">open_in_new</span> Expandir
@@ -1811,7 +1868,7 @@ export default function CarouselGenerator({ onLogout }: { onLogout: () => void }
                               <button
                                 onClick={(e) => { e.stopPropagation(); handleRemoveImage(index, e); }}
                                 className="pointer-events-auto flex items-center justify-start gap-3 bg-red-500/20 text-red-100 hover:bg-red-500/40 px-4 py-2.5 rounded-xl text-xs font-bold transition-all border border-red-500/30">
-                                <span className="material-symbols-outlined text-[16px]">delete</span> Remover
+                                <span className="material-symbols-outlined text-[16px]">image_not_supported</span> Remover Imagem
                               </button>
                             </div>
                           </div>

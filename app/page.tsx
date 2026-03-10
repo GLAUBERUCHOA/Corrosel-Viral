@@ -87,11 +87,17 @@ export default function HomePage() {
               Uso modelos prontos de geração de carrosséis com IA e produza 10x mais rápido.
             </p>
 
-            {/* ESPAÇO PARA O VÍDEO DE VENDAS */}
-            <div className="w-full max-w-2xl mx-auto h-[150px] sm:h-[200px] md:h-[300px] lg:h-[380px] border-2 border-slate-800 border-dashed rounded-[2rem] bg-slate-900/60 backdrop-blur-md flex flex-col items-center justify-center text-slate-500 gap-4 group hover:border-slate-600 transition-colors relative overflow-hidden mb-4 shadow-2xl">
-              <div className="absolute inset-0 bg-black/40 z-10"></div>
-              <Video size={56} className="text-slate-600 group-hover:text-slate-400 transition-colors z-20" />
-              <p className="font-medium z-20 text-center px-4">[ESPAÇO DO VÍDEO] <br className="sm:hidden" /> Inserir iFrame do YouTube ou Vimeo aqui.</p>
+            {/* VÍDEO DE VENDAS */}
+            <div className="w-full max-w-4xl mx-auto aspect-video rounded-[1.5rem] sm:rounded-[2rem] overflow-hidden shadow-[0_20px_50px_rgba(0,0,0,0.5)] border border-slate-800/50 mb-8 relative group">
+              <div className="absolute inset-0 bg-gradient-to-tr from-orange-500/10 to-purple-500/10 pointer-events-none z-10 group-hover:opacity-0 transition-opacity duration-700"></div>
+              <iframe
+                className="w-full h-full relative z-0"
+                src="https://www.youtube.com/embed/xnvD0HYUSTY?autoplay=1&mute=1&loop=1&playlist=xnvD0HYUSTY&rel=0&modestbranding=1&playsinline=1"
+                title="Vídeo de Vendas - Carrossel Viral"
+                frameBorder="0"
+                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+                allowFullScreen
+              ></iframe>
             </div>
 
             <MainCTA />

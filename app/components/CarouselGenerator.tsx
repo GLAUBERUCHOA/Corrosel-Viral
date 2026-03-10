@@ -1680,18 +1680,11 @@ export default function CarouselGenerator({ onLogout }: { onLogout: () => void }
                         <div className="relative group/slide w-full h-full rounded-2xl overflow-hidden shadow-2xl transition-transform hover:-translate-y-2 duration-300">
                           <div
                             ref={(el) => { slideRefs.current[index] = el; }}
-                            className={`absolute inset-0 flex flex-col items-center ${ctaImage ? 'justify-start pt-12' : 'justify-center'} p-8 text-center overflow-hidden`}
+                            className={`absolute inset-0 flex flex-col items-center justify-start pt-24 pb-12 px-10 text-center overflow-hidden`}
                             style={{ backgroundColor: ctaBgColor }}
                           >
-
-                            {ctaImage && (
-                              <div className="w-[85%] aspect-[16/9] sm:aspect-video rounded-[20px] overflow-hidden shadow-xl shrink-0 border border-white/10 mt-2 mb-0 relative z-10 mx-auto">
-                                <img src={ctaImage} alt="CTA Landscape" className="w-full h-full object-cover" crossOrigin="anonymous" />
-                              </div>
-                            )}
-
                             {(brandHandle || brandLogo) && (
-                              <div className="absolute top-3 left-3 z-[60]" style={{ opacity: 0.7 }}>
+                              <div className="absolute top-4 left-4 z-[60]" style={{ opacity: 0.85 }}>
                                 <div className="flex items-center gap-[5px] px-2 py-1">
                                   {brandLogo && (
                                     <div className="size-[20px] sm:size-[22px] rounded-full overflow-hidden shrink-0 bg-white/20 border border-white/30">
@@ -1701,10 +1694,9 @@ export default function CarouselGenerator({ onLogout }: { onLogout: () => void }
                                   {brandHandle && (
                                     <div className="flex items-center gap-1 text-[10px] sm:text-[11px] font-black tracking-wider text-white uppercase">
                                       <span>{brandHandle}</span>
-                                      <svg className="w-[14px] h-[14px] shrink-0" viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg">
-                                        <circle cx="20" cy="20" r="12" fill="#3897f0" />
-                                        <path d="M17.5 21.5L15 19L13.5 20.5L17.5 24.5L26.5 15.5L25 14L17.5 21.5Z" fill="white" />
-                                        <path d="M20 0L24.5 3.5L30 2.5L31 8L36 11L34.5 16.5L37.5 21.5L33.5 25.5L33.5 31.5L28 32L24 36.5L19.5 33L14 35.5L11 30.5L5.5 29L6 23.5L2 19.5L5.5 15L5 9.5L10.5 8L14 3.5L20 0Z" fill="#3897f0" />
+                                      <svg className="w-[14px] h-[14px] shrink-0 fill-[#3897f0]" viewBox="0 0 40 40">
+                                        <circle cx="20" cy="20" r="12" fill="white" />
+                                        <path d="M20 0L24.5 3.5L30 2.5L31 8L36 11L34.5 16.5L37.5 21.5L33.5 25.5L33.5 31.5L28 32L24 36.5L19.5 33L14 35.5L11 30.5L5.5 29L6 23.5L2 19.5L5.5 15L5 9.5L10.5 8L14 3.5L20 0Z" />
                                         <path d="M17 21L14.5 18.5L13 20L17 24L27 14L25.5 12.5L17 21Z" fill="white" />
                                       </svg>
                                     </div>
@@ -1713,9 +1705,27 @@ export default function CarouselGenerator({ onLogout }: { onLogout: () => void }
                               </div>
                             )}
 
-                            <div className={`w-full flex-1 flex flex-col items-center shrink-0 z-20 relative px-4 ${ctaImage ? 'justify-start mt-6' : 'justify-center'}`} style={{ fontFamily, color: ctaTextColor, fontSize: `${ctaTextSize}px` }}>
-                              {slide.title && <h2 className={`font-extrabold text-2xl sm:text-3xl leading-tight uppercase mb-4 break-words w-full px-4`} style={{ color: ctaTextColor }}>{slide.title}</h2>}
-                              <div className={`font-medium leading-relaxed whitespace-pre-wrap focus:outline-none w-full px-4 break-all sm:break-words mx-auto`} style={{ color: ctaTextColor }} dangerouslySetInnerHTML={{ __html: slide.subtitle }}></div>
+                            {ctaImage && (
+                              <div className="w-[85%] aspect-[16/9] sm:aspect-video rounded-[20px] overflow-hidden shadow-xl shrink-0 border border-white/10 mt-2 mb-4 relative z-10 mx-auto">
+                                <img src={ctaImage} alt="CTA Landscape" className="w-full h-full object-cover" crossOrigin="anonymous" />
+                              </div>
+                            )}
+
+                            <div className={`w-full flex-1 flex flex-col items-center justify-center shrink-0 z-20 relative`} style={{ 
+                              fontFamily, 
+                              color: ctaTextColor,
+                              fontSize: `${ctaTextSize}px`
+                            }}>
+                              {slide.title && (
+                                <h2 className={`font-extrabold text-2xl sm:text-3xl leading-tight uppercase mb-4 break-words w-full`} 
+                                    style={{ color: ctaTextColor }}>
+                                  {slide.title}
+                                </h2>
+                              )}
+                              <div className={`font-medium leading-relaxed whitespace-pre-wrap focus:outline-none w-full break-all sm:break-words mx-auto`} 
+                                   style={{ color: ctaTextColor }} 
+                                   dangerouslySetInnerHTML={{ __html: slide.subtitle }}>
+                              </div>
                             </div>
                           </div>
 

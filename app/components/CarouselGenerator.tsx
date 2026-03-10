@@ -1722,7 +1722,7 @@ export default function CarouselGenerator({ onLogout }: { onLogout: () => void }
                                   {slide.title}
                                 </h2>
                               )}
-                              <div className={`font-medium leading-relaxed whitespace-pre-wrap focus:outline-none w-full break-all sm:break-words mx-auto`} 
+                              <div className={`font-medium leading-relaxed whitespace-pre-wrap focus:outline-none w-full break-words mx-auto`} 
                                    style={{ color: ctaTextColor }} 
                                    dangerouslySetInnerHTML={{ __html: slide.subtitle }}>
                               </div>

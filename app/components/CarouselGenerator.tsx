@@ -706,6 +706,12 @@ export default function CarouselGenerator({ onLogout }: { onLogout: () => void }
     event.target.value = '';
   };
 
+  const handleRemoveBrandLogo = (e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setBrandLogo(null);
+  };
+
   const handleRemoveImage = (index: number, e: React.MouseEvent) => {
     e.stopPropagation();
     setUploadedImages(prev => {
@@ -1481,10 +1487,21 @@ export default function CarouselGenerator({ onLogout }: { onLogout: () => void }
                           className="w-full bg-slate-50 dark:bg-surface-darker border border-slate-200 dark:border-border-dark text-slate-900 dark:text-white rounded-lg pl-6 pr-3 py-2 text-[10px] font-bold outline-none focus:ring-1 focus:ring-primary transition-all shadow-sm"
                         />
                       </div>
-                      <label className="flex-1 py-2 bg-white dark:bg-surface-dark border border-dashed border-slate-200 dark:border-border-dark rounded-lg text-[10px] font-bold text-slate-400 hover:text-primary transition-colors flex items-center justify-center gap-1 shadow-sm cursor-pointer relative overflow-hidden">
-                        <span className="material-symbols-outlined text-[16px]">add_photo_alternate</span> {brandLogo ? 'Trocar Logo' : 'Logo +'}
-                        <input type="file" onChange={handleBrandLogoUpload} accept="image/*" className="absolute inset-0 opacity-0 cursor-pointer" />
-                      </label>
+                      <div className="flex-1 flex gap-2">
+                        <label className="flex-1 py-2 bg-white dark:bg-surface-dark border border-dashed border-slate-200 dark:border-border-dark rounded-lg text-[10px] font-bold text-slate-400 hover:text-primary transition-colors flex items-center justify-center gap-1 shadow-sm cursor-pointer relative overflow-hidden">
+                          <span className="material-symbols-outlined text-[16px]">add_photo_alternate</span> {brandLogo ? 'Trocar Logo' : 'Logo +'}
+                          <input type="file" onChange={handleBrandLogoUpload} accept="image/*" className="absolute inset-0 opacity-0 cursor-pointer" />
+                        </label>
+                        {brandLogo && (
+                          <button 
+                            onClick={handleRemoveBrandLogo}
+                            className="px-3 bg-red-50 dark:bg-red-500/10 border border-red-100 dark:border-red-500/20 rounded-lg text-red-500 hover:bg-red-100 dark:hover:bg-red-500/20 transition-all flex items-center justify-center"
+                            title="Remover Logo"
+                          >
+                            <span className="material-symbols-outlined text-[18px]">delete</span>
+                          </button>
+                        )}
+                      </div>
                     </div>
                   </div>
                 </div>

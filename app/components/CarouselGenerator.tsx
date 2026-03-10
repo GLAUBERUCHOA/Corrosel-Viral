@@ -1680,7 +1680,7 @@ export default function CarouselGenerator({ onLogout }: { onLogout: () => void }
                         <div className="relative group/slide w-full h-full rounded-2xl overflow-hidden shadow-2xl transition-transform hover:-translate-y-2 duration-300">
                           <div
                             ref={(el) => { slideRefs.current[index] = el; }}
-                            className={`absolute inset-0 flex flex-col items-center justify-start pt-24 pb-12 px-10 text-center overflow-hidden`}
+                            className={`absolute inset-0 flex flex-col items-center justify-start pt-12 pb-12 px-10 text-center overflow-hidden`}
                             style={{ backgroundColor: ctaBgColor }}
                           >
                             {(brandHandle || brandLogo) && (

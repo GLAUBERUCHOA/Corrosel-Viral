@@ -40,6 +40,23 @@ export default function HomePage() {
   const primaryGlowingShadow = "shadow-[0_0_30px_rgba(139,92,246,0.3)]";
   const cardGlowingShadow = "hover:shadow-[0_0_20px_rgba(139,92,246,0.2)]";
 
+  // Rastreamento de origem (Kiwify Tracking)
+  useEffect(() => {
+    const urlParams = new URLSearchParams(window.location.search);
+    const srcValue = urlParams.get('src') || urlParams.get('utm_source');
+
+    if (srcValue) {
+      const links = document.querySelectorAll('a[href*="pay.kiwify.com.br"]');
+      links.forEach(link => {
+        let href = link.getAttribute('href');
+        if (href && !href.includes('src=')) {
+          const connector = href.includes('?') ? '&' : '?';
+          link.setAttribute('href', `${href}${connector}src=${srcValue}`);
+        }
+      });
+    }
+  }, []);
+
   const MainCTA = ({ text = "SIM, EU QUERO VIRALIZAR HOJE!", subtext = "Acesso Vitalício + Bônus Exclusivos" }: { text?: string; subtext?: string }) => (
     <div className="flex flex-col items-center justify-center relative my-4">
       <div className="absolute top-0 left-0 w-full h-full border border-orange-500/50 rounded-full animate-[ping_2s_cubic-bezier(0,0,0.2,1)_infinite] z-0"></div>

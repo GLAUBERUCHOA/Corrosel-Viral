@@ -51,6 +51,13 @@ REGRAS DE LAYOUT E COMPOSIÇÃO (OBRIGATÓRIO):
 3. Fidelidade ao Nicho: NUNCA crie estilo "dark/futurista" nem imagens "abstratas" se o nicho classificado não pedir isso. Siga rigorosamente o estilo de cor, textura e iluminação descrito nas regras do nicho que você identificar!`;
 };
 
+const isEmptyHtml = (html: string | undefined | null) => {
+  if (!html) return true;
+  const text = html.replace(/<[^>]*>/g, '').trim();
+  const cleanText = text.replace(/&nbsp;/g, ' ').replace(/\s+/g, '').trim();
+  return cleanText === '';
+};
+
 const SimpleRichTextEditor = ({ value, onChange, placeholder }: { value: string, onChange: (val: string) => void, placeholder: string }) => {
   const editorRef = useRef<HTMLDivElement>(null);
   const lastHtmlRef = useRef(value);
@@ -1716,7 +1723,7 @@ export default function CarouselGenerator({ onLogout }: { onLogout: () => void }
                               color: ctaTextColor,
                               fontSize: `${ctaTextSize}px`
                             }}>
-                              {slide.title && (
+                              {!isEmptyHtml(slide.title) && (
                                 <h2 className={`font-extrabold text-2xl sm:text-3xl leading-tight uppercase mb-4 break-words w-full`} 
                                     style={{ color: ctaTextColor }}>
                                   {slide.title}
@@ -1814,8 +1821,8 @@ export default function CarouselGenerator({ onLogout }: { onLogout: () => void }
 
                           <div className={`w-full px-8 flex flex-col shrink-0 z-20 relative ${textAlignmentPadding} ${textAlign}`} style={{ fontFamily, color: customTextColor }}>
                             <div className={`flex flex-col gap-2 ${textAlign === 'text-center' ? 'items-center text-center' : textAlign === 'text-right' ? 'items-end text-right' : 'items-start text-left'}`}>
-                              {slide.title && <h2 className={`${titleClass} uppercase [&>div]:inline`} style={{ color: customTextColor, fontSize: `${titleSize}px` }} dangerouslySetInnerHTML={{ __html: slide.title }} />}
-                              {slide.subtitle && <p className={`${subtitleClass} [&>div]:inline`} style={{ color: customTextColor, fontSize: `${subSize}px` }} dangerouslySetInnerHTML={{ __html: slide.subtitle }} />}
+                              {!isEmptyHtml(slide.title) && <h2 className={`${titleClass} uppercase [&>div]:inline`} style={{ color: customTextColor, fontSize: `${titleSize}px` }} dangerouslySetInnerHTML={{ __html: slide.title }} />}
+                              {!isEmptyHtml(slide.subtitle) && <p className={`${subtitleClass} [&>div]:inline`} style={{ color: customTextColor, fontSize: `${subSize}px` }} dangerouslySetInnerHTML={{ __html: slide.subtitle }} />}
                             </div>
                             {index === 0 && (
                               <div className="absolute bottom-3 right-3 z-30">

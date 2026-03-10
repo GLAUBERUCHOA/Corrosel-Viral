@@ -75,16 +75,16 @@ export default function HomePage() {
         <section className="pt-2 pb-4 sm:pt-6 sm:pb-8 px-6 max-w-6xl mx-auto text-center flex flex-col items-center">
           <FadeInSection>
 
-            <h1 className="text-xl sm:text-2xl md:text-3xl lg:text-4xl font-extrabold text-white tracking-tight leading-[1.2] mb-3 max-w-3xl mx-auto px-2">
-              Crie carrosséis virais com <br className="hidden sm:block" />
+            <h1 className="text-xl sm:text-2xl md:text-3xl lg:text-4xl font-extrabold text-white tracking-tight leading-[1.2] mb-3 max-w-4xl mx-auto px-2">
+              Quer crescer no Instagram? Crie carrosséis virais no automático com <br className="hidden sm:block" />
               <span className="text-transparent bg-clip-text bg-gradient-to-r from-orange-400 to-amber-400">
-                Agentes de IA em apenas 3 passos
-              </span> <br className="hidden sm:block" />
-              e coloque seu Instagram para vender
+                Inteligência Artificial com o Carrossel Viral Lab
+              </span>, <br className="hidden sm:block" />
+              e produza 10x mais rápido.
             </h1>
 
-            <p className="text-xs sm:text-sm text-slate-500 max-w-lg mx-auto leading-relaxed mb-4 px-4 font-normal tracking-wide italic opacity-80 mt-0">
-              Uso modelos prontos de geração de carrosséis com IA e produza 10x mais rápido.
+            <p className="text-xs sm:text-sm text-slate-500 max-w-xl mx-auto leading-relaxed mb-4 px-4 font-normal tracking-wide italic opacity-80 mt-0">
+              Aumente suas vendas com roteiros, imagens e narrativas que vendem por você!
             </p>
 
             {/* VÍDEO DE VENDAS */}

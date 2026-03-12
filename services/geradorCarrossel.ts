@@ -1,92 +1,74 @@
 import { GoogleGenAI } from '@google/genai';
 
-// Initialize the Google Gen AI SDK
-const ai = new GoogleGenAI({ apiKey: process.env.NEXT_PUBLIC_GEMINI_API_KEY });
-
-// The MVP model
+const ai = new GoogleGenAI({ apiKey: process.env.NEXT_PUBLIC_GEMINI_API_KEY || '' });
 const MODEL_NAME = 'gemini-2.5-flash';
 
-export async function gerarIdeias(nicho: string, tom: string) {
+export async function gerarIdeias(nicho: string, tom: string, temasGerados: string[] = []) {
   try {
-    if (!nicho || !tom) {
-      throw new Error('Nicho e tom de voz são obrigatórios para gerar ideias.');
-    }
+    if (!nicho || !tom) throw new Error('Nicho e tom de voz são obrigatórios.');
 
-    if (!process.env.NEXT_PUBLIC_GEMINI_API_KEY) {
-      throw new Error('API Key do Gemini não está configurada no ambiente.');
-    }
+    const model = ai.getGenerativeModel({ model: MODEL_NAME });
 
-    console.log(`Iniciando geração para Nicho: "${nicho}" | Tom: "${tom}"`);
+    // AGENTE 1: ESTRATEGISTA DE CONTEÚDO (PAUTA DIGITAL)
+    const promptPauta = `Você é o AGENTE 1: ESTRATEGISTA DE CONTEÚDO VIRAL.
+Seu objetivo é criar uma PAUTA DIGITAL disruptiva para um carrossel de Instagram.
+Nicho: ${nicho}
+Tom de voz: ${tom}
+${temasGerados.length > 0 ? `TEMAS JÁ GERADOS NESTA RODADA (EVITE-OS): ${temasGerados.join(', ')}` : ''}
 
-    // Passo A: Gerar a Ideia (temperature 0.8)
-    const promptIdeia = `Você é um expert em marketing de conteúdo e copywriter viral.
-Nicho de atuação: ${nicho}
+REGRAS:
+1. Crie um tema que resolva uma dor real ou desejo ardente do público.
+2. Foque em autoridade e retenção.
+3. Responda apenas com a PAUTA (título sugerido e objetivo do post).`;
+
+    const resultPauta = await model.generateContent(promptPauta);
+    const pauta = resultPauta.response.text();
+
+    console.log('--- PAUTA GERADA (AGENTE 1) ---');
+    console.log(pauta);
+
+    // AGENTE 2: ROTEIRISTA DE CARROSSEIS (COPYWRITER)
+    const promptRoteiro = `Você é o AGENTE 2: ROTEIRISTA DE CARROSSEIS.
+Receba a PAUTA: "${pauta}"
+Nicho: ${nicho}
 Tom de voz: ${tom}
 
-Gere UMA única ideia genial e altamente engajadora para um post estilo carrossel no Instagram, focada em entregar valor real e prender a atenção do público do início ao fim. 
-Responda apenas com a ideia principal, de forma direta e sem firulas.`;
+SUA MISSÃO: Transformar essa pauta em um roteiro de 5 slides de alta conversão.
+Para CADA slide, siga RIGOROSAMENTE as tags: [TÍTULO], [SUBTÍTULO], [DIREÇÃO DE ARTE].
+Ao final de todos os slides, adicione a tag [LEGENDA] para o post.
 
-    const responseIdeia = await ai.models.generateContent({
-      model: MODEL_NAME,
-      contents: promptIdeia,
-      config: {
-        temperature: 0.8,
-      }
-    });
+REGRAS DE OURO:
+- [TÍTULO]: Deve ser magnético.
+- [SUBTÍTULO]: Deve aprofundar a curiosidade ou entregar o valor.
+- [DIREÇÃO DE ARTE]: Descrição detalhada da imagem (em inglês) para o gerador de imagens.
+- [LEGENDA]: Copy persuasivo com call-to-action (CTA).
 
-    const ideiaGerada = responseIdeia.text;
-
-    if (!ideiaGerada) {
-      throw new Error('O Gemini não retornou nenhuma ideia no Passo A.');
-    }
-
-    console.log('Ideia Gerada com Sucesso:', ideiaGerada);
-
-    // Passo B: Estruturar em 5 slides (temperature 0.4)
-    const promptEstrutura = `Baseado na seguinte ideia central: "${ideiaGerada}"
-
-Crie uma estrutura completa para um carrossel de 5 slides para o Instagram.
-Mantenha o tom de voz: ${tom}.
-
-O formato de saída DEVE ser estritamente em JSON válido seguindo a estrutura abaixo, sem marcação markdown e sem textos extras:
+O formato de saída DEVE ser estritamente em JSON válido seguindo a estrutura abaixo:
 [
-  { "slide": 1, "title": "Título chamativo do slide 1", "subtitle": "Subtítulo de apoio", "imagePrompt": "Prompt em inglês para gerar uma imagem relacionada" },
-  { "slide": 2, "title": "...", "subtitle": "...", "imagePrompt": "..." },
-  { "slide": 3, "title": "...", "subtitle": "...", "imagePrompt": "..." },
-  { "slide": 4, "title": "...", "subtitle": "...", "imagePrompt": "..." },
-  { "slide": 5, "title": "...", "subtitle": "Chamada para ação (CTA)", "imagePrompt": "..." }
+  { "slide": 1, "title": "[TÍTULO]", "subtitle": "[SUBTÍTULO]", "imagePrompt": "[DIREÇÃO DE ARTE]" },
+  ... até slide 5,
+  { "legenda": "[LEGENDA]" }
 ]`;
 
-    const responseEstrutura = await ai.models.generateContent({
-      model: MODEL_NAME,
-      contents: promptEstrutura,
-      config: {
+    const resultRoteiro = await model.generateContent({
+      contents: [{ role: 'user', parts: [{ text: promptRoteiro }] }],
+      generationConfig: {
         temperature: 0.4,
         responseMimeType: 'application/json'
       }
     });
 
-    const conteudoJSON = responseEstrutura.text;
-    
-    if (!conteudoJSON) {
-        throw new Error('O Gemini não retornou o JSON da estrutura no Passo B.');
-    }
-
-    // Apenas validar se é um JSON parseável
-    const estruturaParsed = JSON.parse(conteudoJSON);
+    const roteiroRaw = resultRoteiro.response.text();
+    const roteiroParsed = JSON.parse(roteiroRaw);
 
     return {
       success: true,
-      ideiaOriginal: ideiaGerada,
-      carrossel: estruturaParsed,
-      rawConteudo: conteudoJSON
+      pauta: pauta,
+      carrossel: roteiroParsed
     };
 
   } catch (error) {
     console.error('Erro na Service geradorCarrossel:', error);
-    return {
-      success: false,
-      error: error instanceof Error ? error.message : 'Erro desconhecido ao gerar ideias',
-    };
+    return { success: false, error: error instanceof Error ? error.message : 'Erro na geração' };
   }
 }

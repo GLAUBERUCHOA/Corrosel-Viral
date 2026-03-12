@@ -1,9 +1,12 @@
 import { NextResponse } from 'next/server';
 import { gerarIdeias } from '@/services/geradorCarrossel';
-import { prisma } from '@/lib/prisma'; // Assumindo que o prisma client exporta singleton daqui
+import { prisma } from '@/lib/prisma';
 
 export const dynamic = 'force-dynamic';
 export const revalidate = 0;
+
+// Função de sleep para o Delay de 15 segundos entre cada posts.
+const sleep = (ms: number) => new Promise(resolve => setTimeout(resolve, ms));
 
 export async function GET(request: Request) {
   try {
@@ -12,57 +15,55 @@ export async function GET(request: Request) {
     const secret = process.env.CRON_SECRET;
     
     if (authHeader !== `Bearer ${secret}`) {
-      return NextResponse.json(
-        { error: 'Não autorizado.' },
-        { status: 401 }
-      );
+      return NextResponse.json({ error: 'Não autorizado.' }, { status: 401 });
     }
 
     // 2. Mock de Usuário via .env
-    const nicho = process.env.USER_NICHE;
-    const tom = process.env.USER_TONE;
+    const nicho = process.env.USER_NICHE || 'Marketing Digital';
+    const tom = process.env.USER_TONE || 'Autoridade, Direto, Persuasivo';
 
-    if (!nicho || !tom) {
-      return NextResponse.json(
-        { error: 'Variáveis de ambiente USER_NICHE e USER_TONE ausentes.' },
-        { status: 500 }
-      );
-    }
+    console.log('--- INICIANDO PRODUÇÃO EM LOTE (10 POSTS) ---');
+    const geradosNestaRodada: string[] = [];
+    const resultadosSucedidos = [];
 
-    // 3. Chamar a Service Isolada
-    const resultado = await gerarIdeias(nicho, tom);
+    for (let i = 1; i <= 10; i++) {
+      console.log(`\n=> Gerando Post ${i} de 10...`);
+      
+      // Chamar a Service (Fluxo Agente 1 -> Agente 2)
+      const resultado = await gerarIdeias(nicho, tom, geradosNestaRodada);
 
-    if (!resultado.success) {
-      return NextResponse.json(
-        { error: 'Falha na geração das ideias.', details: resultado.error },
-        { status: 500 }
-      );
-    }
+      if (resultado.success) {
+        // Salvar no Banco (Hostinger)
+        const novoPost = await prisma.autoCarrossel.create({
+          data: {
+            user_id: 1,
+            conteudo: JSON.stringify(resultado.carrossel),
+            status: 'pendente'
+          }
+        });
 
-    // 4. Salvar resultado no Banco
-    // Se o prisma não estiver acessível, podemos omitir essa parte e voltar ao SQL puro,
-    // Mas vamos tentar salvar o resultado da geração:
-    const novoAutoCarrossel = await prisma.autoCarrossel.create({
-      data: {
-        user_id: 1, // Fixado como solicitado
-        conteudo: JSON.stringify(resultado.carrossel), // Armazenando a estrutura JSON de slides
-        status: 'pendente'
+        geradosNestaRodada.push(resultado.pauta);
+        resultadosSucedidos.push(novoPost.id);
+        console.log(`   [SUCESSO] Post ${i} salvo no banco com ID ${novoPost.id}`);
+      } else {
+        console.error(`   [ERRO] Falha no Post ${i}: ${resultado.error}`);
       }
-    });
 
-    return NextResponse.json(
-      { 
-        success: true, 
-        message: 'Carrossel gerado e salvo com sucesso.', 
-        data: novoAutoCarrossel 
-      },
-      { status: 200 }
-    );
+      // Adicionar delay de 15 segundos entre gerações (exceto no último)
+      if (i < 10) {
+        console.log(`   Aguardando 15s (Rate Limit Prevention)...`);
+        await sleep(15000);
+      }
+    }
+
+    return NextResponse.json({ 
+      success: true, 
+      message: `${resultadosSucedidos.length} carrosséis gerados e salvos em lote.`,
+      ids: resultadosSucedidos 
+    }, { status: 200 });
+
   } catch (error) {
-    console.error('[CRON] Erro ao gerar carrossel:', error);
-    return NextResponse.json(
-      { error: 'Erro interno do servidor', details: error instanceof Error ? error.message : String(error) },
-      { status: 500 }
-    );
+    console.error('[CRON ERROR] Crítico na rota de geração em lote:', error);
+    return NextResponse.json({ error: 'Erro interno no lote.', details: String(error) }, { status: 500 });
   }
 }

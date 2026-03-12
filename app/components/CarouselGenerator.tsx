@@ -1046,7 +1046,9 @@ export default function CarouselGenerator({ onLogout }: { onLogout: () => void }
       });
     }));
 
-    await new Promise(resolve => setTimeout(resolve, 800)); // Delay aumentado para estabilidade no PC e Celular
+    // Delay maior para mobile ou grid mode, onde o layout pode demorar a estabilizar
+    const settleDelay = window.innerWidth < 768 ? 1200 : 800;
+    await new Promise(resolve => setTimeout(resolve, settleDelay));
   };
 
   const handleDownloadSingle = async (index: number) => {
@@ -1057,22 +1059,32 @@ export default function CarouselGenerator({ onLogout }: { onLogout: () => void }
       await prepareSlideForCapture(slideElement);
 
       const filter = (node: any) => {
-        const exclusionClasses = ['animate-pulse', 'invisible'];
+        const exclusionClasses = ['animate-pulse', 'invisible', 'capture-exclude'];
         return !exclusionClasses.some(classname => node.classList?.contains?.(classname));
       };
 
+      // Resgata dimensões base para evitar problemas com zoom/escala do CSS
+      const width = aspectRatio === '9:16' ? 315 : 400;
+      const height = aspectRatio === '9:16' ? 560 : 500;
+
       const dataUrl = await htmlToImage.toPng(slideElement, {
+        width: width,
+        height: height,
         quality: 0.95,
-        pixelRatio: 2,
+        pixelRatio: window.innerWidth < 768 ? 2 : 3, // Qualidade superior no desktop, balanceado no mobile
         skipFonts: false,
-        cacheBust: false,
-        filter: filter
+        cacheBust: true,
+        filter: filter,
+        style: {
+          transform: 'none',
+          borderRadius: '0'
+        }
       });
 
       saveAs(dataUrl, `slide-${index + 1}.png`);
     } catch (error: any) {
       console.error("Erro ao baixar slide:", error);
-      alert(`Erro no Slide ${index + 1}: ${error?.message || 'Possível bloqueio de imagem externa'}. Tente recarregar a página.`);
+      alert(`Erro no Slide ${index + 1}: ${error?.message || 'Falha ao processar imagem'}. Tente baixar novamente ou mude o estilo de visualização.`);
     }
   };
 
@@ -1091,23 +1103,32 @@ export default function CarouselGenerator({ onLogout }: { onLogout: () => void }
           await prepareSlideForCapture(slideElement);
 
           const filter = (node: any) => {
-            const exclusionClasses = ['animate-pulse', 'invisible'];
+            const exclusionClasses = ['animate-pulse', 'invisible', 'capture-exclude'];
             return !exclusionClasses.some(classname => node.classList?.contains?.(classname));
           };
 
+          const width = aspectRatio === '9:16' ? 315 : 400;
+          const height = aspectRatio === '9:16' ? 560 : 500;
+
           const dataUrl = await htmlToImage.toPng(slideElement, {
+            width: width,
+            height: height,
             quality: 0.9,
-            pixelRatio: 2,
+            pixelRatio: window.innerWidth < 768 ? 1.5 : 2, // Reduzido ligeiramente no mobile para evitar estouro de memória no ZIP
             skipFonts: false,
-            cacheBust: false,
-            filter: filter
+            cacheBust: true,
+            filter: filter,
+            style: {
+              transform: 'none',
+              borderRadius: '0'
+            }
           });
 
           const base64Data = dataUrl.replace(/^data:image\/(png|jpeg);base64,/, "");
           zip.file(`slide-${index + 1}.png`, base64Data, { base64: true });
         } catch (slideErr: any) {
           console.error(`Falha no slide ${index + 1}:`, slideErr);
-          throw new Error(`O slide ${index + 1} impediu o fechamento do ZIP. Tente baixar ele sozinho.`);
+          throw new Error(`O slide ${index + 1} impediu a geração do pacote. Tente baixar os slides individualmente.`);
         }
       }
 
@@ -1754,7 +1775,7 @@ export default function CarouselGenerator({ onLogout }: { onLogout: () => void }
                           </div>
 
                           <div
-                            className={`absolute inset-0 bg-black/80 transition-opacity flex flex-col items-center justify-center p-6 backdrop-blur-[4px] z-[60] cursor-pointer outline-none overflow-hidden ${openSlideIndex === index ? 'opacity-100' : 'opacity-0 pointer-events-none'}`}
+                            className={`absolute inset-0 bg-black/80 transition-opacity flex flex-col items-center justify-center p-6 backdrop-blur-[4px] z-[60] cursor-pointer outline-none overflow-hidden capture-exclude ${openSlideIndex === index ? 'opacity-100' : 'opacity-0 pointer-events-none'}`}
                             onClick={(e) => { if (e.target === e.currentTarget) setOpenSlideIndex(null); }}
                           >
                             <div className="flex w-full h-full gap-2 sm:gap-4 items-center justify-center pointer-events-none">
@@ -1779,8 +1800,8 @@ export default function CarouselGenerator({ onLogout }: { onLogout: () => void }
                   const isImageBottom = index === 0 ? false : randomPattern[index % randomPattern.length];
                   const contentOrder = isImageBottom ? 'flex-col-reverse' : 'flex-col';
                   const textAlignmentPadding = isImageBottom
-                    ? 'pt-8 pb-4'
-                    : (index === 0 ? 'pt-4 pb-10' : 'pt-4 pb-8');
+                    ? 'pt-12 pb-6'
+                    : (index === 0 ? 'pt-8 pb-12' : 'pt-8 pb-10');
 
                   return (
                     <div key={index} data-slide-index={index} className={`relative shrink-0 snap-center flex items-center group/slide-wrapper ${getSlideDimensions()}`}
@@ -1795,6 +1816,10 @@ export default function CarouselGenerator({ onLogout }: { onLogout: () => void }
                         >
                           <div
                             className="w-full flex-1 min-h-[35%] overflow-hidden group/image z-10 relative"
+                            style={{
+                              maskImage: `linear-gradient(to ${isImageBottom ? 'top' : 'bottom'}, black calc(100% - 120px), transparent)`,
+                              WebkitMaskImage: `linear-gradient(to ${isImageBottom ? 'top' : 'bottom'}, black calc(100% - 120px), transparent)`
+                            }}
                           >
                             {imageSrc && (
                               <div
@@ -1842,7 +1867,7 @@ export default function CarouselGenerator({ onLogout }: { onLogout: () => void }
                               {!isEmptyHtml(slide.subtitle) && <p className={`${subtitleClass} [&>div]:inline`} style={{ color: customTextColor, fontSize: `${subSize}px` }} dangerouslySetInnerHTML={{ __html: slide.subtitle }} />}
                             </div>
                             {index === 0 && (
-                              <div className="absolute bottom-3 right-3 z-30">
+                              <div className="absolute bottom-3 right-3 z-30 capture-exclude">
                                 <div className="flex items-center gap-1 bg-white/[0.07] backdrop-blur-md border border-white/[0.08] rounded-full px-2.5 py-1 shadow-lg shadow-black/10">
                                   <span className={`text-[7px] font-light tracking-widest ${theme.textClass} opacity-50`} style={{ fontFamily: 'Inter, system-ui, sans-serif' }}>Arraste para o lado</span>
                                   <span className={`text-[9px] font-light ${theme.textClass} opacity-40`}>&gt;</span>
@@ -1852,7 +1877,7 @@ export default function CarouselGenerator({ onLogout }: { onLogout: () => void }
                           </div>
                         </div>
                         <div
-                          className={`absolute inset-0 bg-black/80 transition-opacity duration-200 flex flex-col items-center justify-center p-6 backdrop-blur-[4px] z-[60] cursor-pointer outline-none overflow-hidden ${openSlideIndex === index ? 'opacity-100' : 'opacity-0 pointer-events-none group-hover/slide:opacity-100 group-hover/slide:pointer-events-auto'}`}
+                          className={`absolute inset-0 bg-black/80 transition-opacity duration-200 flex flex-col items-center justify-center p-6 backdrop-blur-[4px] z-[60] cursor-pointer outline-none overflow-hidden capture-exclude ${openSlideIndex === index ? 'opacity-100' : 'opacity-0 pointer-events-none group-hover/slide:opacity-100 group-hover/slide:pointer-events-auto'}`}
                           onClick={(e) => { if (e.target === e.currentTarget) setOpenSlideIndex(null); }}
                         >
                           <div className="flex w-full h-full gap-2 sm:gap-4 items-center justify-center pointer-events-none">
@@ -1908,7 +1933,7 @@ export default function CarouselGenerator({ onLogout }: { onLogout: () => void }
                           </div>
                         </div>
                       </div>
-                      <div className="absolute top-auto bottom-8 right-6 lg:bottom-auto lg:top-1/2 lg:-translate-y-1/2 lg:left-full lg:right-auto lg:ml-4 max-lg:opacity-100 opacity-0 group-hover/slide-wrapper:opacity-100 transition-opacity z-[999] pointer-events-auto">
+                      <div className="absolute top-auto bottom-8 right-6 lg:bottom-auto lg:top-1/2 lg:-translate-y-1/2 lg:left-full lg:right-auto lg:ml-4 max-lg:opacity-100 opacity-0 group-hover/slide-wrapper:opacity-100 transition-opacity z-[999] pointer-events-auto capture-exclude">
                         <button
                           onMouseDown={(e) => handleImgDragStart(e, index)}
                           onTouchStart={(e) => {

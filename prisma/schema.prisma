@@ -33,3 +33,11 @@ model ImagePromptSetting {
   isDeletable Boolean  @default(true) // Impede deleção da instrução global
   updatedAt   DateTime @updatedAt
 }
+
+model AutoCarrossel {
+  id        Int      @id @default(autoincrement())
+  user_id   Int      @default(1)
+  conteudo  Json     // Guarda o json/conteudo gerado
+  status    String   @default("pendente")
+  criado_em DateTime @default(now())
+}

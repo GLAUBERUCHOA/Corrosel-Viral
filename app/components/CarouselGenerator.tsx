@@ -1830,33 +1830,30 @@ export default function CarouselGenerator({ onLogout }: { onLogout: () => void }
                                   </div>
                                 )}
                                 
-                                {/* Gradiente Dinâmico: Acompanha a altura do texto */}
+                                {/* Gradiente Dinâmico e Localizado: Protege o brilho da imagem no topo */}
                                 <div 
-                                  className="absolute inset-0 z-10 pointer-events-none"
+                                  className="absolute bottom-0 left-0 right-0 z-10 pointer-events-none"
                                   style={{
-                                    background: `linear-gradient(to top, ${customColor} 0%, ${customColor}CC 40%, ${customColor}66 70%, transparent 100%)`,
-                                    height: '100%',
-                                    top: 'auto',
-                                    bottom: 0
+                                    background: `linear-gradient(to top, ${customColor} 0%, ${customColor}EE 25%, ${customColor}88 50%, ${customColor}00 100%)`,
+                                    height: '65%', // Ocupa apenas a parte inferior, deixando o topo 100% limpo
                                   }}
                                 />
 
-                                {/* Branding Flutuante no Topo (apenas Capa) */}
-                                <div className="absolute top-6 left-6 z-[60]" style={{ opacity: 0.9 }}>
+                                {/* Branding Flutuante no Topo (ajustado para máxima visibilidade) */}
+                                <div className="absolute top-6 left-6 z-[60]" style={{ opacity: 1 }}>
                                   {(brandHandle || brandLogo) && (
-                                    <div className="flex items-center gap-[6px] px-2 py-1">
+                                    <div className="flex items-center gap-[6px] px-2 py-1 bg-black/10 backdrop-blur-sm rounded-full border border-white/10 shadow-lg">
                                       {brandLogo && (
-                                        <div className="size-[22px] sm:size-[24px] rounded-full overflow-hidden shrink-0 bg-white/20 border border-white/30 shadow-sm">
+                                        <div className="size-[22px] sm:size-[24px] rounded-full overflow-hidden shrink-0 bg-white/40 border border-white/40 shadow-sm">
                                           <img src={brandLogo} alt="Logo" className="w-full h-full object-cover" crossOrigin="anonymous" />
                                         </div>
                                       )}
                                       {brandHandle && (
-                                        <div className="flex items-center gap-1.5 text-[10px] sm:text-[12px] font-black tracking-wider text-white uppercase drop-shadow-md">
+                                        <div className="flex items-center gap-1.2 text-[10px] sm:text-[11px] font-black tracking-wider text-white uppercase drop-shadow-md pr-1">
                                           <span>{brandHandle}</span>
-                                          <svg className="w-[14px] h-[14px] shrink-0" viewBox="0 0 40 40" fill="none">
-                                            <circle cx="20" cy="20" r="12" fill="#3897f0" />
-                                            <path d="M17.5 21.5L15 19L13.5 20.5L17.5 24.5L26.5 15.5L25 14L17.5 21.5Z" fill="white" />
-                                            <path d="M20 0L24.5 3.5L30 2.5L31 8L36 11L34.5 16.5L37.5 21.5L33.5 25.5L33.5 31.5L28 32L24 36.5L19.5 33L14 35.5L11 30.5L5.5 29L6 23.5L2 19.5L5.5 15L5 9.5L10.5 8L14 3.5L20 0Z" fill="#3897f0" />
+                                          <svg className="w-[13px] h-[13px] shrink-0 fill-[#3897f0]" viewBox="0 0 40 40">
+                                            <circle cx="20" cy="20" r="12" fill="white" />
+                                            <path d="M20 0L24.5 3.5L30 2.5L31 8L36 11L34.5 16.5L37.5 21.5L33.5 25.5L33.5 31.5L28 32L24 36.5L19.5 33L14 35.5L11 30.5L5.5 29L6 23.5L2 19.5L5.5 15L5 9.5L10.5 8L14 3.5L20 0Z" />
                                             <path d="M17 21L14.5 18.5L13 20L17 24L27 14L25.5 12.5L17 21Z" fill="white" />
                                           </svg>
                                         </div>
@@ -1865,11 +1862,29 @@ export default function CarouselGenerator({ onLogout }: { onLogout: () => void }
                                   )}
                                 </div>
 
-                                {/* Conteúdo da Capa */}
+                                {/* Conteúdo da Capa com Sombras Inteligentes */}
                                 <div className={`w-full ${textPadding} ${textAlign} z-20 relative`} style={{ fontFamily, color: customTextColor }}>
                                   <div className={`flex flex-col gap-4 ${textAlign === 'text-center' ? 'items-center text-center' : textAlign === 'text-right' ? 'items-end text-right' : 'items-start text-left'}`}>
-                                    {!isEmptyHtml(slide.title) && <h2 className={`${titleClass} uppercase [&>div]:inline drop-shadow-lg`} style={{ color: customTextColor, fontSize: `${titleSize}px` }} dangerouslySetInnerHTML={{ __html: slide.title }} />}
-                                    {!isEmptyHtml(slide.subtitle) && <p className={`${subtitleClass} [&>div]:inline leading-tight font-medium opacity-90`} style={{ color: customTextColor, fontSize: `${subSize}px` }} dangerouslySetInnerHTML={{ __html: slide.subtitle }} />}
+                                    {!isEmptyHtml(slide.title) && (
+                                      <h2 className={`${titleClass} uppercase [&>div]:inline`} 
+                                          style={{ 
+                                            color: customTextColor, 
+                                            fontSize: `${titleSize}px`,
+                                            textShadow: '0 2px 10px rgba(0,0,0,0.3)' // Sombra para contraste extra sem escurecer a foto
+                                          }} 
+                                          dangerouslySetInnerHTML={{ __html: slide.title }} 
+                                      />
+                                    )}
+                                    {!isEmptyHtml(slide.subtitle) && (
+                                      <p className={`${subtitleClass} [&>div]:inline leading-tight font-medium opacity-100`} 
+                                         style={{ 
+                                           color: customTextColor, 
+                                           fontSize: `${subSize}px`,
+                                           textShadow: '0 1px 6px rgba(0,0,0,0.2)' 
+                                         }} 
+                                         dangerouslySetInnerHTML={{ __html: slide.subtitle }} 
+                                      />
+                                    )}
                                   </div>
                                   <div className="absolute bottom-6 right-6 z-30 capture-exclude">
                                     <div className="flex items-center gap-1.5 bg-white/[0.1] backdrop-blur-xl border border-white/[0.15] rounded-full px-3 py-1.5 shadow-2xl">

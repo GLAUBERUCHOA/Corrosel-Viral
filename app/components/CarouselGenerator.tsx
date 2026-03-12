@@ -1815,7 +1815,7 @@ export default function CarouselGenerator({ onLogout }: { onLogout: () => void }
                             className={`absolute inset-0 flex flex-col ${isFirst ? 'justify-end' : ''} overflow-hidden`}
                             style={{ backgroundColor: customColor }}
                           >
-                            {isFirst ? (
+                                {isFirst ? (
                               /* --- LAYOUT CAPA (SLIDE 1) --- */
                               <>
                                 {imageSrc && (
@@ -1830,38 +1830,38 @@ export default function CarouselGenerator({ onLogout }: { onLogout: () => void }
                                   </div>
                                 )}
                                 
+                                {/* Branding Flutuante no Topo (Reduzido em 20%) - FIXO NO TOPO */}
+                                <div className="absolute top-6 left-6 z-[60]" style={{ opacity: 1 }}>
+                                  {(brandHandle || brandLogo) && (
+                                    <div className="flex items-center gap-[5px] px-2 py-1 bg-black/10 backdrop-blur-sm rounded-full border border-white/10 shadow-lg">
+                                      {brandLogo && (
+                                        <div className="size-[18px] sm:size-[20px] rounded-full overflow-hidden shrink-0 bg-white/40 border border-white/40 shadow-sm">
+                                          <img src={brandLogo} alt="Logo" className="w-full h-full object-cover" crossOrigin="anonymous" />
+                                        </div>
+                                      )}
+                                      {brandHandle && (
+                                        <div className="flex items-center gap-1 text-[9px] sm:text-[10px] font-black tracking-wider text-white uppercase drop-shadow-md pr-1">
+                                          <span>{brandHandle}</span>
+                                          <svg className="w-[11px] h-[11px] shrink-0 fill-[#3897f0]" viewBox="0 0 40 40">
+                                            <circle cx="20" cy="20" r="12" fill="white" />
+                                            <path d="M20 0L24.5 3.5L30 2.5L31 8L36 11L34.5 16.5L37.5 21.5L33.5 25.5L33.5 31.5L28 32L24 36.5L19.5 33L14 35.5L11 30.5L5.5 29L6 23.5L2 19.5L5.5 15L5 9.5L10.5 8L14 3.5L20 0Z" />
+                                            <path d="M17 21L14.5 18.5L13 20L17 24L27 14L25.5 12.5L17 21Z" fill="white" />
+                                          </svg>
+                                        </div>
+                                      )}
+                                    </div>
+                                  )}
+                                </div>
+
                                 {/* Conteúdo da Capa com Gradiente Dinâmico (Escala com o texto) */}
                                 <div className={`w-full ${textPadding} ${textAlign} z-20 relative mt-auto`} 
                                      style={{ 
                                        fontFamily, 
                                        color: customTextColor,
                                        background: `linear-gradient(to top, ${customColor} 0%, ${customColor}F2 45%, ${customColor}A6 75%, ${customColor}00 100%)`,
-                                       paddingTop: '140px' // Respiro do gradiente acima do texto
+                                       paddingTop: '100px' // Ajuste fino no topo do gradiente
                                      }}>
                                   
-                                  {/* Branding Flutuante no Topo (Reduzido em 20%) */}
-                                  <div className="absolute -top-[230px] left-6 z-[60]" style={{ opacity: 1 }}>
-                                    {(brandHandle || brandLogo) && (
-                                      <div className="flex items-center gap-[5px] px-2 py-1 bg-black/10 backdrop-blur-sm rounded-full border border-white/10 shadow-lg">
-                                        {brandLogo && (
-                                          <div className="size-[18px] sm:size-[20px] rounded-full overflow-hidden shrink-0 bg-white/40 border border-white/40 shadow-sm">
-                                            <img src={brandLogo} alt="Logo" className="w-full h-full object-cover" crossOrigin="anonymous" />
-                                          </div>
-                                        )}
-                                        {brandHandle && (
-                                          <div className="flex items-center gap-1 text-[9px] sm:text-[10px] font-black tracking-wider text-white uppercase drop-shadow-md pr-1">
-                                            <span>{brandHandle}</span>
-                                            <svg className="w-[11px] h-[11px] shrink-0 fill-[#3897f0]" viewBox="0 0 40 40">
-                                              <circle cx="20" cy="20" r="12" fill="white" />
-                                              <path d="M20 0L24.5 3.5L30 2.5L31 8L36 11L34.5 16.5L37.5 21.5L33.5 25.5L33.5 31.5L28 32L24 36.5L19.5 33L14 35.5L11 30.5L5.5 29L6 23.5L2 19.5L5.5 15L5 9.5L10.5 8L14 3.5L20 0Z" />
-                                              <path d="M17 21L14.5 18.5L13 20L17 24L27 14L25.5 12.5L17 21Z" fill="white" />
-                                            </svg>
-                                          </div>
-                                        )}
-                                      </div>
-                                    )}
-                                  </div>
-
                                   <div className={`flex flex-col gap-4 ${textAlign === 'text-center' ? 'items-center text-center' : textAlign === 'text-right' ? 'items-end text-right' : 'items-start text-left'}`}>
                                     {!isEmptyHtml(slide.title) && (
                                       <h2 className={`${titleClass} uppercase [&>div]:inline`} 

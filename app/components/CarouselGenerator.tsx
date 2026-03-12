@@ -1799,9 +1799,10 @@ export default function CarouselGenerator({ onLogout }: { onLogout: () => void }
                   const randomPattern = [false, true, false, false, true, false, true, true, false, true];
                   const isImageBottom = index === 0 ? false : randomPattern[index % randomPattern.length];
                   const contentOrder = isImageBottom ? 'flex-col-reverse' : 'flex-col';
-                  const textAlignmentPadding = isImageBottom
-                    ? 'pt-20 pb-10'
-                    : (index === 0 ? 'pt-10 pb-24' : 'pt-10 pb-20');
+                  // Padding dinâmico para evitar espaços vazios excessivos
+                  const textPadding = isFirst 
+                    ? 'pt-32 pb-16 px-10' // Capa: Mais Respiro no topo para o fade
+                    : (isImageBottom ? 'pt-10 pb-10 px-8' : 'pt-8 pb-10 px-8'); // Internos: Tighter margins
 
                   return (
                     <div key={index} data-slide-index={index} className={`relative shrink-0 snap-center flex items-center group/slide-wrapper ${getSlideDimensions()}`}
@@ -1811,69 +1812,116 @@ export default function CarouselGenerator({ onLogout }: { onLogout: () => void }
 
                           <div
                             ref={(el) => { slideRefs.current[index] = el; }}
-                            className={`absolute inset-0 flex flex-col ${isImageBottom ? 'justify-start' : 'justify-end'} ${theme.bgClass} overflow-hidden`}
-                            style={{ ...theme.bgStyle, backgroundColor: customColor }}
+                            className={`absolute inset-0 flex flex-col ${isFirst ? 'justify-end' : ''} overflow-hidden`}
+                            style={{ backgroundColor: customColor }}
                           >
-                            {/* Background Image with adaptive gradient overlay */}
-                            {imageSrc && (
-                              <div className="absolute inset-0 z-0">
-                                <img
-                                  src={imageSrc}
-                                  alt={`Slide ${index}`}
-                                  className="absolute inset-0 w-full h-full object-cover transition-transform duration-500"
-                                  style={{
-                                    objectPosition: `center ${imagePosMap[index] ?? 50}%`,
-                                  }}
-                                  crossOrigin="anonymous"
-                                />
+                            {isFirst ? (
+                              /* --- LAYOUT CAPA (SLIDE 1) --- */
+                              <>
+                                {imageSrc && (
+                                  <div className="absolute inset-0 z-0">
+                                    <img
+                                      src={imageSrc}
+                                      alt={`Slide ${index}`}
+                                      className="absolute inset-0 w-full h-full object-cover transition-transform duration-500"
+                                      style={{ objectPosition: `center ${imagePosMap[index] ?? 50}%` }}
+                                      crossOrigin="anonymous"
+                                    />
+                                  </div>
+                                )}
+                                
+                                {/* Gradiente Dinâmico: Acompanha a altura do texto */}
                                 <div 
-                                  className="absolute inset-0 z-10"
+                                  className="absolute inset-0 z-10 pointer-events-none"
                                   style={{
-                                    background: `linear-gradient(to ${isImageBottom ? 'top' : 'bottom'}, transparent 0%, ${customColor}33 35%, ${customColor}CC 65%, ${customColor} 100%)`
+                                    background: `linear-gradient(to top, ${customColor} 0%, ${customColor}CC 40%, ${customColor}66 70%, transparent 100%)`,
+                                    height: '100%',
+                                    top: 'auto',
+                                    bottom: 0
                                   }}
                                 />
-                              </div>
-                            )}
 
-                            {/* Branding Layer */}
-                            <div className={`absolute ${isImageBottom ? 'bottom-6' : 'top-6'} left-6 z-[60]`} style={{ opacity: 0.85 }}>
-                              {(brandHandle || brandLogo) && (
-                                <div className="flex items-center gap-[6px] px-2 py-1">
-                                  {brandLogo && (
-                                    <div className="size-[22px] sm:size-[24px] rounded-full overflow-hidden shrink-0 bg-white/20 border border-white/30 shadow-sm">
-                                      <img src={brandLogo} alt="Logo" className="w-full h-full object-cover" crossOrigin="anonymous" />
-                                    </div>
-                                  )}
-                                  {brandHandle && (
-                                    <div className="flex items-center gap-1.5 text-[10px] sm:text-[12px] font-black tracking-wider text-white uppercase drop-shadow-md">
-                                      <span>{brandHandle}</span>
-                                      <svg className="w-[14px] h-[14px] shrink-0" viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg">
-                                        <circle cx="20" cy="20" r="12" fill="#3897f0" />
-                                        <path d="M17.5 21.5L15 19L13.5 20.5L17.5 24.5L26.5 15.5L25 14L17.5 21.5Z" fill="white" />
-                                        <path d="M20 0L24.5 3.5L30 2.5L31 8L36 11L34.5 16.5L37.5 21.5L33.5 25.5L33.5 31.5L28 32L24 36.5L19.5 33L14 35.5L11 30.5L5.5 29L6 23.5L2 19.5L5.5 15L5 9.5L10.5 8L14 3.5L20 0Z" fill="#3897f0" />
-                                        <path d="M17 21L14.5 18.5L13 20L17 24L27 14L25.5 12.5L17 21Z" fill="white" />
-                                      </svg>
+                                {/* Branding Flutuante no Topo (apenas Capa) */}
+                                <div className="absolute top-6 left-6 z-[60]" style={{ opacity: 0.9 }}>
+                                  {(brandHandle || brandLogo) && (
+                                    <div className="flex items-center gap-[6px] px-2 py-1">
+                                      {brandLogo && (
+                                        <div className="size-[22px] sm:size-[24px] rounded-full overflow-hidden shrink-0 bg-white/20 border border-white/30 shadow-sm">
+                                          <img src={brandLogo} alt="Logo" className="w-full h-full object-cover" crossOrigin="anonymous" />
+                                        </div>
+                                      )}
+                                      {brandHandle && (
+                                        <div className="flex items-center gap-1.5 text-[10px] sm:text-[12px] font-black tracking-wider text-white uppercase drop-shadow-md">
+                                          <span>{brandHandle}</span>
+                                          <svg className="w-[14px] h-[14px] shrink-0" viewBox="0 0 40 40" fill="none">
+                                            <circle cx="20" cy="20" r="12" fill="#3897f0" />
+                                            <path d="M17.5 21.5L15 19L13.5 20.5L17.5 24.5L26.5 15.5L25 14L17.5 21.5Z" fill="white" />
+                                            <path d="M20 0L24.5 3.5L30 2.5L31 8L36 11L34.5 16.5L37.5 21.5L33.5 25.5L33.5 31.5L28 32L24 36.5L19.5 33L14 35.5L11 30.5L5.5 29L6 23.5L2 19.5L5.5 15L5 9.5L10.5 8L14 3.5L20 0Z" fill="#3897f0" />
+                                            <path d="M17 21L14.5 18.5L13 20L17 24L27 14L25.5 12.5L17 21Z" fill="white" />
+                                          </svg>
+                                        </div>
+                                      )}
                                     </div>
                                   )}
                                 </div>
-                              )}
-                            </div>
 
-                            {/* Main Content Layer */}
-                            <div className={`w-full px-10 flex flex-col shrink-0 z-20 relative ${textAlignmentPadding} ${textAlign}`} style={{ fontFamily, color: customTextColor }}>
-                              <div className={`flex flex-col gap-4 ${textAlign === 'text-center' ? 'items-center text-center' : textAlign === 'text-right' ? 'items-end text-right' : 'items-start text-left'}`}>
-                                {!isEmptyHtml(slide.title) && <h2 className={`${titleClass} uppercase [&>div]:inline drop-shadow-sm`} style={{ color: customTextColor, fontSize: `${titleSize}px` }} dangerouslySetInnerHTML={{ __html: slide.title }} />}
-                                {!isEmptyHtml(slide.subtitle) && <p className={`${subtitleClass} [&>div]:inline leading-relaxed opacity-95`} style={{ color: customTextColor, fontSize: `${subSize}px` }} dangerouslySetInnerHTML={{ __html: slide.subtitle }} />}
-                              </div>
-                              {index === 0 && (
-                                <div className="absolute bottom-6 right-6 z-30 capture-exclude">
-                                  <div className="flex items-center gap-1.5 bg-white/[0.1] backdrop-blur-xl border border-white/[0.15] rounded-full px-3 py-1.5 shadow-2xl">
-                                    <span className={`text-[8px] font-bold tracking-[0.2em] ${theme.textClass} opacity-60 uppercase`} style={{ fontFamily: 'Inter, system-ui, sans-serif' }}>Deslize</span>
-                                    <span className={`text-[10px] font-bold ${theme.textClass} opacity-50`}>&gt;</span>
+                                {/* Conteúdo da Capa */}
+                                <div className={`w-full ${textPadding} ${textAlign} z-20 relative`} style={{ fontFamily, color: customTextColor }}>
+                                  <div className={`flex flex-col gap-4 ${textAlign === 'text-center' ? 'items-center text-center' : textAlign === 'text-right' ? 'items-end text-right' : 'items-start text-left'}`}>
+                                    {!isEmptyHtml(slide.title) && <h2 className={`${titleClass} uppercase [&>div]:inline drop-shadow-lg`} style={{ color: customTextColor, fontSize: `${titleSize}px` }} dangerouslySetInnerHTML={{ __html: slide.title }} />}
+                                    {!isEmptyHtml(slide.subtitle) && <p className={`${subtitleClass} [&>div]:inline leading-tight font-medium opacity-90`} style={{ color: customTextColor, fontSize: `${subSize}px` }} dangerouslySetInnerHTML={{ __html: slide.subtitle }} />}
+                                  </div>
+                                  <div className="absolute bottom-6 right-6 z-30 capture-exclude">
+                                    <div className="flex items-center gap-1.5 bg-white/[0.1] backdrop-blur-xl border border-white/[0.15] rounded-full px-3 py-1.5 shadow-2xl">
+                                      <span className={`text-[8px] font-bold tracking-[0.2em] opacity-60 uppercase`} style={{ fontFamily: 'Inter, system-ui, sans-serif' }}>Deslize</span>
+                                      <span className="text-[10px] font-bold opacity-50">&gt;</span>
+                                    </div>
                                   </div>
                                 </div>
-                              )}
-                            </div>
+                              </>
+                            ) : (
+                              /* --- LAYOUT INTERNO (DEMAIS SLIDES) --- */
+                              <div className={`flex flex-col flex-1 ${contentOrder}`}>
+                                <div 
+                                  className="flex-1 relative overflow-hidden z-10"
+                                  style={{
+                                    maskImage: `linear-gradient(to ${isImageBottom ? 'top' : 'bottom'}, black 75%, transparent 100%)`,
+                                    WebkitMaskImage: `linear-gradient(to ${isImageBottom ? 'top' : 'bottom'}, black 75%, transparent 100%)`
+                                  }}
+                                >
+                                  {imageSrc && (
+                                    <img
+                                      src={imageSrc}
+                                      alt={`Slide ${index}`}
+                                      className="absolute inset-0 w-full h-full object-cover transition-transform duration-500"
+                                      style={{ objectPosition: `center ${imagePosMap[index] ?? 50}%` }}
+                                      crossOrigin="anonymous"
+                                    />
+                                  )}
+                                  
+                                  {/* Branding para slides internos (segue o layout) */}
+                                  <div className={`absolute ${isImageBottom ? 'bottom-4' : 'top-4'} left-4 z-50`} style={{ opacity: 0.7 }}>
+                                    {(brandHandle || brandLogo) && (
+                                      <div className="flex items-center gap-1.5 px-2 py-1">
+                                        {brandLogo && (
+                                          <div className="size-[18px] rounded-full overflow-hidden bg-white/20 border border-white/30">
+                                            <img src={brandLogo} alt="Logo" className="w-full h-full object-cover" crossOrigin="anonymous" />
+                                          </div>
+                                        )}
+                                        {brandHandle && <span className="text-[9px] font-bold text-white uppercase tracking-wider">{brandHandle}</span>}
+                                      </div>
+                                    )}
+                                  </div>
+                                </div>
+
+                                <div className={`w-full ${textPadding} ${textAlign} relative z-20`} style={{ fontFamily, color: customTextColor, backgroundColor: customColor }}>
+                                  <div className={`flex flex-col gap-2 ${textAlign === 'text-center' ? 'items-center text-center' : textAlign === 'text-right' ? 'items-end text-right' : 'items-start text-left'}`}>
+                                    {!isEmptyHtml(slide.title) && <h2 className={`${titleClass} uppercase [&>div]:inline`} style={{ color: customTextColor, fontSize: `${titleSize}px` }} dangerouslySetInnerHTML={{ __html: slide.title }} />}
+                                    {!isEmptyHtml(slide.subtitle) && <p className={`${subtitleClass} [&>div]:inline leading-relaxed`} style={{ color: customTextColor, fontSize: `${subSize}px` }} dangerouslySetInnerHTML={{ __html: slide.subtitle }} />}
+                                  </div>
+                                </div>
+                              </div>
+                            )}
                           </div>
                         <div
                           className={`absolute inset-0 bg-black/80 transition-opacity duration-200 flex flex-col items-center justify-center p-6 backdrop-blur-[4px] z-[60] cursor-pointer outline-none overflow-hidden capture-exclude ${openSlideIndex === index ? 'opacity-100' : 'opacity-0 pointer-events-none group-hover/slide:opacity-100 group-hover/slide:pointer-events-auto'}`}

@@ -1829,7 +1829,7 @@ export default function CarouselGenerator({ onLogout }: { onLogout: () => void }
                                 <div 
                                   className="absolute inset-0 z-10"
                                   style={{
-                                    background: `linear-gradient(to ${isImageBottom ? 'bottom' : 'top'}, transparent 0%, ${customColor}33 35%, ${customColor}CC 65%, ${customColor} 100%)`
+                                    background: `linear-gradient(to ${isImageBottom ? 'top' : 'bottom'}, transparent 0%, ${customColor}33 35%, ${customColor}CC 65%, ${customColor} 100%)`
                                   }}
                                 />
                               </div>

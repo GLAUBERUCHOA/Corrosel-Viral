@@ -7,8 +7,6 @@ export async function gerarIdeias(nicho: string, tom: string, temasGerados: stri
   try {
     if (!nicho || !tom) throw new Error('Nicho e tom de voz são obrigatórios.');
 
-    const model = ai.getGenerativeModel({ model: MODEL_NAME });
-
     // AGENTE 1: ESTRATEGISTA DE CONTEÚDO (PAUTA DIGITAL)
     const promptPauta = `Você é o AGENTE 1: ESTRATEGISTA DE CONTEÚDO VIRAL.
 Seu objetivo é criar uma PAUTA DIGITAL disruptiva para um carrossel de Instagram.
@@ -21,8 +19,12 @@ REGRAS:
 2. Foque em autoridade e retenção.
 3. Responda apenas com a PAUTA (título sugerido e objetivo do post).`;
 
-    const resultPauta = await model.generateContent(promptPauta);
-    const pauta = resultPauta.response.text();
+    const resultPauta = await (ai as any).models.generateContent({
+      model: MODEL_NAME,
+      contents: promptPauta,
+      config: { temperature: 0.8 }
+    });
+    const pauta = resultPauta.text || '';
 
     console.log('--- PAUTA GERADA (AGENTE 1) ---');
     console.log(pauta);
@@ -50,15 +52,16 @@ O formato de saída DEVE ser estritamente em JSON válido seguindo a estrutura a
   { "legenda": "[LEGENDA]" }
 ]`;
 
-    const resultRoteiro = await model.generateContent({
-      contents: [{ role: 'user', parts: [{ text: promptRoteiro }] }],
-      generationConfig: {
+    const resultRoteiro = await (ai as any).models.generateContent({
+      model: MODEL_NAME,
+      contents: promptRoteiro,
+      config: {
         temperature: 0.4,
         responseMimeType: 'application/json'
       }
     });
 
-    const roteiroRaw = resultRoteiro.response.text();
+    const roteiroRaw = resultRoteiro.text || '';
     const roteiroParsed = JSON.parse(roteiroRaw);
 
     return {

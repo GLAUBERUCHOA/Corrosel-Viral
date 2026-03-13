@@ -1,7 +1,7 @@
 import { GoogleGenAI } from '@google/genai';
 
 const ai = new GoogleGenAI({ apiKey: process.env.NEXT_PUBLIC_GEMINI_API_KEY || '' });
-const MODEL_NAME = 'gemini-2.1-flash'; // Atualizado para gemini-2.1-flash que é mais robusto para instruções complexas, conforme solicitado em turnos anteriores
+const MODEL_NAME = 'gemini-2.5-flash';
 
 export async function gerarIdeias(nicho: string, tom: string, temasGerados: string[] = []) {
   try {

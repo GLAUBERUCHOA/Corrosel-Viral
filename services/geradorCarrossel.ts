@@ -1,54 +1,65 @@
 import { GoogleGenAI } from '@google/genai';
 
 const ai = new GoogleGenAI({ apiKey: process.env.NEXT_PUBLIC_GEMINI_API_KEY || '' });
-const MODEL_NAME = 'gemini-2.5-flash';
+const MODEL_NAME = 'gemini-2.1-flash'; // Atualizado para gemini-2.1-flash que é mais robusto para instruções complexas, conforme solicitado em turnos anteriores
 
 export async function gerarIdeias(nicho: string, tom: string, temasGerados: string[] = []) {
   try {
     if (!nicho || !tom) throw new Error('Nicho e tom de voz são obrigatórios.');
 
-    // AGENTE 1: ESTRATEGISTA DE CONTEÚDO (PAUTA DIGITAL)
-    const promptPauta = `Você é o AGENTE 1: ESTRATEGISTA DE CONTEÚDO VIRAL.
-Seu objetivo é criar uma PAUTA DIGITAL disruptiva para um carrossel de Instagram.
-Nicho: ${nicho}
-Tom de voz: ${tom}
+    // AGENTE 1: DIRETOR DE PAUTA (Módulos 1 a 4)
+    // Foco em: Donas de casa, Fofoca Estratégica, Economia do cotidiano
+    const promptPauta = `Você é o AGENTE 1: DIRETOR DE PAUTA (Especialista em Viralização no Instagram).
+Seu treinamento é baseado no método de 7 Módulos de Conteúdo Viral.
+
+OBJETIVO: Criar uma PAUTA DIGITAL disruptiva.
+NICHO: ${nicho}
+TOM DE VOZ: ${tom}
+AUDIÊNCIA ALVO: Principalmente donas de casa e pessoas que buscam soluções práticas para o dia a dia.
+ÂNCORES NARRATIVAS: Use a técnica da "Fofoca Estratégica" (curiosidade, segredos revelados) e "Economia do Cotidiano" (como economizar tempo ou dinheiro).
+
 ${temasGerados.length > 0 ? `TEMAS JÁ GERADOS NESTA RODADA (EVITE-OS): ${temasGerados.join(', ')}` : ''}
 
-REGRAS:
-1. Crie um tema que resolva uma dor real ou desejo ardente do público.
-2. Foque em autoridade e retenção.
-3. Responda apenas com a PAUTA (título sugerido e objetivo do post).`;
+REGRAS DE OURO (Módulos 1-4):
+1. Fuja do óbvio. Não pergunte "o que é X", mas sim "o segredo que ninguém te conta sobre X".
+2. Use pautas que gerem indignação, curiosidade extrema ou economia imediata.
+3. Responda apenas com a PAUTA (Título Provocativo + Objetivo Narrativo).`;
 
     const resultPauta = await (ai as any).models.generateContent({
       model: MODEL_NAME,
       contents: promptPauta,
-      config: { temperature: 0.8 }
+      config: { temperature: 0.9, topP: 0.95 }
     });
     const pauta = resultPauta.text || '';
 
-    console.log('--- PAUTA GERADA (AGENTE 1) ---');
+    console.log('--- PAUTA RESTRUTURADA (AGENTE 1) ---');
     console.log(pauta);
 
-    // AGENTE 2: ROTEIRISTA DE CARROSSEIS (COPYWRITER)
-    const promptRoteiro = `Você é o AGENTE 2: ROTEIRISTA DE CARROSSEIS.
+    // AGENTE 2: DECODIFICADOR VIRAL (Módulos 5 a 7)
+    const promptRoteiro = `Você é o AGENTE 2: DECODIFICADOR VIRAL E ROTEIRISTA SÊNIOR.
 Receba a PAUTA: "${pauta}"
-Nicho: ${nicho}
-Tom de voz: ${tom}
+NICHO: ${nicho}
+TOM DE VOZ: ${tom}
 
-SUA MISSÃO: Transformar essa pauta em um roteiro de 5 slides de alta conversão.
-Para CADA slide, siga RIGOROSAMENTE as tags: [TÍTULO], [SUBTÍTULO], [DIREÇÃO DE ARTE].
-Ao final de todos os slides, adicione a tag [LEGENDA] para o post.
+SUA MISSÃO: Transformar essa pauta em um roteiro de 5 slides magnéticos.
+VOCÊ DEVE USAR OS MÓDULOS 5, 6 e 7 (Roteirização de Alta Retenção).
 
-REGRAS DE OURO:
-- [TÍTULO]: Deve ser magnético.
-- [SUBTÍTULO]: Deve aprofundar a curiosidade ou entregar o valor.
-- [DIREÇÃO DE ARTE]: Descrição detalhada da imagem (em inglês) para o gerador de imagens.
-- [LEGENDA]: Copy persuasivo com call-to-action (CTA).
+TAGS OBRIGATÓRIAS POR SLIDE:
+[TÍTULO]: Em CAIXA ALTA, curto e impactante.
+[SUBTÍTULO]: Texto narrativo que mantém o usuário lendo. Sem clichês robóticos.
+[DIREÇÃO DE ARTE]: Prompt detalhado em inglês para IA de imagem, respeitando o nicho e composição (Top-Heavy).
+[LEGENDA]: Copy viral completo para o post com CTA no final.
 
-O formato de saída DEVE ser estritamente em JSON válido seguindo a estrutura abaixo:
+REGRAS (Módulos 5-7):
+- Slide 1: O Gancho (A fofoca estratégica ou a dor da falta de economia).
+- Slide 2, 3 e 4: O Conteúdo e a Solução.
+- Slide 5: Chamada para Ação.
+- PROIBIDO: Usar frases genéricas como "Em conclusão", "Esperamos que goste". Seja humano e direto.
+
+FORMATO DE SAÍDA (Apenas JSON):
 [
   { "slide": 1, "title": "[TÍTULO]", "subtitle": "[SUBTÍTULO]", "imagePrompt": "[DIREÇÃO DE ARTE]" },
-  ... até slide 5,
+  ... slides 2 a 5,
   { "legenda": "[LEGENDA]" }
 ]`;
 
@@ -56,7 +67,7 @@ O formato de saída DEVE ser estritamente em JSON válido seguindo a estrutura a
       model: MODEL_NAME,
       contents: promptRoteiro,
       config: {
-        temperature: 0.4,
+        temperature: 0.5,
         responseMimeType: 'application/json'
       }
     });
@@ -72,6 +83,6 @@ O formato de saída DEVE ser estritamente em JSON válido seguindo a estrutura a
 
   } catch (error) {
     console.error('Erro na Service geradorCarrossel:', error);
-    return { success: false, error: error instanceof Error ? error.message : 'Erro na geração' };
+    return { success: false, error: error instanceof Error ? error.message : 'Erro na geração treinada' };
   }
 }

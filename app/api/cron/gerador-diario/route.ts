@@ -25,41 +25,43 @@ export async function GET(request: Request) {
     console.log('--- INICIANDO PRODUÇÃO EM LOTE (10 POSTS) ---');
     const geradosNestaRodada: string[] = [];
     const resultadosSucedidos = [];
+    const logsErro = [];
 
     for (let i = 1; i <= 10; i++) {
       console.log(`\n=> Gerando Post ${i} de 10...`);
       
-      // Chamar a Service (Fluxo Agente 1 -> Agente 2)
       const resultado = await gerarIdeias(nicho, tom, geradosNestaRodada);
 
       if (resultado.success) {
-        // Salvar no Banco (Hostinger)
-        const novoPost = await prisma.autoCarrossel.create({
-          data: {
-            user_id: 1,
-            conteudo: JSON.stringify(resultado.carrossel),
-            status: 'pendente'
-          }
-        });
+        try {
+          const novoPost = await prisma.autoCarrossel.create({
+            data: {
+              user_id: 1,
+              conteudo: JSON.stringify(resultado.carrossel),
+              status: 'pendente'
+            }
+          });
 
-        geradosNestaRodada.push(resultado.pauta);
-        resultadosSucedidos.push(novoPost.id);
-        console.log(`   [SUCESSO] Post ${i} salvo no banco com ID ${novoPost.id}`);
+          geradosNestaRodada.push(resultado.pauta);
+          resultadosSucedidos.push(novoPost.id);
+          console.log(`   [SUCESSO] Post ${i} salvo no banco com ID ${novoPost.id}`);
+        } catch (dbError) {
+          logsErro.push({ index: i, error: 'Database Error', details: String(dbError) });
+          console.error(`   [ERRO DB] Post ${i}:`, dbError);
+        }
       } else {
+        logsErro.push({ index: i, error: 'Service Error', details: resultado.error });
         console.error(`   [ERRO] Falha no Post ${i}: ${resultado.error}`);
       }
 
-      // Adicionar delay de 15 segundos entre gerações (exceto no último)
-      if (i < 10) {
-        console.log(`   Aguardando 15s (Rate Limit Prevention)...`);
-        await sleep(15000);
-      }
+      if (i < 10) await sleep(12000); // Reduzi levemente o sleep para tentar caber melhor no timeout
     }
 
     return NextResponse.json({ 
       success: true, 
-      message: `${resultadosSucedidos.length} carrosséis gerados e salvos em lote.`,
-      ids: resultadosSucedidos 
+      message: `${resultadosSucedidos.length} carrosséis gerados.`,
+      ids: resultadosSucedidos,
+      erros: logsErro
     }, { status: 200 });
 
   } catch (error) {

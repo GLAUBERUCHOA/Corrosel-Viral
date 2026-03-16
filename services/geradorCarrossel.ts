@@ -27,16 +27,15 @@ export async function gerarIdeias(tipo: 'noticias' | 'perene', temasGerados: str
     const rules = await loadSquadRules();
     const isNoticia = tipo === 'noticias';
 
-    const promptNoticiaStr = rules.agente_1.prompt_noticias;
-    const promptPereneStr = rules.agente_1.prompt_perene;
-
-    const basePrompt = isNoticia ? promptNoticiaStr : promptPereneStr;
+    const basePrompt = rules.agente_1.prompt_diretor;
 
     const temasRestricao = temasGerados.length > 0 
       ? `\nTEMAS JÁ GERADOS NESTA RODADA (EVITE-OS OBRIGATORIAMENTE): ${temasGerados.join(', ')}` 
       : '';
 
-    const pautaSetup = `${rules.contexto_squad}\n\n${rules.tom_de_voz_global}\n\n${rules.agente_1.pesquisador}\n\n${basePrompt}${temasRestricao}`;
+    const instrucaoInvisivel = '\n\nIGNORE A ETAPA DE CURADORIA (esperar aprovação) E A MENSAGEM DE INICIAÇÃO: Como você está em um sistema automatizado de lote, sua tarefa é entregar diretamente a pauta final para o Agente 2 conforme os critérios dos 4 Pilares.';
+
+    const pautaSetup = `${rules.contexto_squad}\n\n${rules.tom_de_voz_global}\n\n${rules.agente_1.pesquisador}\n\n${basePrompt}${temasRestricao}${instrucaoInvisivel}`;
 
     // AGENTE 1: PESQUISADOR E DIRETOR DE PAUTA
     const reqPautaOptions: any = {

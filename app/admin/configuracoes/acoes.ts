@@ -27,8 +27,7 @@ export async function salvarConfiguracoes(formData: FormData) {
       tom_de_voz_global: formData.get('tom_de_voz_global'),
       agente_1: {
         ...(existingRules.agente_1 || {}),
-        prompt_noticias: formData.get('prompt_noticias'),
-        prompt_perene: formData.get('prompt_perene')
+        prompt_diretor: formData.get('prompt_diretor')
       },
       agente_2: {
         ...(existingRules.agente_2 || {}),

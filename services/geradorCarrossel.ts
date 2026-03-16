@@ -1,18 +1,30 @@
 import { GoogleGenAI } from '@google/genai';
+import { prisma } from '@/lib/prisma';
 import path from 'path';
 import fs from 'fs';
 
 const ai = new GoogleGenAI({ apiKey: process.env.NEXT_PUBLIC_GEMINI_API_KEY || '' });
 const MODEL_NAME = 'gemini-2.5-flash';
 
-function loadSquadRules() {
+async function loadSquadRules() {
+  try {
+    const setting = await prisma.promptSetting.findUnique({
+      where: { toneKey: 'SQUAD_CONFIG' }
+    });
+    if (setting && setting.instruction) {
+      return JSON.parse(setting.instruction);
+    }
+  } catch (err) {
+    console.warn('Erro ao ler do BD, caindo para fallback local:', err);
+  }
+
   const rulesPath = path.join(process.cwd(), 'config', 'squad-rules.json');
   return JSON.parse(fs.readFileSync(rulesPath, 'utf8'));
 }
 
 export async function gerarIdeias(tipo: 'noticias' | 'perene', temasGerados: string[] = []) {
   try {
-    const rules = loadSquadRules();
+    const rules = await loadSquadRules();
     const isNoticia = tipo === 'noticias';
 
     const promptNoticiaStr = rules.agente_1.prompt_noticias;

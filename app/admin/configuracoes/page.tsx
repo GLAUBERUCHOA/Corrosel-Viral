@@ -1,13 +1,23 @@
+import { prisma } from '@/lib/prisma';
 import fs from 'fs';
 import path from 'path';
 import ClientForm from './ClientForm';
+
+export const dynamic = 'force-dynamic';
+export const revalidate = 0;
 
 export default async function ConfiguracoesPage() {
   const jsonPath = path.join(process.cwd(), 'config', 'squad-rules.json');
   let config = null;
 
   try {
-    if (fs.existsSync(jsonPath)) {
+    const setting = await prisma.promptSetting.findUnique({
+      where: { toneKey: 'SQUAD_CONFIG' }
+    });
+    
+    if (setting && setting.instruction) {
+      config = JSON.parse(setting.instruction);
+    } else if (fs.existsSync(jsonPath)) {
       config = JSON.parse(fs.readFileSync(jsonPath, 'utf8'));
     }
   } catch (error) {
@@ -15,7 +25,7 @@ export default async function ConfiguracoesPage() {
   }
 
   if (!config) {
-    return <div className="p-8">Arquivo de configuração (squad-rules.json) não encontrado.</div>;
+    return <div className="p-8">Arquivo de configuração não encontrado.</div>;
   }
 
   return (

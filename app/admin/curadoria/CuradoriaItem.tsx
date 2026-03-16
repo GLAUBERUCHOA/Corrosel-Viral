@@ -12,9 +12,39 @@ interface CuradoriaItemProps {
 export default function CuradoriaItem({ item }: CuradoriaItemProps) {
   const [isPending, startTransition] = useTransition();
 
-  const slides = (typeof item.conteudo === 'string' ? JSON.parse(item.conteudo) : item.conteudo) || [];
-  const primeiroSlide = slides[0] || {};
-  const quantSlides = slides.length;
+  const conteudoBruto = (typeof item.conteudo === 'string' ? JSON.parse(item.conteudo) : item.conteudo) || [];
+  // Tratamento de segurança para diferentes formatos de JSON devolvidos pela GenAI
+  const isArray = Array.isArray(conteudoBruto);
+  const conteudoOriginal = isArray ? conteudoBruto : [conteudoBruto];
+  
+  // Vamos buscar o primeiro item real que a IA gerou
+  const possibleObject = conteudoOriginal[0] || {};
+  
+  let titulo = 'Título Indisponível';
+  let subtitulo = 'Sem subtítulo';
+  let quantSlides = 0;
+
+  // Formato GenAI Desviante 1 (Objeto com chaves 'SLIDE 01')
+  if (possibleObject['SLIDE 01'] || possibleObject['SLIDE 1']) {
+    const s1 = possibleObject['SLIDE 01'] || possibleObject['SLIDE 1'];
+    titulo = s1['TÍTULO'] || s1['TITLE'] || s1.title || titulo;
+    subtitulo = s1['SUBTÍTULO'] || s1['SUBTITLE'] || s1.subtitle || subtitulo;
+    quantSlides = Object.keys(possibleObject).filter(k => k.toLowerCase().includes('slide') && !k.toLowerCase().includes('legenda')).length;
+  }
+  // Formato Desviante 2 ({ title: '', slides: [] })
+  else if (Array.isArray(possibleObject.slides)) {
+    const s1 = possibleObject.slides[0] || {};
+    titulo = s1.title || s1['TÍTULO'] || possibleObject.title || titulo;
+    subtitulo = s1.subtitle || s1['SUBTÍTULO'] || subtitulo;
+    quantSlides = possibleObject.slides.length;
+  } 
+  // Formato Estrito Original ({ slide: 1, title: '...', subtitle: '...' })
+  else {
+    const s1 = conteudoOriginal.find((s: any) => String(s.slide).includes('1')) || possibleObject;
+    titulo = s1.title || s1['TÍTULO'] || titulo;
+    subtitulo = s1.subtitle || s1['SUBTÍTULO'] || subtitulo;
+    quantSlides = isArray ? conteudoOriginal.length : Object.keys(possibleObject).length;
+  }
 
   const onAprovar = () => {
     if (confirm('Aprovar e preparar para geração?')) {
@@ -61,10 +91,10 @@ export default function CuradoriaItem({ item }: CuradoriaItemProps) {
       <div className="px-6 py-6 flex flex-col sm:flex-row gap-6 justify-between items-start">
         <div className="flex-1">
           <h2 className="text-xl font-bold text-slate-900 leading-snug mb-2">
-            {primeiroSlide.title || 'Título Indisponível'}
+            {titulo}
           </h2>
           <p className="text-slate-600 line-clamp-2 leading-relaxed mb-4">
-            {primeiroSlide.subtitle || 'Sem subtítulo'}
+            {subtitulo}
           </p>
           
           <div className="flex gap-2">

@@ -48,30 +48,43 @@ export async function gerarIdeias(tipo: 'noticias' | 'perene', temasGerados: str
       reqPautaOptions.config.tools = [{ googleSearch: {} }];
     }
 
-    const resultPauta = await (ai as any).models.generateContent(reqPautaOptions);
-    const pauta = resultPauta.text || '';
-
-    console.log(`--- SQUAD AGENTE 1: DIRETOR DE PAUTA (${tipo.toUpperCase()}) ---`);
-    console.log(pauta);
+    let pauta = '';
+    try {
+      const resultPauta = await (ai as any).models.generateContent(reqPautaOptions);
+      pauta = resultPauta.text || '';
+      console.log(`--- SQUAD AGENTE 1: DIRETOR DE PAUTA (${tipo.toUpperCase()}) --- (SUCESSO)`);
+    } catch (agent1Error) {
+      console.error(`--- ERRO SQUAD AGENTE 1 (${tipo.toUpperCase()}) --- Falha na busca ou geração da pauta.`);
+      console.error(agent1Error);
+      return { success: false, error: 'Agent 1 (Search/Pauta) failed.' };
+    }
 
     // AGENTE 2: ROTEIRISTA E COPYWRITER VIRAL
     const roteiroSetup = `${rules.contexto_squad}\n\n${rules.tom_de_voz_global}\n\n${rules.agente_2.roteirista}\n\n[PAUTA]:\n${pauta}\n\n${rules.agente_2.regras_escrita}`;
 
-    const resultRoteiro = await (ai as any).models.generateContent({
-      model: MODEL_NAME,
-      contents: roteiroSetup,
-      config: {
-        temperature: 0.5,
-        responseMimeType: 'application/json'
-        // Agente 2 PROIBIDO de usar ferramentas (tools), foca 100% no texto e JSON.
-      }
-    });
+    let roteiroParsed;
+    try {
+      const resultRoteiro = await (ai as any).models.generateContent({
+        model: MODEL_NAME,
+        contents: roteiroSetup,
+        config: {
+          temperature: 0.5,
+          responseMimeType: 'application/json'
+          // Agente 2 PROIBIDO de usar ferramentas (tools), foca 100% no texto e JSON.
+        }
+      });
 
-    const roteiroRaw = resultRoteiro.text || '';
-    
-    // Limpeza de blocos marcados em markdown como json (bem comum em respostas curtas de modelos)
-    const roteiroParsedStr = roteiroRaw.replace(/```(json)?/g, '').trim();
-    const roteiroParsed = JSON.parse(roteiroParsedStr);
+      const roteiroRaw = resultRoteiro.text || '';
+      
+      // Limpeza de blocos marcados em markdown como json (bem comum em respostas curtas de modelos)
+      const roteiroParsedStr = roteiroRaw.replace(/```(json)?/g, '').trim();
+      roteiroParsed = JSON.parse(roteiroParsedStr);
+      console.log(`--- SQUAD AGENTE 2: ROTEIRISTA --- (SUCESSO NO JSON)`);
+    } catch (agent2Error) {
+      console.error(`--- ERRO SQUAD AGENTE 2 --- Falha na geração do roteiro ou no parseamento do JSON.`);
+      console.error(agent2Error);
+      return { success: false, error: 'Agent 2 (Script/JSON) failed.' };
+    }
 
     return {
       success: true,
@@ -80,7 +93,7 @@ export async function gerarIdeias(tipo: 'noticias' | 'perene', temasGerados: str
     };
 
   } catch (error) {
-    console.error('Erro na Service geradorCarrossel (Squad):', error);
+    console.error('Erro geral na Service geradorCarrossel (Squad):', error);
     return { success: false, error: error instanceof Error ? error.message : 'Erro no Squad' };
   }
 }

@@ -28,33 +28,38 @@ export async function GET(request: Request) {
       const tipo = (i % 2 !== 0) ? 'noticias' : 'perene';
       console.log(`\n=> Gerando Post ${i} de 10 (Modo: ${tipo})...`);
       
-      const resultado = await gerarIdeias(tipo, geradosNestaRodada);
+      try {
+        const resultado = await gerarIdeias(tipo, geradosNestaRodada);
 
-      if (resultado.success) {
-        try {
-          const novoPost = await prisma.autoCarrossel.create({
-            data: {
-              user_id: 1,
-              conteudo: JSON.stringify(resultado.carrossel),
-              status: 'pendente'
+        if (resultado.success) {
+          try {
+            const novoPost = await prisma.autoCarrossel.create({
+              data: {
+                user_id: 1,
+                conteudo: JSON.stringify(resultado.carrossel),
+                status: 'pendente'
+              }
+            });
+
+            if (resultado.pauta) {
+              geradosNestaRodada.push(resultado.pauta);
             }
-          });
-
-          if (resultado.pauta) {
-            geradosNestaRodada.push(resultado.pauta);
+            resultadosSucedidos.push(novoPost.id);
+            console.log(`   [SUCESSO] Post ${i} salvo no banco com ID ${novoPost.id}`);
+          } catch (dbError) {
+            logsErro.push({ index: i, error: 'Database Error', details: String(dbError) });
+            console.error(`   [ERRO DB] Post ${i}:`, dbError);
           }
-          resultadosSucedidos.push(novoPost.id);
-          console.log(`   [SUCESSO] Post ${i} salvo no banco com ID ${novoPost.id}`);
-        } catch (dbError) {
-          logsErro.push({ index: i, error: 'Database Error', details: String(dbError) });
-          console.error(`   [ERRO DB] Post ${i}:`, dbError);
+        } else {
+          logsErro.push({ index: i, error: 'Service Error', details: resultado.error });
+          console.error(`   [ERRO] Falha no Post ${i}: ${resultado.error}`);
         }
-      } else {
-        logsErro.push({ index: i, error: 'Service Error', details: resultado.error });
-        console.error(`   [ERRO] Falha no Post ${i}: ${resultado.error}`);
+      } catch (loopError) {
+        logsErro.push({ index: i, error: 'Generation Error', details: String(loopError) });
+        console.error(`   [ERRO FATAL] Falha não tratada ao gerar Post ${i}:`, loopError);
       }
 
-      if (i < 10) await sleep(12000); // Reduzi levemente o sleep para tentar caber melhor no timeout
+      if (i < 10) await sleep(5000); // Reduzi levemente o sleep para tentar caber melhor no timeout
     }
 
     return NextResponse.json({ 

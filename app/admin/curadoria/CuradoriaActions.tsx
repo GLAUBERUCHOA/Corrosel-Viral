@@ -7,7 +7,6 @@ export default function CuradoriaActions() {
   const router = useRouter();
   const [limpando, setLimpando] = useState(false);
   const [gerando, setGerando] = useState(false);
-  const [backgroundTaskRunning, setBackgroundTaskRunning] = useState(false);
 
   const handleLimparBanco = async () => {
     if (!confirm('Tem certeza que deseja deletar todos os posts pendentes? Essa ação não pode ser desfeita.')) return;
@@ -34,8 +33,8 @@ export default function CuradoriaActions() {
     }
   };
 
-  const handleDispararLote = async () => {
-    if (!confirm('Isso vai iniciar a geração de 10 posts em segundo plano. Deseja prosseguir?')) return;
+  const handleDispararUm = async () => {
+    if (!confirm('Isso vai iniciar a geração de 1 post avulso. Pode levar cerca de 15~30 segundos. Deseja prosseguir?')) return;
     
     try {
       setGerando(true);
@@ -43,13 +42,13 @@ export default function CuradoriaActions() {
       const res = await fetch('/api/admin/curadoria/acoes', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ action: 'gerar_lote' })
+        body: JSON.stringify({ action: 'gerar_um' })
       });
 
       const data = await res.json();
       if (res.ok && data.success) {
         alert(data.message);
-        setBackgroundTaskRunning(true);
+        router.refresh();
       } else {
         alert(`Erro ao gerar: ${data.error || data.details}`);
       }
@@ -64,7 +63,7 @@ export default function CuradoriaActions() {
     <div className="flex flex-col gap-3 mb-8">
       <div className="flex gap-4">
         <button 
-          onClick={handleDispararLote} 
+          onClick={handleDispararUm} 
           disabled={gerando || limpando}
           className="flex items-center gap-2 px-5 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg font-bold shadow-md transition disabled:opacity-50"
         >
@@ -73,7 +72,7 @@ export default function CuradoriaActions() {
           ) : (
             <span className="material-symbols-outlined text-sm">rocket_launch</span>
           )}
-          {gerando ? 'Iniciando...' : 'Disparar Lote de 10'}
+          {gerando ? 'Gerando...' : 'Gerar 1 Pauta'}
         </button>
 
         <button 
@@ -89,13 +88,6 @@ export default function CuradoriaActions() {
           {limpando ? 'Limpando...' : 'Limpar Banco'}
         </button>
       </div>
-
-      {backgroundTaskRunning && (
-        <div className="flex items-center gap-2 text-indigo-600 dark:text-indigo-400 font-medium text-sm mt-1 animate-pulse delay-75">
-          <span className="material-symbols-outlined text-sm">psychology</span>
-          IA trabalhando em 2º plano... dê F5 em instantes
-        </div>
-      )}
     </div>
   );
 }

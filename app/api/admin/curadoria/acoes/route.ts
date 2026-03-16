@@ -15,44 +15,33 @@ export async function POST(req: Request) {
       return NextResponse.json({ success: true, count, message: 'Itens pendentes removidos' });
     }
 
-    if (action === 'gerar_lote') {
-      // Execução assíncrona em segundo plano para evitar timeout do navegador/Vercel
-      const iniciarGeracaoEmLote = async () => {
-        const geradosNestaRodada: string[] = [];
-        
-        for (let i = 1; i <= 10; i++) {
-          try {
-            const tipo = (i % 2 !== 0) ? 'noticias' : 'perene';
-            const resultado = await gerarIdeias(tipo, geradosNestaRodada);
+    if (action === 'gerar_um') {
+      try {
+        // Randomiza entre notícias e perene para manter a variedade
+        const tipo = Math.random() > 0.5 ? 'noticias' : 'perene';
+        const resultado = await gerarIdeias(tipo, []);
 
-            if (resultado.success) {
-              await prisma.autoCarrossel.create({
-                data: {
-                  user_id: 1,
-                  conteudo: JSON.stringify(resultado.carrossel),
-                  status: 'pendente'
-                }
-              });
-
-              if (resultado.pauta) geradosNestaRodada.push(resultado.pauta);
-            } else {
-              console.error(`Erro ao gerar post ${i}:`, resultado.error);
+        if (resultado.success) {
+          const novoPost = await prisma.autoCarrossel.create({
+            data: {
+              user_id: 1,
+              conteudo: JSON.stringify(resultado.carrossel),
+              status: 'pendente'
             }
-          } catch (error) {
-            console.error(`Erro fatal no loop ${i}:`, error);
-          }
+          });
 
-          if (i < 10) await sleep(15000); // 15 segundos de intervalo para não estourar rate limit da API
+          return NextResponse.json({ 
+            success: true, 
+            message: '1 post gerado com sucesso!',
+            post: novoPost
+          });
+        } else {
+          return NextResponse.json({ success: false, error: resultado.error });
         }
-      };
-
-      // Dispara a promise sem await para deixar rodando em background
-      iniciarGeracaoEmLote().catch(err => console.error("Falha no processo em lote:", err));
-
-      return NextResponse.json({ 
-        success: true, 
-        message: 'Processamento iniciado! Os posts aparecerão na lista em instantes.'
-      });
+      } catch (error) {
+        console.error('Erro na geração avulsa:', error);
+        return NextResponse.json({ success: false, error: 'Erro ao gerar o post.' });
+      }
     }
 
     return NextResponse.json({ error: 'Ação indefinida' }, { status: 400 });

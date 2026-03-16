@@ -18,19 +18,17 @@ export async function GET(request: Request) {
       return NextResponse.json({ error: 'Não autorizado.' }, { status: 401 });
     }
 
-    // 2. Mock de Usuário via .env
-    const nicho = process.env.USER_NICHE || 'Marketing Digital';
-    const tom = process.env.USER_TONE || 'Autoridade, Direto, Persuasivo';
-
     console.log('--- INICIANDO PRODUÇÃO EM LOTE (10 POSTS) ---');
     const geradosNestaRodada: string[] = [];
     const resultadosSucedidos = [];
     const logsErro = [];
 
+    // O loop gera 10 posts, alternando entre notícias (ímpares) e perenes (pares).
     for (let i = 1; i <= 10; i++) {
-      console.log(`\n=> Gerando Post ${i} de 10...`);
+      const tipo = (i % 2 !== 0) ? 'noticias' : 'perene';
+      console.log(`\n=> Gerando Post ${i} de 10 (Modo: ${tipo})...`);
       
-      const resultado = await gerarIdeias(nicho, tom, geradosNestaRodada);
+      const resultado = await gerarIdeias(tipo, geradosNestaRodada);
 
       if (resultado.success) {
         try {
@@ -42,7 +40,9 @@ export async function GET(request: Request) {
             }
           });
 
-          geradosNestaRodada.push(resultado.pauta);
+          if (resultado.pauta) {
+            geradosNestaRodada.push(resultado.pauta);
+          }
           resultadosSucedidos.push(novoPost.id);
           console.log(`   [SUCESSO] Post ${i} salvo no banco com ID ${novoPost.id}`);
         } catch (dbError) {

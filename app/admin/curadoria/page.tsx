@@ -1,5 +1,6 @@
 import { prisma } from '@/lib/prisma';
 import CuradoriaItem from './CuradoriaItem';
+import CuradoriaActions from './CuradoriaActions';
 
 export const dynamic = 'force-dynamic';
 export const revalidate = 0;
@@ -16,9 +17,15 @@ export default async function CuradoriaPage() {
 
   return (
     <div className="container mx-auto py-8 px-4 max-w-5xl animate-in fade-in duration-500">
-      <header className="mb-10 text-center sm:text-left">
-        <h1 className="text-3xl font-black text-slate-900 tracking-tight mb-2 uppercase">Editor-Chefe: Curadoria</h1>
-        <p className="text-slate-500 font-medium">Reveja as ideias geradas diariamente pela IA antes de aprovar e publicar.</p>
+      <header className="mb-8 text-center sm:text-left flex flex-col md:flex-row md:justify-between md:items-end border-b border-slate-200 pb-6 gap-4">
+        <div>
+          <h1 className="text-3xl font-black text-slate-900 tracking-tight mb-2 uppercase">Editor-Chefe: Curadoria</h1>
+          <p className="text-slate-500 font-medium max-w-2xl mb-4">Reveja as ideias geradas diariamente pela IA antes de aprovar e publicar.</p>
+          <a href="/admin/configuracoes" className="inline-flex items-center gap-2 text-indigo-600 font-bold hover:text-indigo-800 transition">
+            <span className="material-symbols-outlined text-[20px]">settings</span> Configurações da IA
+          </a>
+        </div>
+        <CuradoriaActions />
       </header>
 
       {carrosseisPendentes.length === 0 ? (

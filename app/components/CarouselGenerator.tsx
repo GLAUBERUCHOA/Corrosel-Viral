@@ -568,10 +568,17 @@ export default function CarouselGenerator({ onLogout }: { onLogout: () => void }
     document.addEventListener("mouseup", onMouseUp);
   }, [sidebarWidth]);
 
-  const handleFileUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
+  const handleFileUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
     const files = event.target.files;
-    if (files) {
-      const newImages = Array.from(files).map(file => URL.createObjectURL(file));
+    if (files && files.length > 0) {
+      const readAsDataURL = (file: File): Promise<string> => new Promise(resolve => {
+        const reader = new FileReader();
+        reader.onload = e => resolve(e.target?.result as string);
+        reader.readAsDataURL(file);
+      });
+
+      const newImages = await Promise.all(Array.from(files).map(readAsDataURL));
+
       setUploadedImages(prev => {
         const updated = [...prev];
         while (updated.length < slideCount) updated.push(null);
@@ -1073,7 +1080,7 @@ export default function CarouselGenerator({ onLogout }: { onLogout: () => void }
         quality: 0.95,
         pixelRatio: window.innerWidth < 768 ? 2 : 3, // Qualidade superior no desktop, balanceado no mobile
         skipFonts: false,
-        cacheBust: true,
+        cacheBust: false,
         filter: filter,
         style: {
           transform: 'none',
@@ -1116,7 +1123,7 @@ export default function CarouselGenerator({ onLogout }: { onLogout: () => void }
             quality: 0.9,
             pixelRatio: window.innerWidth < 768 ? 1.5 : 2, // Reduzido ligeiramente no mobile para evitar estouro de memória no ZIP
             skipFonts: false,
-            cacheBust: true,
+            cacheBust: false,
             filter: filter,
             style: {
               transform: 'none',

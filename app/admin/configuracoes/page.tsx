@@ -20,9 +20,9 @@ export default async function ConfiguracoesPage() {
 
   return (
     <div className="container mx-auto py-8 px-4 max-w-5xl animate-in fade-in duration-500">
-      <header className="mb-8 border-b border-slate-200 pb-6">
-        <h1 className="text-3xl font-black text-slate-900 tracking-tight mb-2 uppercase">⚙️ Configurações da IA (Squad)</h1>
-        <p className="text-slate-500 font-medium">Controle central dos comportamentos, regras de pesquisa e copy dos agentes.</p>
+      <header className="mb-8 border-b border-slate-200 dark:border-slate-800 pb-6">
+        <h1 className="text-3xl font-black text-slate-900 dark:text-white tracking-tight mb-2 uppercase">⚙️ Configurações da IA (Squad)</h1>
+        <p className="text-slate-500 dark:text-slate-400 font-medium">Controle central dos comportamentos, regras de pesquisa e copy dos agentes.</p>
       </header>
 
       <ClientForm initialConfig={config} />

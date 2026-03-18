@@ -1,6 +1,6 @@
 'use client';
 
-import { useTransition } from 'react';
+import { useState, useTransition } from 'react';
 import { handleAprovar, handleDescartar } from './actions';
 import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
@@ -11,39 +11,35 @@ interface CuradoriaItemProps {
 
 export default function CuradoriaItem({ item }: CuradoriaItemProps) {
   const [isPending, startTransition] = useTransition();
+  const [showRaw, setShowRaw] = useState(false);
 
-  const conteudoBruto = (typeof item.conteudo === 'string' ? JSON.parse(item.conteudo) : item.conteudo) || [];
-  // Tratamento de segurança para diferentes formatos de JSON devolvidos pela GenAI
-  const isArray = Array.isArray(conteudoBruto);
-  const conteudoOriginal = isArray ? conteudoBruto : [conteudoBruto];
-  
-  // Vamos buscar o primeiro item real que a IA gerou
-  const possibleObject = conteudoOriginal[0] || {};
-  
-  let titulo = 'Título Indisponível';
+  // O conteúdo salvo no banco. Vamos tentar extrair como texto.
+  const textoBruto = typeof item.conteudo === 'string' ? item.conteudo : JSON.stringify(item.conteudo, null, 2);
+
+  let titulo = 'Pauta Gerada (Ver Detalhes)';
   let subtitulo = 'Sem subtítulo';
-  let quantSlides = 0;
 
-  // Formato GenAI Desviante 1 (Objeto com chaves 'SLIDE 01')
-  if (possibleObject['SLIDE 01'] || possibleObject['SLIDE 1']) {
-    const s1 = possibleObject['SLIDE 01'] || possibleObject['SLIDE 1'];
-    titulo = s1['TÍTULO'] || s1['TITLE'] || s1.title || titulo;
-    subtitulo = s1['SUBTÍTULO'] || s1['SUBTITLE'] || s1.subtitle || subtitulo;
-    quantSlides = Object.keys(possibleObject).filter(k => k.toLowerCase().includes('slide') && !k.toLowerCase().includes('legenda')).length;
+  // Usa regex para extrair [TÍTULO]: ou "TÍTULO": e ignora aspas se houver
+  const tituloMatch = textoBruto.match(/\[?T[IÍ]TULO\]?['"]?\s*[:\-]?\s*['"]?([^"'\n\\]+)/i);
+  if (tituloMatch && tituloMatch[1]) {
+    titulo = tituloMatch[1].trim();
+  } else {
+    // Tenta fallback para "title": "..."
+    const titleMatch = textoBruto.match(/['"]?title['"]?\s*[:\-]\s*['"]([^"'\n\\]+)/i);
+    if (titleMatch && titleMatch[1]) {
+      titulo = titleMatch[1].trim();
+    }
   }
-  // Formato Desviante 2 ({ title: '', slides: [] })
-  else if (Array.isArray(possibleObject.slides)) {
-    const s1 = possibleObject.slides[0] || {};
-    titulo = s1.title || s1['TÍTULO'] || possibleObject.title || titulo;
-    subtitulo = s1.subtitle || s1['SUBTÍTULO'] || subtitulo;
-    quantSlides = possibleObject.slides.length;
-  } 
-  // Formato Estrito Original ({ slide: 1, title: '...', subtitle: '...' })
-  else {
-    const s1 = conteudoOriginal.find((s: any) => String(s.slide).includes('1')) || possibleObject;
-    titulo = s1.title || s1['TÍTULO'] || titulo;
-    subtitulo = s1.subtitle || s1['SUBTÍTULO'] || subtitulo;
-    quantSlides = isArray ? conteudoOriginal.length : Object.keys(possibleObject).length;
+
+  const subtituloMatch = textoBruto.match(/\[?SUBT[IÍ]TULO\]?['"]?\s*[:\-]?\s*['"]?([^"'\n\\]+)/i);
+  if (subtituloMatch && subtituloMatch[1]) {
+    subtitulo = subtituloMatch[1].trim();
+  } else {
+    // Tenta fallback para "subtitle": "..."
+    const subtitleMatch = textoBruto.match(/['"]?subtitle['"]?\s*[:\-]\s*['"]([^"'\n\\]+)/i);
+    if (subtitleMatch && subtitleMatch[1]) {
+      subtitulo = subtitleMatch[1].trim();
+    }
   }
 
   const onAprovar = () => {
@@ -61,6 +57,17 @@ export default function CuradoriaItem({ item }: CuradoriaItemProps) {
         const result = await handleDescartar(item.id);
         if (!result.success) alert(result.error);
       });
+    }
+  };
+
+  // Formata o texto bruto descompactando quebras de linha estritas (se era JSON stringificado com \n)
+  const formatRawText = (text: string) => {
+    try {
+      // Se for JSON perfeitamente válido, exibe bonitinho
+      return JSON.stringify(JSON.parse(text), null, 2);
+    } catch {
+      // Caso contrário, apenas substitui as quebras de linha literais caso a IA tenha retornado escapado
+      return text.replace(/\\n/g, '\n');
     }
   };
 
@@ -98,9 +105,9 @@ export default function CuradoriaItem({ item }: CuradoriaItemProps) {
           </p>
           
           <div className="flex gap-2">
-            <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md text-xs font-semibold bg-indigo-50 text-indigo-700 border border-indigo-100">
+            <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md text-xs font-semibold bg-indigo-50 text-indigo-700 border border-indigo-100 uppercase tracking-wide">
               <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 10h16M4 14h16M4 18h16" /></svg>
-              {quantSlides} Slides Mapeados
+              Conteúdo Bruto
             </span>
           </div>
         </div>
@@ -108,13 +115,22 @@ export default function CuradoriaItem({ item }: CuradoriaItemProps) {
         {/* Ações */}
         <div className="flex sm:flex-col gap-3 justify-center sm:min-w-[180px] w-full sm:w-auto mt-4 sm:mt-0">
           <button 
+            onClick={() => setShowRaw(!showRaw)}
+            className="flex-1 w-full flex items-center justify-center gap-2 bg-indigo-600 hover:bg-indigo-700 disabled:bg-indigo-300 text-white px-4 py-2.5 rounded-lg text-sm font-bold shadow-sm transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-600"
+          >
+            <svg className="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" /><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" /></svg>
+            {showRaw ? 'Esconder Texto' : 'Ver Texto Puro'}
+          </button>
+
+          <button 
             onClick={onAprovar}
             disabled={isPending}
             className="flex-1 w-full flex items-center justify-center gap-2 bg-slate-900 hover:bg-slate-800 disabled:bg-slate-700 text-white px-4 py-2.5 rounded-lg text-sm font-bold shadow-sm transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-slate-900"
           >
             <svg className="w-4 h-4 text-emerald-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" /></svg>
-            {isPending ? 'Aprovando...' : 'Aprovar & Gerar'}
+            {isPending ? 'Aprovando...' : 'Aprovar'}
           </button>
+          
           <button 
             onClick={onDescartar}
             disabled={isPending}
@@ -125,6 +141,18 @@ export default function CuradoriaItem({ item }: CuradoriaItemProps) {
           </button>
         </div>
       </div>
+
+      {/* Editor Têxtil Raw */}
+      {showRaw && (
+        <div className="px-6 py-4 bg-slate-50 border-t border-slate-200">
+          <p className="text-sm font-bold text-slate-700 mb-2">Texto Original (Copie e cole no LAB):</p>
+          <textarea 
+            readOnly
+            className="w-full h-80 p-4 text-sm font-mono text-slate-800 bg-white border border-slate-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:outline-none resize-y shadow-inner whitespace-pre-wrap"
+            defaultValue={formatRawText(textoBruto)}
+          />
+        </div>
+      )}
     </div>
   );
 }

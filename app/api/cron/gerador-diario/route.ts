@@ -4,6 +4,7 @@ import { prisma } from '@/lib/prisma';
 
 export const dynamic = 'force-dynamic';
 export const revalidate = 0;
+export const maxDuration = 60;
 
 // Função de sleep para o Delay de 15 segundos entre cada posts.
 const sleep = (ms: number) => new Promise(resolve => setTimeout(resolve, ms));

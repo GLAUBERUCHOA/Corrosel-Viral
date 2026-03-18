@@ -4,7 +4,11 @@ import path from 'path';
 import fs from 'fs';
 
 const ai = new GoogleGenAI({ apiKey: process.env.NEXT_PUBLIC_GEMINI_API_KEY || '' });
-const MODEL_NAME = 'gemini-2.5-pro';
+
+// Agent 1 (Pesquisador): Flash é rápido e ideal para pesquisa com Google Search.
+const MODEL_AGENT_1 = 'gemini-2.5-flash';
+// Agent 2 (Copywriter): Pro entrega copywriting de alto nível. Thinking limitado para não estourar timeout.
+const MODEL_AGENT_2 = 'gemini-2.5-pro';
 
 async function loadSquadRules() {
   try {
@@ -37,9 +41,9 @@ export async function gerarIdeias(tipo: 'noticias' | 'perene', temasGerados: str
 
     const pautaSetup = `${rules.contexto_squad}\n\n${rules.tom_de_voz_global}\n\n${rules.agente_1.pesquisador}\n\n${basePrompt}${temasRestricao}${instrucaoInvisivel}`;
 
-    // AGENTE 1: PESQUISADOR E DIRETOR DE PAUTA
+    // AGENTE 1: PESQUISADOR E DIRETOR DE PAUTA (Flash — rápido com Google Search)
     const reqPautaOptions: any = {
-      model: MODEL_NAME,
+      model: MODEL_AGENT_1,
       contents: pautaSetup,
       config: { temperature: 0.7, topP: 0.95 }
     };
@@ -59,16 +63,17 @@ export async function gerarIdeias(tipo: 'noticias' | 'perene', temasGerados: str
       return { success: false, error: 'Agent 1 (Search/Pauta) failed.' };
     }
 
-    // AGENTE 2: ROTEIRISTA E COPYWRITER VIRAL
+    // AGENTE 2: ROTEIRISTA E COPYWRITER VIRAL (Pro — qualidade máxima, thinking limitado)
     const roteiroSetup = `${rules.contexto_squad}\n\n${rules.tom_de_voz_global}\n\n${rules.agente_2.roteirista}\n\n[PAUTA]:\n${pauta}\n\n${rules.agente_2.regras_escrita}`;
 
     let roteiroParsed;
     try {
       const resultRoteiro = await (ai as any).models.generateContent({
-        model: MODEL_NAME,
+        model: MODEL_AGENT_2,
         contents: roteiroSetup,
         config: {
-          temperature: 0.7
+          temperature: 0.7,
+          thinkingConfig: { thinkingBudget: 2048 }
           // Agente 2 PROIBIDO de usar ferramentas (tools), foca 100% no texto.
         }
       });
@@ -78,9 +83,9 @@ export async function gerarIdeias(tipo: 'noticias' | 'perene', temasGerados: str
       
       console.log(`--- SQUAD AGENTE 2: ROTEIRISTA --- (SUCESSO NO TEXTO)`);
     } catch (agent2Error) {
-      console.error(`--- ERRO SQUAD AGENTE 2 --- Falha na geração do roteiro ou no parseamento do JSON.`);
+      console.error(`--- ERRO SQUAD AGENTE 2 --- Falha na geração do roteiro.`);
       console.error(agent2Error);
-      return { success: false, error: 'Agent 2 (Script/Text) failed.' };
+      return { success: false, error: `Agent 2 (Script/Text) failed: ${agent2Error instanceof Error ? agent2Error.message : String(agent2Error)}` };
     }
 
     return {

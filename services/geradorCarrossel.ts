@@ -4,7 +4,7 @@ import path from 'path';
 import fs from 'fs';
 
 const ai = new GoogleGenAI({ apiKey: process.env.NEXT_PUBLIC_GEMINI_API_KEY || '' });
-const MODEL_NAME = 'gemini-1.5-pro';
+const MODEL_NAME = 'gemini-2.5-pro';
 
 async function loadSquadRules() {
   try {

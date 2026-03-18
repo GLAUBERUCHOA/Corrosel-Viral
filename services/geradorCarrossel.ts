@@ -4,7 +4,7 @@ import path from 'path';
 import fs from 'fs';
 
 const ai = new GoogleGenAI({ apiKey: process.env.NEXT_PUBLIC_GEMINI_API_KEY || '' });
-const MODEL_NAME = 'gemini-2.5-flash';
+const MODEL_NAME = 'gemini-1.5-pro';
 
 async function loadSquadRules() {
   try {
@@ -41,7 +41,7 @@ export async function gerarIdeias(tipo: 'noticias' | 'perene', temasGerados: str
     const reqPautaOptions: any = {
       model: MODEL_NAME,
       contents: pautaSetup,
-      config: { temperature: 0.9, topP: 0.95 }
+      config: { temperature: 0.7, topP: 0.95 }
     };
 
     if (isNoticia) {
@@ -68,7 +68,7 @@ export async function gerarIdeias(tipo: 'noticias' | 'perene', temasGerados: str
         model: MODEL_NAME,
         contents: roteiroSetup,
         config: {
-          temperature: 0.5
+          temperature: 0.7
           // Agente 2 PROIBIDO de usar ferramentas (tools), foca 100% no texto.
         }
       });

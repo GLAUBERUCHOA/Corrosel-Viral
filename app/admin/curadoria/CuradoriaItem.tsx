@@ -146,11 +146,11 @@ export default function CuradoriaItem({ item }: CuradoriaItemProps) {
       {showRaw && (
         <div className="px-6 py-4 bg-slate-50 border-t border-slate-200">
           <p className="text-sm font-bold text-slate-700 mb-2">Texto Original (Copie e cole no LAB):</p>
-          <textarea 
-            readOnly
-            className="w-full h-80 p-4 text-sm font-mono text-slate-800 bg-white border border-slate-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:outline-none resize-y shadow-inner whitespace-pre-wrap"
-            defaultValue={formatRawText(textoBruto)}
-          />
+          <pre 
+            className="w-full h-80 p-4 text-sm font-mono text-slate-800 bg-white border border-slate-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:outline-none overflow-y-auto shadow-inner whitespace-pre-wrap"
+          >
+            {formatRawText(textoBruto)}
+          </pre>
         </div>
       )}
     </div>

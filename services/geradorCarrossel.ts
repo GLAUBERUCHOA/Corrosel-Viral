@@ -68,22 +68,19 @@ export async function gerarIdeias(tipo: 'noticias' | 'perene', temasGerados: str
         model: MODEL_NAME,
         contents: roteiroSetup,
         config: {
-          temperature: 0.5,
-          responseMimeType: 'application/json'
-          // Agente 2 PROIBIDO de usar ferramentas (tools), foca 100% no texto e JSON.
+          temperature: 0.5
+          // Agente 2 PROIBIDO de usar ferramentas (tools), foca 100% no texto.
         }
       });
 
       const roteiroRaw = resultRoteiro.text || '';
+      roteiroParsed = roteiroRaw.trim();
       
-      // Limpeza de blocos marcados em markdown como json (bem comum em respostas curtas de modelos)
-      const roteiroParsedStr = roteiroRaw.replace(/```(json)?/g, '').trim();
-      roteiroParsed = JSON.parse(roteiroParsedStr);
-      console.log(`--- SQUAD AGENTE 2: ROTEIRISTA --- (SUCESSO NO JSON)`);
+      console.log(`--- SQUAD AGENTE 2: ROTEIRISTA --- (SUCESSO NO TEXTO)`);
     } catch (agent2Error) {
       console.error(`--- ERRO SQUAD AGENTE 2 --- Falha na geração do roteiro ou no parseamento do JSON.`);
       console.error(agent2Error);
-      return { success: false, error: 'Agent 2 (Script/JSON) failed.' };
+      return { success: false, error: 'Agent 2 (Script/Text) failed.' };
     }
 
     return {

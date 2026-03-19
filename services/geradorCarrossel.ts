@@ -3,7 +3,13 @@ import { prisma } from '@/lib/prisma';
 import path from 'path';
 import fs from 'fs';
 
-const ai = new GoogleGenAI({ apiKey: process.env.GOOGLE_GENERATIVE_AI_API_KEY || '' });
+function getAIClient() {
+  const apiKey = process.env.GOOGLE_GENERATIVE_AI_API_KEY;
+  if (!apiKey) {
+    throw new Error('GOOGLE_GENERATIVE_AI_API_KEY is not defined in environment variables.');
+  }
+  return new GoogleGenAI({ apiKey });
+}
 
 // Agent 1 (Pesquisador): Flash é ideal para busca rápida.
 const MODEL_AGENT_1 = 'gemini-2.5-flash';
@@ -56,6 +62,7 @@ export async function gerarIdeias(tipo: 'noticias' | 'perene', temasGerados: str
 
     let pauta = '';
     try {
+      const ai = getAIClient();
       const resultPauta = await (ai as any).models.generateContent(reqPautaOptions);
       // Tentativa robusta de extração de texto
       pauta = resultPauta.text || resultPauta.response?.text || (resultPauta as any).candidates?.[0]?.content?.parts?.[0]?.text || '';
@@ -74,6 +81,7 @@ export async function gerarIdeias(tipo: 'noticias' | 'perene', temasGerados: str
 
     let roteiroParsed;
     try {
+      const ai = getAIClient();
       const resultRoteiro = await (ai as any).models.generateContent({
         model: MODEL_AGENT_2,
         contents: roteiroSetup,

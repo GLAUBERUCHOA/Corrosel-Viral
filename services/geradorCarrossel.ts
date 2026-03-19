@@ -5,10 +5,10 @@ import fs from 'fs';
 
 const ai = new GoogleGenAI({ apiKey: process.env.NEXT_PUBLIC_GEMINI_API_KEY || '' });
 
-// Agent 1 (Pesquisador): Flash é rápido e ideal para pesquisa com Google Search.
-const MODEL_AGENT_1 = 'gemini-2.5-flash';
-// Agent 2 (Copywriter): Pro entrega copywriting de alto nível. Thinking limitado para não estourar timeout.
-const MODEL_AGENT_2 = 'gemini-2.5-pro';
+// Agent 1 (Pesquisador): Pro é mais estável para ferramentas complexas.
+const MODEL_AGENT_1 = 'gemini-1.5-pro';
+// Agent 2 (Copywriter): Pro entrega copywriting de alto nível.
+const MODEL_AGENT_2 = 'gemini-1.5-pro';
 
 async function loadSquadRules() {
   try {
@@ -31,7 +31,7 @@ export async function gerarIdeias(tipo: 'noticias' | 'perene', temasGerados: str
     const rules = await loadSquadRules();
     const isNoticia = tipo === 'noticias';
 
-    const basePrompt = rules.agente_1.prompt_diretor;
+    const basePrompt = rules.agente_1.prompt_diretor || (isNoticia ? rules.agente_1.prompt_noticias : rules.agente_1.prompt_perene);
 
     const temasRestricao = temasGerados.length > 0 
       ? `\nTEMAS JÁ GERADOS NESTA RODADA (EVITE-OS OBRIGATORIAMENTE): ${temasGerados.join(', ')}` 
@@ -41,29 +41,35 @@ export async function gerarIdeias(tipo: 'noticias' | 'perene', temasGerados: str
 
     const pautaSetup = `${rules.contexto_squad}\n\n${rules.tom_de_voz_global}\n\n${rules.agente_1.pesquisador}\n\n${basePrompt}${temasRestricao}${instrucaoInvisivel}`;
 
-    // AGENTE 1: PESQUISADOR E DIRETOR DE PAUTA (Flash — rápido com Google Search)
+    console.log(`--- INICIANDO AGENTE 1 (${tipo.toUpperCase()}) --- Key: ${!!process.env.NEXT_PUBLIC_GEMINI_API_KEY}`);
+
+    // AGENTE 1: PESQUISADOR E DIRETOR DE PAUTA
     const reqPautaOptions: any = {
       model: MODEL_AGENT_1,
       contents: pautaSetup,
-      config: { temperature: 0.7, topP: 0.95 }
+      config: { 
+        temperature: 0.7, 
+        topP: 0.95,
+        tools: isNoticia ? [{ googleSearch: {} }] : []
+      }
     };
-
-    if (isNoticia) {
-      reqPautaOptions.config.tools = [{ googleSearch: {} }];
-    }
 
     let pauta = '';
     try {
       const resultPauta = await (ai as any).models.generateContent(reqPautaOptions);
-      pauta = resultPauta.text || '';
-      console.log(`--- SQUAD AGENTE 1: DIRETOR DE PAUTA (${tipo.toUpperCase()}) --- (SUCESSO)`);
-    } catch (agent1Error) {
-      console.error(`--- ERRO SQUAD AGENTE 1 (${tipo.toUpperCase()}) --- Falha na busca ou geração da pauta.`);
-      console.error(agent1Error);
-      return { success: false, error: 'Agent 1 (Search/Pauta) failed.' };
+      // Tentativa robusta de extração de texto
+      pauta = resultPauta.text || resultPauta.response?.text || (resultPauta as any).candidates?.[0]?.content?.parts?.[0]?.text || '';
+      
+      if (!pauta) throw new Error('O modelo retornou uma resposta vazia (Agente 1).');
+
+      console.log(`--- SQUAD AGENTE 1: DIRETOR DE PAUTA SUCESSO ---`);
+    } catch (agent1Error: any) {
+      const errorMsg = agent1Error?.message || String(agent1Error);
+      console.error(`--- ERRO AGENTE 1 ---`, errorMsg);
+      return { success: false, error: `Falha no Agente 1 (Pesquisa): ${errorMsg}` };
     }
 
-    // AGENTE 2: ROTEIRISTA E COPYWRITER VIRAL (Pro — qualidade máxima, thinking limitado)
+    // AGENTE 2: ROTEIRISTA E COPYWRITER VIRAL
     const roteiroSetup = `${rules.contexto_squad}\n\n${rules.tom_de_voz_global}\n\n${rules.agente_2.roteirista}\n\n[PAUTA]:\n${pauta}\n\n${rules.agente_2.regras_escrita}`;
 
     let roteiroParsed;
@@ -74,18 +80,19 @@ export async function gerarIdeias(tipo: 'noticias' | 'perene', temasGerados: str
         config: {
           temperature: 0.7,
           thinkingConfig: { thinkingBudget: 2048 }
-          // Agente 2 PROIBIDO de usar ferramentas (tools), foca 100% no texto.
         }
       });
 
-      const roteiroRaw = resultRoteiro.text || '';
+      const roteiroRaw = resultRoteiro.text || resultRoteiro.response?.text || (resultRoteiro as any).candidates?.[0]?.content?.parts?.[0]?.text || '';
       roteiroParsed = roteiroRaw.trim();
       
-      console.log(`--- SQUAD AGENTE 2: ROTEIRISTA --- (SUCESSO NO TEXTO)`);
-    } catch (agent2Error) {
-      console.error(`--- ERRO SQUAD AGENTE 2 --- Falha na geração do roteiro.`);
-      console.error(agent2Error);
-      return { success: false, error: `Agent 2 (Script/Text) failed: ${agent2Error instanceof Error ? agent2Error.message : String(agent2Error)}` };
+      if (!roteiroParsed) throw new Error('O modelo retornou uma resposta vazia (Agente 2).');
+      
+      console.log(`--- SQUAD AGENTE 2: ROTEIRISTA SUCESSO ---`);
+    } catch (agent2Error: any) {
+      const errorMsg = agent2Error?.message || String(agent2Error);
+      console.error(`--- ERRO AGENTE 2 ---`, errorMsg);
+      return { success: false, error: `Falha no Agente 2 (Escrita): ${errorMsg}` };
     }
 
     return {
@@ -94,9 +101,10 @@ export async function gerarIdeias(tipo: 'noticias' | 'perene', temasGerados: str
       carrossel: roteiroParsed
     };
 
-  } catch (error) {
-    console.error('Erro geral na Service geradorCarrossel (Squad):', error);
-    return { success: false, error: error instanceof Error ? error.message : 'Erro no Squad' };
+  } catch (error: any) {
+    const errorMsg = error?.message || String(error);
+    console.error('Erro geral na Service geradorCarrossel (Squad):', errorMsg);
+    return { success: false, error: `Erro no Squad: ${errorMsg}` };
   }
 }
 

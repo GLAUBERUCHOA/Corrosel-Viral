@@ -5,10 +5,10 @@ import fs from 'fs';
 
 const ai = new GoogleGenAI({ apiKey: process.env.NEXT_PUBLIC_GEMINI_API_KEY || '' });
 
-// Agent 1 (Pesquisador): Pro é mais estável para ferramentas complexas.
-const MODEL_AGENT_1 = 'gemini-1.5-pro';
+// Agent 1 (Pesquisador): Flash é ideal para busca rápida.
+const MODEL_AGENT_1 = 'gemini-2.5-flash';
 // Agent 2 (Copywriter): Pro entrega copywriting de alto nível.
-const MODEL_AGENT_2 = 'gemini-1.5-pro';
+const MODEL_AGENT_2 = 'gemini-2.5-pro';
 
 async function loadSquadRules() {
   try {

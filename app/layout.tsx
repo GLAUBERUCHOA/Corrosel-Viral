@@ -2,6 +2,8 @@ import type { Metadata } from 'next';
 import { Poppins, Geist } from 'next/font/google';
 import './globals.css';
 import { cn } from "@/lib/utils";
+import { ConvexClientProvider } from "./ConvexClientProvider";
+
 
 const geist = Geist({subsets:['latin'],variable:'--font-sans'});
 
@@ -26,7 +28,11 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet" />
         <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&family=Montserrat:wght@400;600;800&family=Playfair+Display:ital,wght@0,400;0,700;1,400&family=Oswald:wght@400;700&family=Bebas+Neue&family=Archivo+Black&display=swap" rel="stylesheet" />
       </head>
-      <body className="font-sans" suppressHydrationWarning>{children}</body>
+      <body className="font-sans" suppressHydrationWarning>
+        <ConvexClientProvider>
+          {children}
+        </ConvexClientProvider>
+      </body>
     </html>
   );
 }

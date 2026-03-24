@@ -1,5 +1,6 @@
 import { action, mutation, query } from "./_generated/server";
 import { v } from "convex/values";
+import { internal } from "./_generated/api";
 import { GoogleGenAI } from "@google/genai";
 
 const MODEL_AGENT_1 = 'gemini-2.0-flash';
@@ -44,7 +45,7 @@ export const runAgent1Fetcher = action({
     const pauta = result.text || result.response?.text || (result as any).candidates?.[0]?.content?.parts?.[0]?.text || '';
 
 
-    await ctx.runMutation("agents:savePauta", {
+    await ctx.runMutation(internal.agents.savePauta, {
       pauta,
       type: "noticia"
     });
@@ -60,7 +61,7 @@ export const runAgent2Processor = action({
   args: {},
   handler: async (ctx) => {
     // 1. Get next pending pauta
-    const pendingPauta = await ctx.runQuery("agents:getPendingPauta");
+    const pendingPauta = await ctx.runQuery(internal.agents.getPendingPauta);
     if (!pendingPauta) return { success: false, message: "No pending pautas" };
 
     const apiKey = process.env.GOOGLE_GENERATIVE_AI_API_KEY;
@@ -80,7 +81,7 @@ export const runAgent2Processor = action({
       const carrossel = result.text || result.response?.text || (result as any).candidates?.[0]?.content?.parts?.[0]?.text || '';
 
 
-      await ctx.runMutation("agents:updatePautaProcessed", {
+      await ctx.runMutation(internal.agents.updatePautaProcessed, {
         id: pendingPauta._id,
         carrossel,
         status: "processed"
@@ -88,7 +89,7 @@ export const runAgent2Processor = action({
 
       return { success: true, carrossel };
     } catch (err: any) {
-      await ctx.runMutation("agents:updatePautaProcessed", {
+      await ctx.runMutation(internal.agents.updatePautaProcessed, {
         id: pendingPauta._id,
         status: "failed",
         error: err.message
@@ -137,3 +138,14 @@ export const getPendingPauta = query({
       .first();
   },
 });
+
+export const getAllPautas = query({
+  args: {},
+  handler: async (ctx) => {
+    return await ctx.db
+      .query("pautas")
+      .order("desc")
+      .take(50);
+  },
+});
+

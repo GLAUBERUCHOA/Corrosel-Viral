@@ -1,8 +1,13 @@
 'use client';
 
 import { useState } from 'react';
-import { salvarConfiguracoes } from './acoes';
 import { useRouter } from 'next/navigation';
+import { salvarConfiguracoes } from './acoes';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
+import { Textarea } from '@/components/ui/textarea';
+import { Label } from '@/components/ui/label';
+import { Save, Info, Globe, Search, FileText, Loader2, Settings } from 'lucide-react';
 
 export default function ClientForm({ initialConfig }: { initialConfig: any }) {
   const [salvando, setSalvando] = useState(false);
@@ -18,89 +23,108 @@ export default function ClientForm({ initialConfig }: { initialConfig: any }) {
     setSalvando(false);
     
     if (res.success) {
-      alert(res.message);
       router.refresh();
+      alert('Configurações salvas com sucesso!');
     } else {
       alert('Houve um erro: ' + res.message);
     }
   }
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-8 pb-10">
+    <form onSubmit={handleSubmit} className="space-y-8 pb-32">
       
-      <div className="bg-white dark:bg-slate-800 p-6 rounded-2xl shadow-sm border border-slate-200 dark:border-slate-700">
-        <h2 className="text-xl font-bold text-slate-800 dark:text-slate-100 flex items-center gap-2 mb-4">
-          <span className="material-symbols-outlined text-indigo-500">public</span> Geral
-        </h2>
-        
-        <div className="space-y-5">
-          <div>
-            <label className="block text-sm font-semibold text-slate-700 dark:text-slate-200 mb-2">Contexto do Squad</label>
-            <textarea 
+      {/* SEÇÃO GERAL */}
+      <Card className="border-slate-800 bg-slate-900/50 backdrop-blur-sm text-slate-100 shadow-xl overflow-hidden transition-all hover:border-blue-500/30">
+        <CardHeader className="bg-slate-900/50 border-b border-slate-800/50">
+          <CardTitle className="text-xl font-black flex items-center gap-3">
+            <Globe className="h-6 w-6 text-blue-500" />
+            Configurações Globais
+          </CardTitle>
+          <CardDescription className="text-slate-400 font-medium">Contexto básico e tom de voz que os dois agentes compartilham.</CardDescription>
+        </CardHeader>
+        <CardContent className="p-8 space-y-8">
+          <div className="space-y-3">
+            <Label className="text-sm font-bold uppercase tracking-widest text-slate-500">Contexto do Squad (Público & Regras)</Label>
+            <Textarea 
               name="contexto_squad" 
               defaultValue={initialConfig.contexto_squad} 
-              className="w-full h-24 text-sm font-mono bg-slate-50 dark:bg-slate-900 border border-slate-300 dark:border-slate-600 text-slate-900 dark:text-slate-100 rounded-lg p-3 outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 resize-y"
+              className="min-h-[120px] bg-slate-950/50 border-slate-800 focus:border-blue-500 font-mono text-blue-50"
             />
-            <p className="mt-1 text-xs text-slate-500 dark:text-slate-400">Ex: Lembrete para o Squad... O público alvo... Proibição de cliques de marketing.</p>
           </div>
 
-          <div>
-            <label className="block text-sm font-semibold text-slate-700 dark:text-slate-200 mb-2">Tom de Voz Global</label>
-            <textarea 
+          <div className="space-y-3">
+            <Label className="text-sm font-bold uppercase tracking-widest text-slate-500">Tom de Voz Principal</Label>
+            <Textarea 
               name="tom_de_voz_global" 
               defaultValue={initialConfig.tom_de_voz_global} 
-              className="w-full h-20 text-sm font-mono bg-slate-50 dark:bg-slate-900 border border-slate-300 dark:border-slate-600 text-slate-900 dark:text-slate-100 rounded-lg p-3 outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 resize-y"
+              className="min-h-[100px] bg-slate-950/50 border-slate-800 focus:border-blue-500 font-mono text-blue-50"
             />
           </div>
-        </div>
-      </div>
+        </CardContent>
+      </Card>
 
-      <div className="bg-white dark:bg-slate-800 p-6 rounded-2xl shadow-sm border border-slate-200 dark:border-slate-700">
-        <h2 className="text-xl font-bold text-slate-800 dark:text-slate-100 flex items-center gap-2 mb-4">
-          <span className="material-symbols-outlined text-orange-500">manage_search</span> Agente 1 (Pesquisador / Diretor de Pauta)
-        </h2>
-        
-        <div>
-          <label className="block text-sm font-semibold text-slate-700 dark:text-slate-200 mb-2">Instruções do Diretor de Pauta</label>
-          <textarea 
+      {/* AGENTE 1 */}
+      <Card className="border-slate-800 bg-slate-900/50 backdrop-blur-sm text-slate-100 shadow-xl overflow-hidden transition-all hover:border-amber-500/30">
+        <CardHeader className="bg-slate-900/50 border-b border-slate-800/50">
+          <CardTitle className="text-xl font-black flex items-center gap-3 text-amber-500">
+            <Search className="h-6 w-6" />
+            Agente 1: Diretor de Pauta
+          </CardTitle>
+          <CardDescription className="text-slate-400 font-medium">Instruções para a etapa de pesquisa no Tavily e escolha da notícia disruptiva.</CardDescription>
+        </CardHeader>
+        <CardContent className="p-8">
+          <Textarea 
             name="prompt_diretor" 
             defaultValue={initialConfig.agente_1.prompt_diretor || initialConfig.agente_1.prompt_noticias || ''} 
-            className="w-full h-80 text-sm font-mono bg-slate-50 dark:bg-slate-900 border border-slate-300 dark:border-slate-600 text-slate-900 dark:text-slate-100 rounded-lg p-3 outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 resize-y"
+            className="min-h-[350px] bg-slate-950/50 border-slate-800 focus:border-amber-500 font-mono text-blue-50"
           />
-          <p className="mt-2 text-xs text-slate-500 dark:text-slate-400">Insira todo o contexto de pesquisa num campo único. A inteligência atuará num bloco centralizado ignorando etapas de aprovação por chat.</p>
-        </div>
-      </div>
+        </CardContent>
+      </Card>
 
-      <div className="bg-white dark:bg-slate-800 p-6 rounded-2xl shadow-sm border border-slate-200 dark:border-slate-700">
-        <h2 className="text-xl font-bold text-slate-800 dark:text-slate-100 flex items-center gap-2 mb-4">
-          <span className="material-symbols-outlined text-emerald-500">edit_square</span> Agente 2 (Roteirista / Copywriter)
-        </h2>
-        
-        <div>
-          <label className="block text-sm font-semibold text-slate-700 mb-2">Instrução Central (Módulos 1 a 7 e Limitações)</label>
-          <textarea 
+      {/* AGENTE 2 */}
+      <Card className="border-slate-800 bg-slate-900/50 backdrop-blur-sm text-slate-100 shadow-xl overflow-hidden transition-all hover:border-emerald-500/30">
+        <CardHeader className="bg-slate-900/50 border-b border-slate-800/50">
+          <CardTitle className="text-xl font-black flex items-center gap-3 text-emerald-500">
+            <FileText className="h-6 w-6" />
+            Agente 2: Roteirista Viral
+          </CardTitle>
+          <CardDescription className="text-slate-400 font-medium">Técnicas de Copywriting e estruturação JSON dos slides magnéticos.</CardDescription>
+        </CardHeader>
+        <CardContent className="p-8">
+          <Textarea 
             name="regras_escrita" 
             defaultValue={initialConfig.agente_2.regras_escrita} 
-            className="w-full h-80 text-sm font-mono bg-slate-50 dark:bg-slate-900 border border-slate-300 dark:border-slate-600 text-slate-900 dark:text-slate-100 rounded-lg p-3 outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 resize-y"
+            className="min-h-[400px] bg-slate-950/50 border-slate-800 focus:border-emerald-500 font-mono text-blue-50"
           />
-          <p className="mt-2 text-xs text-amber-600 font-bold">ATENÇÃO: Mantenha as tags obrigatórias [TÍTULO], [SUBTÍTULO], [DIREÇÃO DE ARTE] e [LEGENDA] exatamente como estão.</p>
-        </div>
-      </div>
+          <div className="mt-4 p-4 rounded-xl bg-orange-500/5 border border-orange-500/20 flex gap-3">
+             <Info className="h-5 w-5 text-orange-500 shrink-0" />
+             <p className="text-xs text-orange-200/60 font-medium uppercase tracking-tighter">
+                MANTER TAGS [TÍTULO], [SUBTÍTULO], [DIREÇÃO DE ARTE] E [LEGENDA]
+             </p>
+          </div>
+        </CardContent>
+      </Card>
 
-      <div className="sticky bottom-6 bg-slate-900 border border-slate-700 p-4 rounded-2xl flex justify-between items-center shadow-xl z-10 w-full animate-in slide-in-from-bottom">
-        <p className="text-white text-sm font-medium">Lembre-se: as alterações têm efeito imediato na IA.</p>
-        <button 
-          type="submit" 
-          disabled={salvando}
-          className="bg-indigo-500 hover:bg-indigo-400 text-white font-bold px-8 py-3 rounded-lg flex gap-2 items-center transition disabled:opacity-50"
-        >
-          {salvando ? (
-            <span className="material-symbols-outlined animate-spin text-sm">progress_activity</span>
-          ) : (
-            <span className="material-symbols-outlined text-sm">save</span>
-          )}
-          {salvando ? 'Salvando...' : 'Salvar Alterações'}
-        </button>
+      {/* FLOATING ACTION BAR */}
+      <div className="fixed bottom-10 left-1/2 -translate-x-1/2 w-[90%] max-w-lg z-50">
+        <div className="bg-slate-900/90 backdrop-blur-md border border-slate-700/50 p-4 rounded-3xl shadow-2xl flex justify-between items-center gap-6">
+          <p className="text-slate-400 text-xs pl-4 font-bold flex flex-col">
+            <span>MODO EDIÇÃO</span>
+            <span className="text-blue-500">AÇÕES IMEDIATAS</span>
+          </p>
+          <Button 
+            type="submit" 
+            disabled={salvando}
+            className="bg-blue-600 hover:bg-blue-500 h-14 px-10 rounded-2xl font-black text-lg transition-all shadow-xl shadow-blue-900/40 hover:scale-105 active:scale-95"
+          >
+            {salvando ? (
+              <Loader2 className="mr-2 h-6 w-6 animate-spin" />
+            ) : (
+              <Save className="mr-2 h-6 w-6" />
+            )}
+            {salvando ? 'Salvando...' : 'SALVAR REGRAS'}
+          </Button>
+        </div>
       </div>
 
     </form>

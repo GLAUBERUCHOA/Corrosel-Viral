@@ -1,14 +1,12 @@
 "use client";
 
 import { useState } from "react";
-import { useQuery, useAction } from "convex/react";
+import { useQuery, useAction, useMutation } from "convex/react";
 import { api } from "../../convex/_generated/api";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Loader2, Eye, Send, RefreshCw, Rocket, Settings, Info, Newspaper, LayoutDashboard } from "lucide-react";
-import Link from "next/link";
-
+import { Loader2, Eye, Send, RefreshCw, Rocket, Settings, Info, Newspaper, Trash2 } from "lucide-react";
 import {
   Sheet,
   SheetContent,
@@ -21,11 +19,15 @@ import {
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
+import Link from "next/link";
 
 export default function CuradoriaPage() {
   const pautas = useQuery(api.agents.getAllPautas);
   const runAgent1 = useAction(api.agents.runAgent1Fetcher);
+  const clearPautas = useMutation(api.agents.clearAllPautas);
+  
   const [isRunningAgent1, setIsRunningAgent1] = useState(false);
+  const [isClearing, setIsClearing] = useState(false);
 
   async function handleDispararAgente1() {
     setIsRunningAgent1(true);
@@ -35,6 +37,18 @@ export default function CuradoriaPage() {
       console.error("Falha ao disparar Agente 1", err);
     } finally {
       setIsRunningAgent1(false);
+    }
+  }
+
+  async function handleLimparFila() {
+    if (!confirm("Tem certeza que deseja limpar toda a fila de pautas?")) return;
+    setIsClearing(true);
+    try {
+      await clearPautas();
+    } catch (err) {
+      console.error("Erro ao limpar fila", err);
+    } finally {
+      setIsClearing(false);
     }
   }
 
@@ -63,6 +77,16 @@ export default function CuradoriaPage() {
 
           <div className="flex items-center gap-3">
             <Button 
+                onClick={handleLimparFila}
+                disabled={isClearing || pautas.length === 0}
+                variant="destructive"
+                className="bg-rose-600/10 text-rose-500 border border-rose-500/20 hover:bg-rose-600 hover:text-white font-bold transition-all"
+            >
+              {isClearing ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Trash2 className="mr-2 h-4 w-4" />}
+              Limpar Fila
+            </Button>
+
+            <Button 
                 onClick={handleDispararAgente1}
                 disabled={isRunningAgent1}
                 className="bg-blue-600 font-bold hover:bg-blue-500 shadow-lg shadow-blue-900/20"
@@ -72,7 +96,7 @@ export default function CuradoriaPage() {
               ) : (
                 <Rocket className="mr-2 h-4 w-4" />
               )}
-              Disparar Agente 1 Agora
+              Disparar Agente 1
             </Button>
 
             <Sheet>
@@ -93,6 +117,16 @@ export default function CuradoriaPage() {
                 </SheetHeader>
                 
                 <div className="py-6 space-y-10">
+                  <div className="space-y-4">
+                    <h3 className="text-sm font-bold uppercase tracking-widest text-slate-500">Regras e Comportamento</h3>
+                    <a href="https://www.carrosselvirallab.com.br/admin/configuracoes" className="block w-full">
+                      <Button variant="secondary" className="w-full bg-slate-800 text-slate-200 hover:bg-slate-700 h-12 font-bold flex items-center gap-2">
+                        <Settings className="h-4 w-4" />
+                        Gerenciar Prompts dos Agentes
+                      </Button>
+                    </a>
+                  </div>
+
                   <div className="space-y-5">
                     <h3 className="text-xs font-black uppercase tracking-widest text-slate-500">Automação</h3>
                     <div className="flex items-center justify-between p-5 rounded-2xl bg-slate-950/50 border border-slate-800 transition-colors hover:border-slate-700">
@@ -116,16 +150,6 @@ export default function CuradoriaPage() {
                         <Input className="bg-slate-950 border-slate-800 h-12 font-mono text-blue-400" placeholder="gemini-2.0-flash" disabled />
                       </div>
                     </div>
-                  </div>
-
-                  <div className="space-y-4">
-                    <h3 className="text-sm font-bold uppercase tracking-widest text-slate-500">Regras e Comportamento</h3>
-                    <Link href="/admin/configuracoes" className="block w-full">
-                      <Button variant="secondary" className="w-full bg-slate-800 text-slate-200 hover:bg-slate-700 h-12 font-bold flex items-center gap-2">
-                        <Settings className="h-4 w-4" />
-                        Gerenciar Prompts dos Agentes
-                      </Button>
-                    </Link>
                   </div>
 
                   <div className="p-6 rounded-2xl bg-blue-500/5 border border-blue-500/10 backdrop-blur-sm">
@@ -169,7 +193,7 @@ export default function CuradoriaPage() {
                     </span>
                   </div>
                   <CardTitle className="line-clamp-2 text-xl font-black leading-tight group-hover:text-blue-400 transition-colors">
-                    {pauta.pauta.split('\n')[0].replace('Qual é a notícia + ', '')}
+                    {pauta.pauta.split('\n')[0].replace('Qual é a notícia + ', '') || "Sem Título"}
                   </CardTitle>
                 </CardHeader>
                 <CardContent className="flex-grow">

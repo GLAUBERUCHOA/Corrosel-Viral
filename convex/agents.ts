@@ -149,3 +149,15 @@ export const getAllPautas = query({
   },
 });
 
+export const clearAllPautas = mutation({
+  args: {},
+  handler: async (ctx) => {
+    const all = await ctx.db.query("pautas").collect();
+    for (const pauta of all) {
+      await ctx.db.delete(pauta._id);
+    }
+  },
+});
+
+
+

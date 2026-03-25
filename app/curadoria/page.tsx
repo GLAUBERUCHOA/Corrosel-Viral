@@ -6,7 +6,7 @@ import { api } from "../../convex/_generated/api";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Loader2, Eye, Send, RefreshCw, Rocket, Settings, Info, Newspaper, Trash2, CheckCircle2 } from "lucide-react";
+import { Loader2, Eye, Send, RefreshCw, Rocket, Settings, Info, Newspaper, Trash2, CheckCircle2, Copy, Check } from "lucide-react";
 import {
   Sheet,
   SheetContent,
@@ -39,6 +39,7 @@ export default function CuradoriaPage() {
   const [isClearing, setIsClearing] = useState(false);
   const [selectedPauta, setSelectedPauta] = useState<any>(null);
   const [isPreviewOpen, setIsPreviewOpen] = useState(false);
+  const [copied, setCopied] = useState(false);
 
   async function handleDispararAgente1() {
     setIsRunningAgent1(true);
@@ -71,14 +72,21 @@ export default function CuradoriaPage() {
     }
   }
 
+  async function copyToClipboard(text: string) {
+    try {
+      await navigator.clipboard.writeText(text);
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2000);
+    } catch (err) {
+      console.error("Erro ao copiar", err);
+    }
+  }
+
   const renderRoteiro = (carrosselRaw: string) => {
     try {
-      // Divide por SLIDE XX: ou LEGENDA:
       const sections = carrosselRaw.split(/(SLIDE \d+:|LEGENDA:)/i);
       const slides: any[] = [];
       
-      let currentSection: any = null;
-
       for (let i = 1; i < sections.length; i += 2) {
         const header = sections[i].toUpperCase();
         const content = sections[i+1];
@@ -96,28 +104,18 @@ export default function CuradoriaPage() {
       }
 
       if (slides.length === 0) {
-        // Fallback for plain text if no tags found
-        return <div className="whitespace-pre-wrap font-medium text-slate-300 text-sm leading-relaxed p-4 bg-slate-950 rounded-xl border border-slate-800">{carrosselRaw}</div>;
+        return <div className="whitespace-pre-wrap font-mono text-slate-300 text-xs leading-relaxed p-4 bg-slate-950 rounded-xl border border-slate-800">{carrosselRaw}</div>;
       }
 
       return (
-        <div className="space-y-6 max-h-[60vh] overflow-y-auto pr-4 scrollbar-thin scrollbar-thumb-slate-800">
+        <div className="space-y-4 max-h-[60vh] overflow-y-auto pr-4 scrollbar-thin scrollbar-thumb-slate-800">
           {slides.map((s: any, idx: number) => (
-            <div key={idx} className="p-4 rounded-xl bg-slate-950 border border-slate-800 space-y-2">
-              <div className="flex items-center justify-between">
-                <Badge variant="outline" className="text-blue-400 border-blue-400/20">
-                  {s.slide === "legenda" ? "LEGENDA" : `Slide ${s.slide}`}
-                </Badge>
-                {s.imagePrompt && <span className="text-[10px] text-slate-500 font-mono">ARTE OK</span>}
-              </div>
-              {s.title && <h4 className="text-lg font-black text-white">{s.title}</h4>}
-              {s.subtitle && <p className="text-sm text-slate-400 font-medium">{s.subtitle}</p>}
-              {s.imagePrompt && (
-                <p className="text-[10px] text-slate-600 italic bg-blue-500/5 p-2 rounded border border-blue-500/10"> Art Direction: {s.imagePrompt}</p>
-              )}
-              {s.legenda && (
-                <div className="mt-2 text-sm text-slate-300 italic border-t border-slate-900 pt-4">"{s.legenda}"</div>
-              )}
+            <div key={idx} className="p-4 rounded-xl bg-slate-950 border border-slate-800 font-mono text-xs">
+              <div className="text-blue-400 font-bold mb-2">{s.slide === "legenda" ? "LEGENDA:" : `SLIDE ${s.slide}:`}</div>
+              {s.title && <div>[TÍTULO]: {s.title}</div>}
+              {s.subtitle && <div>[SUBTÍTULO]: {s.subtitle}</div>}
+              {s.imagePrompt && <div className="text-slate-500 mt-1">[ARTE]: {s.imagePrompt}</div>}
+              {s.legenda && <div>{s.legenda}</div>}
             </div>
           ))}
         </div>
@@ -217,7 +215,7 @@ export default function CuradoriaPage() {
                     <h3 className="text-xs font-black uppercase tracking-widest text-slate-500">Modelos Ativos</h3>
                     <div className="grid gap-5">
                       <div className="space-y-3">
-                        <Label className="text-sm font-bold text-slate-400 uppercase tracking-tight">Agente 1 (Status: Elite 2026)</Label>
+                        <Label className="text-sm font-bold text-slate-400 uppercase tracking-tight">Agente 1 (Status: Variedade Ativa)</Label>
                         <Input className="bg-slate-950 border-slate-800 h-12 font-mono text-blue-400" placeholder="gemini-2.5-flash" disabled />
                       </div>
                     </div>
@@ -227,7 +225,7 @@ export default function CuradoriaPage() {
                     <div className="flex gap-4">
                       <Info className="h-6 w-6 text-blue-500 shrink-0" />
                       <p className="text-xs text-blue-300 leading-relaxed font-semibold">
-                        Regras de Nicho Ativas: Mercado Imobiliário & IA. Foco em Gatilhos de Indignação e Ganho.
+                        Código Negro Ativo: Variedade total (Shopee, iFood, Consumo, Psicologia). Foco em Ganho e Indignação.
                       </p>
                     </div>
                   </div>
@@ -262,14 +260,14 @@ export default function CuradoriaPage() {
                   </CardTitle>
                 </CardHeader>
                 <CardContent className="flex-grow">
-                  <CardDescription className="text-slate-400 leading-relaxed font-medium">
+                  <CardDescription className="text-slate-400 leading-relaxed font-medium line-clamp-3">
                     {pauta.pauta.split('\n')[1] || "Aguardando geração do ângulo provocativo..."}
                   </CardDescription>
                 </CardContent>
                 <CardFooter className="grid grid-cols-2 gap-3 border-t border-slate-800/50 p-6 pt-5 bg-slate-900/30">
                   <Button 
                     variant="outline" 
-                    className="border-slate-800 bg-slate-900/50 text-slate-200 hover:bg-slate-800 hover:text-white" 
+                    className="border-slate-800 bg-slate-900/50 text-slate-200 hover:bg-slate-800 hover:text-white transition-all" 
                     disabled={!pauta.carrossel}
                     onClick={() => { setSelectedPauta(pauta); setIsPreviewOpen(true); }}
                   >
@@ -294,9 +292,9 @@ export default function CuradoriaPage() {
         <Dialog open={isPreviewOpen} onOpenChange={setIsPreviewOpen}>
           <DialogContent className="bg-slate-900 border-slate-800 text-white sm:max-w-2xl">
             <DialogHeader>
-              <DialogTitle className="text-2xl font-black">Roteiro Gerado pelo Agente 2</DialogTitle>
+              <DialogTitle className="text-2xl font-black">Roteiro Finalizado</DialogTitle>
               <DialogDescription className="text-slate-400">
-                Revise os slides antes de aprovar a publicação no Instagram.
+                Copie o texto bruto abaixo para colar diretamente no LAB.
               </DialogDescription>
             </DialogHeader>
             
@@ -304,14 +302,21 @@ export default function CuradoriaPage() {
               {selectedPauta?.carrossel ? renderRoteiro(selectedPauta.carrossel) : <p className="text-slate-500 italic text-center py-10">Processando roteiro...</p>}
             </div>
 
-            <DialogFooter className="gap-2 sm:gap-0">
-              <Button variant="ghost" className="text-slate-400 hover:text-white" onClick={() => setIsPreviewOpen(false)}>Fechar</Button>
+            <DialogFooter className="flex flex-col sm:flex-row gap-3">
               <Button 
-                className="bg-blue-600 hover:bg-blue-500 font-bold" 
+                variant="secondary" 
+                className="bg-slate-800 text-white hover:bg-slate-700 font-bold flex-1"
+                onClick={() => copyToClipboard(selectedPauta?.carrossel || "")}
+              >
+                {copied ? <Check className="mr-2 h-4 w-4 text-emerald-400" /> : <Copy className="mr-2 h-4 w-4" />}
+                {copied ? "Texto Copiado!" : "Copiar Texto para o LAB"}
+              </Button>
+              <Button 
+                className="bg-blue-600 hover:bg-blue-500 font-bold flex-1" 
                 disabled={selectedPauta?.status === "approved"}
                 onClick={() => { handleAprovar(selectedPauta?._id); setIsPreviewOpen(false); }}
               >
-                Aprovar Agora
+                Aprovar & Publicar
               </Button>
             </DialogFooter>
           </DialogContent>

@@ -6,7 +6,7 @@ import { api } from "../../convex/_generated/api";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Loader2, Eye, Send, RefreshCw, Rocket, Settings, Info, Newspaper, Trash2 } from "lucide-react";
+import { Loader2, Eye, Send, RefreshCw, Rocket, Settings, Info, Newspaper, Trash2, CheckCircle2 } from "lucide-react";
 import {
   Sheet,
   SheetContent,
@@ -16,6 +16,14 @@ import {
   SheetTrigger,
   SheetFooter,
 } from "@/components/ui/sheet";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+  DialogFooter,
+} from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
@@ -25,9 +33,12 @@ export default function CuradoriaPage() {
   const pautas = useQuery(api.agents.getAllPautas);
   const runAgent1 = useAction(api.agents.runAgent1Fetcher);
   const clearPautas = useMutation(api.agents.clearAllPautas);
+  const approvePauta = useMutation(api.agents.approvePauta);
   
   const [isRunningAgent1, setIsRunningAgent1] = useState(false);
   const [isClearing, setIsClearing] = useState(false);
+  const [selectedPauta, setSelectedPauta] = useState<any>(null);
+  const [isPreviewOpen, setIsPreviewOpen] = useState(false);
 
   async function handleDispararAgente1() {
     setIsRunningAgent1(true);
@@ -51,6 +62,42 @@ export default function CuradoriaPage() {
       setIsClearing(false);
     }
   }
+
+  async function handleAprovar(id: any) {
+    try {
+      await approvePauta({ id });
+    } catch (err) {
+      console.error("Erro ao aprovar pauta", err);
+    }
+  }
+
+  const renderRoteiro = (carrosselJson: string) => {
+    try {
+      const slides = JSON.parse(carrosselJson);
+      return (
+        <div className="space-y-6 max-h-[60vh] overflow-y-auto pr-4 scrollbar-thin scrollbar-thumb-slate-800">
+          {slides.map((s: any, idx: number) => (
+            <div key={idx} className="p-4 rounded-xl bg-slate-950 border border-slate-800 space-y-2">
+              <div className="flex items-center justify-between">
+                <Badge variant="outline" className="text-blue-400 border-blue-400/20">Slide {s.slide}</Badge>
+                {s.imagePrompt && <span className="text-[10px] text-slate-500 font-mono">ARTE OK</span>}
+              </div>
+              {s.title && <h4 className="text-lg font-black text-white">{s.title}</h4>}
+              {s.subtitle && <p className="text-sm text-slate-400 font-medium">{s.subtitle}</p>}
+              {s.legenda && (
+                <div className="mt-4 pt-4 border-t border-slate-900">
+                   <p className="text-xs text-slate-500 uppercase font-bold mb-2">Legenda Recomendada</p>
+                   <p className="text-sm text-slate-300 italic">"{s.legenda}"</p>
+                </div>
+              )}
+            </div>
+          ))}
+        </div>
+      );
+    } catch (e) {
+      return <div className="p-4 bg-rose-500/10 text-rose-500 rounded-lg border border-rose-500/20 font-mono text-xs">Erro ao processar JSON: {carrosselJson}</div>;
+    }
+  };
 
   if (pautas === undefined) {
     return (
@@ -119,7 +166,7 @@ export default function CuradoriaPage() {
                 <div className="py-6 space-y-10">
                   <div className="space-y-4">
                     <h3 className="text-sm font-bold uppercase tracking-widest text-slate-500">Regras e Comportamento</h3>
-                    <a href="https://www.carrosselvirallab.com.br/admin/configuracoes" className="block w-full">
+                    <a href="/admin/configuracoes" className="block w-full">
                       <Button variant="secondary" className="w-full bg-slate-800 text-slate-200 hover:bg-slate-700 h-12 font-bold flex items-center gap-2">
                         <Settings className="h-4 w-4" />
                         Gerenciar Prompts dos Agentes
@@ -128,13 +175,13 @@ export default function CuradoriaPage() {
                   </div>
 
                   <div className="space-y-5">
-                    <h3 className="text-xs font-black uppercase tracking-widest text-slate-500">Automação</h3>
+                    <h3 className="text-xs font-black uppercase tracking-widest text-slate-500">Automação (15m News / 2m Agent 2)</h3>
                     <div className="flex items-center justify-between p-5 rounded-2xl bg-slate-950/50 border border-slate-800 transition-colors hover:border-slate-700">
                       <div className="space-y-1">
-                        <Label className="text-base font-bold">Agendamento Diário</Label>
-                        <p className="text-xs text-slate-500 font-medium">Executar busca automática a cada hora</p>
+                        <Label className="text-base font-bold">Modo Produção</Label>
+                        <p className="text-xs text-slate-500 font-medium">Ativar agendamento 00:00 - 05:00</p>
                       </div>
-                      <Switch defaultChecked className="data-[state=checked]:bg-blue-600" />
+                      <Switch className="data-[state=checked]:bg-blue-600" />
                     </div>
                   </div>
 
@@ -142,12 +189,8 @@ export default function CuradoriaPage() {
                     <h3 className="text-xs font-black uppercase tracking-widest text-slate-500">Modelos Ativos</h3>
                     <div className="grid gap-5">
                       <div className="space-y-3">
-                        <Label className="text-sm font-bold text-slate-400 uppercase tracking-tight">Agente 1 (Pesquisador)</Label>
-                        <Input className="bg-slate-950 border-slate-800 h-12 font-mono text-blue-400" placeholder="gemini-2.0-flash" disabled />
-                      </div>
-                      <div className="space-y-3">
-                        <Label className="text-sm font-bold text-slate-400 uppercase tracking-tight">Agente 2 (Roteirista)</Label>
-                        <Input className="bg-slate-950 border-slate-800 h-12 font-mono text-blue-400" placeholder="gemini-2.0-flash" disabled />
+                        <Label className="text-sm font-bold text-slate-400 uppercase tracking-tight">Agente 1 (Status: Elite 2026)</Label>
+                        <Input className="bg-slate-950 border-slate-800 h-12 font-mono text-blue-400" placeholder="gemini-2.5-flash" disabled />
                       </div>
                     </div>
                   </div>
@@ -156,17 +199,11 @@ export default function CuradoriaPage() {
                     <div className="flex gap-4">
                       <Info className="h-6 w-6 text-blue-500 shrink-0" />
                       <p className="text-xs text-blue-300 leading-relaxed font-semibold">
-                        Operando via infraestrutura Convex. Alterações refletem imediatamente na lógica de filas.
+                        Regras de Nicho Ativas: Mercado Imobiliário & IA. Foco em Gatilhos de Indignação e Ganho.
                       </p>
                     </div>
                   </div>
                 </div>
-
-                <SheetFooter className="mt-8 border-t border-slate-800 pt-8">
-                  <Button className="w-full bg-blue-600 hover:bg-blue-500 h-12 font-black text-lg shadow-xl shadow-blue-900/30 transition-all hover:scale-[1.02]">
-                    Salvar Alterações
-                  </Button>
-                </SheetFooter>
               </SheetContent>
             </Sheet>
           </div>
@@ -202,19 +239,55 @@ export default function CuradoriaPage() {
                   </CardDescription>
                 </CardContent>
                 <CardFooter className="grid grid-cols-2 gap-3 border-t border-slate-800/50 p-6 pt-5 bg-slate-900/30">
-                  <Button variant="outline" className="border-slate-800 bg-slate-900/50 text-slate-200 hover:bg-slate-800 hover:text-white" disabled={!pauta.carrossel}>
+                  <Button 
+                    variant="outline" 
+                    className="border-slate-800 bg-slate-900/50 text-slate-200 hover:bg-slate-800 hover:text-white" 
+                    disabled={!pauta.carrossel}
+                    onClick={() => { setSelectedPauta(pauta); setIsPreviewOpen(true); }}
+                  >
                     <Eye className="mr-2 h-4 w-4" />
                     Preview
                   </Button>
-                  <Button className="bg-blue-600 font-bold text-white hover:bg-blue-500 shadow-lg shadow-blue-900/20" disabled={!pauta.carrossel}>
-                    <Send className="mr-2 h-4 w-4" />
-                    Aprovar
+                  <Button 
+                    className="bg-blue-600 font-bold text-white hover:bg-blue-500 shadow-lg shadow-blue-900/20 disabled:bg-slate-800 disabled:text-slate-500" 
+                    disabled={!pauta.carrossel || pauta.status === "approved"}
+                    onClick={() => handleAprovar(pauta._id)}
+                  >
+                    {pauta.status === "approved" ? <CheckCircle2 className="mr-2 h-4 w-4 text-emerald-400" /> : <Send className="mr-2 h-4 w-4" />}
+                    {pauta.status === "approved" ? "Aprovado" : "Aprovar"}
                   </Button>
                 </CardFooter>
               </Card>
             ))}
           </div>
         )}
+
+        {/* Dialog for Preview */}
+        <Dialog open={isPreviewOpen} onOpenChange={setIsPreviewOpen}>
+          <DialogContent className="bg-slate-900 border-slate-800 text-white sm:max-w-2xl">
+            <DialogHeader>
+              <DialogTitle className="text-2xl font-black">Roteiro Gerado pelo Agente 2</DialogTitle>
+              <DialogDescription className="text-slate-400">
+                Revise os slides antes de aprovar a publicação no Instagram.
+              </DialogDescription>
+            </DialogHeader>
+            
+            <div className="py-4">
+              {selectedPauta?.carrossel ? renderRoteiro(selectedPauta.carrossel) : <p className="text-slate-500 italic text-center py-10">Processando roteiro...</p>}
+            </div>
+
+            <DialogFooter className="gap-2 sm:gap-0">
+              <Button variant="ghost" className="text-slate-400 hover:text-white" onClick={() => setIsPreviewOpen(false)}>Fechar</Button>
+              <Button 
+                className="bg-blue-600 hover:bg-blue-500 font-bold" 
+                disabled={selectedPauta?.status === "approved"}
+                onClick={() => { handleAprovar(selectedPauta?._id); setIsPreviewOpen(false); }}
+              >
+                Aprovar Agora
+              </Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
       </div>
     </div>
   );
@@ -227,7 +300,9 @@ function StatusBadge({ status }: { status: string }) {
     case "processing":
       return <Badge className="bg-blue-500/10 text-blue-500 border-blue-500/20 px-3 py-1 font-bold animate-pulse">Agente 2 em Ação</Badge>;
     case "processed":
-      return <Badge className="bg-emerald-500/10 text-emerald-500 border-emerald-500/20 px-3 py-1 font-bold">Pronto</Badge>;
+      return <Badge className="bg-emerald-500/10 text-emerald-400 border-emerald-500/20 px-3 py-1 font-bold">Pronto</Badge>;
+    case "approved":
+      return <Badge className="bg-blue-600/20 text-blue-400 border-blue-400/20 px-3 py-1 font-bold">✓ No Instagram</Badge>;
     case "failed":
       return <Badge className="bg-rose-500/10 text-rose-500 border-rose-500/20 px-3 py-1 font-bold">Falhou</Badge>;
     default:

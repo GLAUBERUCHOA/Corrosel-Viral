@@ -10,8 +10,8 @@ const rules = {
   contexto_squad: "Lembrete para o Squad: o público-alvo são Donas de Casa e Pequenos Empreendedores. Proibido usar jargões de Marketing Digital como 'Gurus' ou 'Leads'. O foco narrativo principal de todo post é a 'Economia do Cotidiano', 'Dores de Tempo' e 'Soluções Práticas'.",
   tom_de_voz_global: "Você tem um tom direto, irônico, afiado e focadíssimo em pessoas comuns. Seja extremamente humano. Fale a língua do povo de forma inteligente.",
   agente_1: {
-    pesquisador: "Você é o Agente 1: PESQUISADOR E DIRETOR DE PAUTA do Squad.",
-    prompt_noticias: "OBJETIVO: Criar uma PAUTA DIGITAL disruptiva baseada em Notícias Quentes.\n\nREGRAS:\n1. PESQUISE OBRIGATORIAMENTE uma notícia real, verificada e estritamente atual que de alguma forma possa afetar a vida real das pessoas ou gerar fofoca construtiva.\n2. Formule uma pauta usando o princípio da Curiosidade Extrema.\n3. Responda apenas com a PAUTA: Qual é a notícia + O ângulo provocativo para explorar no carrossel.",
+    pesquisador: "Você é o Agente 1: PESQUISADOR E DIRETOR DE PAUTA do Squad especializado em Mercado Imobiliário e IA.",
+    prompt_noticias: "OBJETIVO: Criar uma PAUTA DIGITAL disruptiva baseada em Notícias Quentes de HOJE sobre Mercado Imobiliário e Inteligência Artificial.\n\nREGRAS:\n1. BUSQUE as 3 notícias mais disruptivas de HOJE que unam Imóveis e IA.\n2. Foque em ângulos que gerem INDIGNAÇÃO (ex: robôs substituindo corretores), CURIOSIDADE (ex: IA prevendo preço de casas) ou DESEJO DE GANHO (ex: Como lucrar 30% mais usando IA no aluguel).\n3. Formule uma pauta usando o princípio da Curiosidade Extrema.\n4. Responda apenas com a PAUTA: Qual é a notícia + O ângulo provocativo para explorar no carrossel.",
   },
   agente_2: {
     roteirista: "Você é o Agente 2: ROTEIRISTA E COPYWRITER VIRAL do Squad.\nReceba a PAUTA a seguir.",
@@ -28,6 +28,28 @@ export const runAgent1Fetcher = action({
     const apiKey = process.env.GOOGLE_GENERATIVE_AI_API_KEY;
     if (!apiKey) throw new Error("Missing GOOGLE_GENERATIVE_AI_API_KEY");
     
+    const PRODUCTION_MODE = false; // Turn true to enable 00:00-05:00 schedule
+    
+    if (PRODUCTION_MODE) {
+      const now = new Date();
+      const hour = now.getUTCHours() - 3; // Brasilia Time
+      const localHour = hour < 0 ? hour + 24 : hour;
+      
+      if (localHour < 0 || localHour > 5) {
+        console.log("Fora do horário de produção (00-05). Pulando.");
+        return { success: false, message: "Outside production hours" };
+      }
+
+      // Check daily limit of 10 pautas
+      const startOfDay = new Date();
+      startOfDay.setHours(0, 0, 0, 0);
+      const todaysPautas = await ctx.runQuery(internal.agents.countTodaysPautas, { since: startOfDay.getTime() });
+      if (todaysPautas >= 10) {
+        console.log("Limite diário de 10 pautas atingido.");
+        return { success: false, message: "Daily limit reached" };
+      }
+    }
+
     const genAI = new GoogleGenAI({ apiKey });
     
     const pautaSetup = `${rules.contexto_squad}\n\n${rules.tom_de_voz_global}\n\n${rules.agente_1.pesquisador}\n\n${rules.agente_1.prompt_noticias}\n\nResponda apenas com a pauta.`;
@@ -44,7 +66,6 @@ export const runAgent1Fetcher = action({
 
     const pauta = result.text || result.response?.text || (result as any).candidates?.[0]?.content?.parts?.[0]?.text || '';
 
-
     await ctx.runMutation(internal.agents.savePauta, {
       pauta,
       type: "noticia"
@@ -53,6 +74,7 @@ export const runAgent1Fetcher = action({
     return { success: true, pauta };
   },
 });
+
 
 /**
  * Agente 2: Pega uma pauta pendente e gera o carrossel
@@ -158,6 +180,31 @@ export const clearAllPautas = mutation({
     }
   },
 });
+
+export const countTodaysPautas = query({
+  args: { since: v.number() },
+  handler: async (ctx, args) => {
+    const pautas = await ctx.db
+      .query("pautas")
+      .filter((q) => q.gt(q.field("createdAt"), args.since))
+      .collect();
+    return pautas.length;
+  },
+});
+
+export const approvePauta = mutation({
+  args: { id: v.id("pautas") },
+  handler: async (ctx, args) => {
+    await ctx.db.patch(args.id, {
+      status: "approved",
+      approvedAt: Date.now()
+    });
+    
+    // Mock Webhook to Vercel/Instagram
+    console.log(`Disparando webhook Instagram para pauta: ${args.id}`);
+  },
+});
+
 
 
 

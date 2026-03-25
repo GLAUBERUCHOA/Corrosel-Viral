@@ -23,7 +23,10 @@ export default function AdminLogin() {
             const data = await res.json();
 
             if (res.ok && data.success) {
-                window.location.href = '/admin'; // Force full reload to trigger middleware
+                // Get callbackUrl from query params
+                const params = new URLSearchParams(window.location.search);
+                const callbackUrl = params.get('callbackUrl') || '/admin';
+                window.location.href = callbackUrl; // Force full reload to trigger middleware
             } else {
                 setError(data.error || 'Erro ao fazer login.');
             }

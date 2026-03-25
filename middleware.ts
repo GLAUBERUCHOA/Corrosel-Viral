@@ -9,7 +9,9 @@ export function middleware(request: NextRequest) {
         const sessionCookie = request.cookies.get('session');
 
         if (!sessionCookie || !sessionCookie.value) {
-            return NextResponse.redirect(new URL('/admin/login', request.url));
+            const loginUrl = new URL('/admin/login', request.url);
+            loginUrl.searchParams.set('callbackUrl', path);
+            return NextResponse.redirect(loginUrl);
         }
     }
 

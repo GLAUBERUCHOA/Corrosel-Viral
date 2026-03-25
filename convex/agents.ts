@@ -2,22 +2,10 @@ import { action, mutation, query } from "./_generated/server";
 import { v } from "convex/values";
 import { internal } from "./_generated/api";
 import { GoogleGenAI } from "@google/genai";
+import { PROMPT_AGENTE_01, PROMPT_AGENTE_02 } from "./instructions";
 
 const MODEL_AGENT_1 = 'gemini-2.5-flash';
-const MODEL_AGENT_2 = 'gemini-2.5-flash'; // Flash is fast for batch processing
-
-const rules = {
-  contexto_squad: "Lembrete para o Squad: o público-alvo são Donas de Casa e Pequenos Empreendedores. Proibido usar jargões de Marketing Digital como 'Gurus' ou 'Leads'. O foco narrativo principal de todo post é a 'Economia do Cotidiano', 'Dores de Tempo' e 'Soluções Práticas'.",
-  tom_de_voz_global: "Você tem um tom direto, irônico, afiado e focadíssimo em pessoas comuns. Seja extremamente humano. Fale a língua do povo de forma inteligente.",
-  agente_1: {
-    pesquisador: "Você é o Agente 1: ESTRATEGISTA DE PESQUISA E BUSCA REAL. Sua missão é achar o fato real, os DADOS (números, porcentagens) e a fonte exata.",
-    prompt_noticias: "OBJETIVO: Criar uma PAUTA DIGITAL baseada em notícias de HOJE com DADOS REAIS.\n\nREGRAS:\n1. BUSQUE notícias sobre Varejo/Consumo (Shopee, iFood, etc.) que contenham DADOS (ex: 'vendas subiram 10%', 'taxa de 20%').\n2. OBRIGATÓRIO: Identifique a URL da notícia. PROIBIDO INVENTAR LINKS. Se não achar a URL real, escreva [FONTE NÃO LOCALIZADA].\n3. FORMATO DE SAÍDA:\n[TEMA DA PAUTA]: (O fato com dados numéricos)\n[ÂNGULO PROVOCATIVO]: (O 'Código Negro' de indignação ou ganho)\n[FONTE]: (URL real ou aviso)",
-  },
-  agente_2: {
-    roteirista: "Você é o Agente 2: ESTRATEGISTA DE VENDAS E DECODIFICADOR VIRAL. Use analogias da rotina (ex: comparar ROAS com o troco do pão).",
-    regras_escrita: "SUA MISSÃO: Criar um roteiro de 5 a 10 SLIDES (use 7 ou mais se a pauta for rica). Use DADOS REAIS da pauta para convencer.\n\nLEI ABSOLUTA: TEXTO PURO. SEM JSON. SEM MARKDOWN.\nREGRA DO SLIDE 01: APENAS [TÍTULO] EM CAIXA ALTA. PROIBIDO [SUBTÍTULO].\nLEGENDA ÚNICA: Apenas UMA legenda no final de tudo, formatada para Instagram (emojis, hashtags e CTA forte).\n\nFORMATO DE SAÍDA (Obrigatoriedade Absoluta):\nSLIDE 01:\n[TÍTULO]: (Gancho em CAIXA ALTA)\n\nSLIDE 02 até SLIDE 10:\n[TÍTULO]: ...\n[SUBTÍTULO]: (Analogia de rotina + Dados reais)\n\nLEGENDA:\n(Texto único para o post)\n\n[FONTE]: (Repita a URL da fonte)"
-  }
-};
+const MODEL_AGENT_2 = 'gemini-2.5-flash';
 
 /**
  * Agente 1: Busca notícias e salva como pauta pendente
@@ -28,43 +16,37 @@ export const runAgent1Fetcher = action({
     const apiKey = process.env.GOOGLE_GENERATIVE_AI_API_KEY;
     if (!apiKey) throw new Error("Missing GOOGLE_GENERATIVE_AI_API_KEY");
     
-    const PRODUCTION_MODE = false; // Turn true to enable 00:00-05:00 schedule
+    const PRODUCTION_MODE = false;
     
     if (PRODUCTION_MODE) {
       const now = new Date();
-      const hour = now.getUTCHours() - 3; // Brasilia Time
+      const hour = now.getUTCHours() - 3;
       const localHour = hour < 0 ? hour + 24 : hour;
-      
-      if (localHour < 0 || localHour > 5) {
-        console.log("Fora do horário de produção (00-05). Pulando.");
-        return { success: false, message: "Outside production hours" };
-      }
+      if (localHour < 0 || localHour > 5) return { success: false, message: "Outside production hours" };
 
-      // Check daily limit of 10 pautas
       const startOfDay = new Date();
       startOfDay.setHours(0, 0, 0, 0);
       const todaysPautas = await ctx.runQuery(internal.agents.countTodaysPautas, { since: startOfDay.getTime() });
-      if (todaysPautas >= 10) {
-        console.log("Limite diário de 10 pautas atingido.");
-        return { success: false, message: "Daily limit reached" };
-      }
+      if (todaysPautas >= 10) return { success: false, message: "Daily limit reached" };
     }
 
     const genAI = new GoogleGenAI({ apiKey });
     
-    const pautaSetup = `${rules.contexto_squad}\n\n${rules.tom_de_voz_global}\n\n${rules.agente_1.pesquisador}\n\n${rules.agente_1.prompt_noticias}\n\nResponda apenas com a pauta.`;
-    
-    // Using the same pattern as in geradorCarrossel.ts
-    const result = await (genAI as any).models.generateContent({
+    // Injeção de Instrução de Sistema (Lei do Arquiteto)
+    const model = genAI.getGenerativeModel({ 
       model: MODEL_AGENT_1,
-      contents: pautaSetup,
-      config: { 
+      systemInstruction: PROMPT_AGENTE_01 
+    });
+    
+    const result = await (model as any).generateContent({
+      contents: [{ role: 'user', parts: [{ text: "Gere a pauta de HOJE sobre Shopee ou Varejo com dados reais." }] }],
+      generationConfig: { 
         temperature: 0.7,
-        tools: [{ googleSearch: {} }] 
-      }
+      },
+      tools: [{ googleSearch: {} }] 
     });
 
-    const pauta = result.text || result.response?.text || (result as any).candidates?.[0]?.content?.parts?.[0]?.text || '';
+    const pauta = result.response?.text() || (result as any).candidates?.[0]?.content?.parts?.[0]?.text || '';
 
     await ctx.runMutation(internal.agents.savePauta, {
       pauta,
@@ -75,14 +57,12 @@ export const runAgent1Fetcher = action({
   },
 });
 
-
 /**
  * Agente 2: Pega uma pauta pendente e gera o carrossel
  */
 export const runAgent2Processor = action({
   args: {},
   handler: async (ctx) => {
-    // 1. Get next pending pauta
     const pendingPauta = await ctx.runQuery(internal.agents.getPendingPauta);
     if (!pendingPauta) return { success: false, message: "No pending pautas" };
 
@@ -91,19 +71,21 @@ export const runAgent2Processor = action({
     
     const genAI = new GoogleGenAI({ apiKey });
     
-    const roteiroSetup = `${rules.contexto_squad}\n\n${rules.tom_de_voz_global}\n\n${rules.agente_2.roteirista}\n\n[PAUTA]:\n${pendingPauta.pauta}\n\n${rules.agente_2.regras_escrita}`;
+    // Injeção de Instrução de Sistema (Lei do Arquiteto)
+    const model = genAI.getGenerativeModel({ 
+      model: MODEL_AGENT_2,
+      systemInstruction: PROMPT_AGENTE_02 
+    });
 
     try {
-      const result = await (genAI as any).models.generateContent({
-        model: MODEL_AGENT_2,
-        contents: roteiroSetup,
-        config: { temperature: 0.7 }
+      const result = await (model as any).generateContent({
+        contents: [{ role: 'user', parts: [{ text: `PAUTA:\n${pendingPauta.pauta}` }] }],
+        generationConfig: { temperature: 0.7 }
       });
 
-      const carrossel = result.text || result.response?.text || (result as any).candidates?.[0]?.content?.parts?.[0]?.text || '';
+      const carrossel = result.response?.text() || (result as any).candidates?.[0]?.content?.parts?.[0]?.text || '';
 
-
-      const status = carrossel.includes("[TEMA DA PAUTA]") || carrossel.includes("SLIDE 01:") ? "processed" : "failed";
+      const status = carrossel.includes("SLIDE 01:") ? "processed" : "failed";
       
       await ctx.runMutation(internal.agents.updatePautaProcessed, {
         id: pendingPauta._id,
@@ -123,7 +105,7 @@ export const runAgent2Processor = action({
   },
 });
 
-// Mutations for storage
+// Mutations (No changes needed below)
 export const savePauta = mutation({
   args: { pauta: v.string(), type: v.string() },
   handler: async (ctx, args) => {
@@ -201,12 +183,6 @@ export const approvePauta = mutation({
       status: "approved",
       approvedAt: Date.now()
     });
-    
-    // Mock Webhook to Vercel/Instagram
-    console.log(`Disparando webhook Instagram para pauta: ${args.id}`);
+    console.log(`Webhook Instagram: ${args.id}`);
   },
 });
-
-
-
-

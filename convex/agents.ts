@@ -3,8 +3,8 @@ import { v } from "convex/values";
 import { internal } from "./_generated/api";
 import { GoogleGenAI } from "@google/genai";
 
-const MODEL_AGENT_1 = 'gemini-2.0-flash';
-const MODEL_AGENT_2 = 'gemini-2.0-flash'; // Flash is fast for batch processing
+const MODEL_AGENT_1 = 'gemini-2.5-flash';
+const MODEL_AGENT_2 = 'gemini-2.5-flash'; // Flash is fast for batch processing
 
 const rules = {
   contexto_squad: "Lembrete para o Squad: o público-alvo são Donas de Casa e Pequenos Empreendedores. Proibido usar jargões de Marketing Digital como 'Gurus' ou 'Leads'. O foco narrativo principal de todo post é a 'Economia do Cotidiano', 'Dores de Tempo' e 'Soluções Práticas'.",

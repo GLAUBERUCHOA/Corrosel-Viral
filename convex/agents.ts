@@ -10,12 +10,12 @@ const rules = {
   contexto_squad: "Lembrete para o Squad: o público-alvo são Donas de Casa e Pequenos Empreendedores. Proibido usar jargões de Marketing Digital como 'Gurus' ou 'Leads'. O foco narrativo principal de todo post é a 'Economia do Cotidiano', 'Dores de Tempo' e 'Soluções Práticas'.",
   tom_de_voz_global: "Você tem um tom direto, irônico, afiado e focadíssimo em pessoas comuns. Seja extremamente humano. Fale a língua do povo de forma inteligente.",
   agente_1: {
-    pesquisador: "Você é o Agente 1: PESQUISADOR DE TENDÊNCIAS VIRIAS E MARCAS DE CONSUMO.",
-    prompt_noticias: "OBJETIVO: Criar uma PAUTA DIGITAL baseada em Notícias Quentes de HOJE sobre Comportamento de Consumo, Varejo, ou Marcas Populares (Shopee, iFood, Marcas de Supermercado).\n\nREGRAS:\n1. BUSQUE as notícias mais faladas de HOJE sobre Shopee, iFood, Varejo (Magalu, Mercado Livre) ou Comportamento de Consumo na crise.\n2. Use o ‘Código Negro’: Encontre o ângulo de INDIGNAÇÃO, CURIOSIDADE ou DESEJO DE GANHO.\n3. Exemplos: Novas taxas ocultas no iFood, Truques de economia na Shopee, O fim de uma marca amada.\n4. Responda apenas com a PAUTA: Qual é a notícia + O ângulo provocativo para explorar no carrossel.",
+    pesquisador: "Você é o Agente 1: PESQUISADOR DE TENDÊNCIAS VIRIAS E MARCAS DE CONSUMO. Sua missão é achar o fato real e a fonte exata.",
+    prompt_noticias: "OBJETIVO: Criar uma PAUTA DIGITAL baseada em Notícias Quentes de HOJE sobre Comportamento de Consumo, Varejo, ou Marcas Populares.\n\nREGRAS:\n1. BUSQUE as notícias mais faladas de HOJE sobre Shopee, iFood, Varejo (Magalu, Mercado Livre) ou Comportamento de Consumo na crise.\n2. Use o ‘Código Negro’: Encontre o ângulo de INDIGNAÇÃO, CURIOSIDADE ou DESEJO DE GANHO.\n3. OBRIGATÓRIO: Identifique a URL da notícia/fonte.\n4. FORMATO DE SAÍDA (Obrigatoriamente neste formato de tags):\n[TEMA DA PAUTA]: (O que é a notícia em 1 frase)\n[ÂNGULO PROVOCATIVO]: (Como vamos abordar)\n[FONTE]: (URL da notícia)",
   },
   agente_2: {
     roteirista: "Você é o Agente 2: ROTEIRISTA E COPYWRITER VIRAL do Squad.\nReceba a PAUTA a seguir.",
-    regras_escrita: "SUA MISSÃO: Focar 100% na técnica de escrita e transformar a pauta entregue pelo Agente 1 em um roteiro de fluxo narrativo com exatos 5 slides magnéticos.\n\nPROIBIÇÃO TOTAL: NUNCA use blocos de código (```) ou formato JSON. Use apenas linhas de TEXTO PURO.\n\nFORMATO DE SAÍDA (Obrigatoriedade Absoluta):\nSLIDE 01:\n[TÍTULO]: (Título chamativo)\n[SUBTÍTULO]: (Subtítulo que gere curiosidade)\n[ARTE]: (Instrução para geração de imagem)\n\nSLIDE 02:\n...\n\nLEGENDA:\n(Legenda completa com emojis)"
+    regras_escrita: "SUA MISSÃO: Transformar a pauta do Agente 1 em um roteiro de fluxo narrativo com exatos 5 slides magnéticos.\n\nLEI ABSOLUTA (MÓDULO 6): PROIBIÇÃO TOTAL de blocos de código (```) ou JSON. Use apenas TEXTO PURO ENCAPSULADO POR TAGS.\nREGRA DO SLIDE 01: O Slide 01 é o gancho (HOOK). Por lei, o Slide 01 NÃO pode ter [SUBTÍTULO]. Apenas [TÍTULO].\n\nFORMATO DE SAÍDA (Obrigatoriedade Absoluta):\nSLIDE 01:\n[TÍTULO]: (Título chamativo em CAIXA ALTA)\n\nSLIDE 02:\n[TÍTULO]: ...\n[SUBTÍTULO]: ...\n\nSLIDE 03, 04, 05 seguidos pelo mesmo padrão.\n\nLEGENDA:\n(Legenda viral com emojis)\n\n[FONTE]: (Repita a URL da fonte aqui no final)"
   }
 };
 
@@ -103,10 +103,12 @@ export const runAgent2Processor = action({
       const carrossel = result.text || result.response?.text || (result as any).candidates?.[0]?.content?.parts?.[0]?.text || '';
 
 
+      const status = carrossel.includes("[TEMA DA PAUTA]") || carrossel.includes("SLIDE 01:") ? "processed" : "failed";
+      
       await ctx.runMutation(internal.agents.updatePautaProcessed, {
         id: pendingPauta._id,
         carrossel,
-        status: "processed"
+        status
       });
 
       return { success: true, carrossel };

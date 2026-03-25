@@ -84,7 +84,8 @@ export default function CuradoriaPage() {
 
   const renderRoteiro = (carrosselRaw: string) => {
     try {
-      const sections = carrosselRaw.split(/(SLIDE \d+:|LEGENDA:)/i);
+      // Divide por SLIDE XX: ou LEGENDA: ou [FONTE]:
+      const sections = carrosselRaw.split(/(SLIDE \d+:|LEGENDA:|\[FONTE\]:)/i);
       const slides: any[] = [];
       
       for (let i = 1; i < sections.length; i += 2) {
@@ -95,11 +96,12 @@ export default function CuradoriaPage() {
           const slideNum = header.match(/\d+/)?.[0] || slides.length + 1;
           const title = content.match(/\[TÍTULO\]:\s*(.*)/i)?.[1]?.trim() || "";
           const subtitle = content.match(/\[SUBTÍTULO\]:\s*(.*)/i)?.[1]?.trim() || "";
-          const arte = content.match(/\[ARTE\]:\s*(.*)/i)?.[1]?.trim() || "";
           
-          slides.push({ slide: slideNum, title, subtitle, imagePrompt: arte });
+          slides.push({ slide: slideNum, title, subtitle });
         } else if (header.includes("LEGENDA")) {
           slides.push({ slide: "legenda", legenda: content.trim() });
+        } else if (header.includes("FONTE")) {
+          slides.push({ slide: "fonte", fonte: content.trim() });
         }
       }
 
@@ -111,10 +113,12 @@ export default function CuradoriaPage() {
         <div className="space-y-4 max-h-[60vh] overflow-y-auto pr-4 scrollbar-thin scrollbar-thumb-slate-800">
           {slides.map((s: any, idx: number) => (
             <div key={idx} className="p-4 rounded-xl bg-slate-950 border border-slate-800 font-mono text-xs">
-              <div className="text-blue-400 font-bold mb-2">{s.slide === "legenda" ? "LEGENDA:" : `SLIDE ${s.slide}:`}</div>
+              <div className="text-blue-400 font-bold mb-2">
+                {s.slide === "legenda" ? "LEGENDA:" : s.slide === "fonte" ? "FONTE:" : `SLIDE ${s.slide}:`}
+              </div>
               {s.title && <div>[TÍTULO]: {s.title}</div>}
-              {s.subtitle && <div>[SUBTÍTULO]: {s.subtitle}</div>}
-              {s.imagePrompt && <div className="text-slate-500 mt-1">[ARTE]: {s.imagePrompt}</div>}
+              {s.subtitle && s.slide !== 1 && <div>[SUBTÍTULO]: {s.subtitle}</div>}
+              {s.fonte && <div className="text-slate-500 underline break-all">{s.fonte}</div>}
               {s.legenda && <div>{s.legenda}</div>}
             </div>
           ))}
@@ -256,12 +260,12 @@ export default function CuradoriaPage() {
                     </span>
                   </div>
                   <CardTitle className="line-clamp-2 text-xl font-black leading-tight group-hover:text-blue-400 transition-colors">
-                    {pauta.pauta.split('\n')[0].replace('Qual é a notícia + ', '') || "Sem Título"}
+                    {pauta.pauta.match(/\[TEMA DA PAUTA\]:\s*(.*)/i)?.[1] || pauta.pauta.split('\n')[0].replace('Qual é a notícia + ', '') || "Sem Título"}
                   </CardTitle>
                 </CardHeader>
                 <CardContent className="flex-grow">
                   <CardDescription className="text-slate-400 leading-relaxed font-medium line-clamp-3">
-                    {pauta.pauta.split('\n')[1] || "Aguardando geração do ângulo provocativo..."}
+                    {pauta.pauta.match(/\[ÂNGULO PROVOCATIVO\]:\s*(.*)/i)?.[1] || pauta.pauta.split('\n')[1] || "Aguardando geração do ângulo provocativo..."}
                   </CardDescription>
                 </CardContent>
                 <CardFooter className="grid grid-cols-2 gap-3 border-t border-slate-800/50 p-6 pt-5 bg-slate-900/30">

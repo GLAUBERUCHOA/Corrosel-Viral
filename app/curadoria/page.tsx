@@ -71,31 +71,59 @@ export default function CuradoriaPage() {
     }
   }
 
-  const renderRoteiro = (carrosselJson: string) => {
+  const renderRoteiro = (carrosselRaw: string) => {
     try {
-      const slides = JSON.parse(carrosselJson);
+      // Divide por SLIDE XX: ou LEGENDA:
+      const sections = carrosselRaw.split(/(SLIDE \d+:|LEGENDA:)/i);
+      const slides: any[] = [];
+      
+      let currentSection: any = null;
+
+      for (let i = 1; i < sections.length; i += 2) {
+        const header = sections[i].toUpperCase();
+        const content = sections[i+1];
+        
+        if (header.includes("SLIDE")) {
+          const slideNum = header.match(/\d+/)?.[0] || slides.length + 1;
+          const title = content.match(/\[TÍTULO\]:\s*(.*)/i)?.[1]?.trim() || "";
+          const subtitle = content.match(/\[SUBTÍTULO\]:\s*(.*)/i)?.[1]?.trim() || "";
+          const arte = content.match(/\[ARTE\]:\s*(.*)/i)?.[1]?.trim() || "";
+          
+          slides.push({ slide: slideNum, title, subtitle, imagePrompt: arte });
+        } else if (header.includes("LEGENDA")) {
+          slides.push({ slide: "legenda", legenda: content.trim() });
+        }
+      }
+
+      if (slides.length === 0) {
+        // Fallback for plain text if no tags found
+        return <div className="whitespace-pre-wrap font-medium text-slate-300 text-sm leading-relaxed p-4 bg-slate-950 rounded-xl border border-slate-800">{carrosselRaw}</div>;
+      }
+
       return (
         <div className="space-y-6 max-h-[60vh] overflow-y-auto pr-4 scrollbar-thin scrollbar-thumb-slate-800">
           {slides.map((s: any, idx: number) => (
             <div key={idx} className="p-4 rounded-xl bg-slate-950 border border-slate-800 space-y-2">
               <div className="flex items-center justify-between">
-                <Badge variant="outline" className="text-blue-400 border-blue-400/20">Slide {s.slide}</Badge>
+                <Badge variant="outline" className="text-blue-400 border-blue-400/20">
+                  {s.slide === "legenda" ? "LEGENDA" : `Slide ${s.slide}`}
+                </Badge>
                 {s.imagePrompt && <span className="text-[10px] text-slate-500 font-mono">ARTE OK</span>}
               </div>
               {s.title && <h4 className="text-lg font-black text-white">{s.title}</h4>}
               {s.subtitle && <p className="text-sm text-slate-400 font-medium">{s.subtitle}</p>}
+              {s.imagePrompt && (
+                <p className="text-[10px] text-slate-600 italic bg-blue-500/5 p-2 rounded border border-blue-500/10"> Art Direction: {s.imagePrompt}</p>
+              )}
               {s.legenda && (
-                <div className="mt-4 pt-4 border-t border-slate-900">
-                   <p className="text-xs text-slate-500 uppercase font-bold mb-2">Legenda Recomendada</p>
-                   <p className="text-sm text-slate-300 italic">"{s.legenda}"</p>
-                </div>
+                <div className="mt-2 text-sm text-slate-300 italic border-t border-slate-900 pt-4">"{s.legenda}"</div>
               )}
             </div>
           ))}
         </div>
       );
     } catch (e) {
-      return <div className="p-4 bg-rose-500/10 text-rose-500 rounded-lg border border-rose-500/20 font-mono text-xs">Erro ao processar JSON: {carrosselJson}</div>;
+      return <div className="whitespace-pre-wrap text-slate-300 p-4 font-mono text-xs">{carrosselRaw}</div>;
     }
   };
 

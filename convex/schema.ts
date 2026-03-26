@@ -11,5 +11,11 @@ export default defineSchema({
     createdAt: v.number(),
     processedAt: v.optional(v.number()),
     approvedAt: v.optional(v.number()),
-  }).index("by_status", ["status"]),
+  })
+  .index("by_status", ["status"])
+  .index("by_created", ["createdAt"]),
+  settings: defineTable({
+    key: v.string(), // "SQUAD_CONFIG"
+    value: v.any(), 
+  }).index("by_key", ["key"]),
 });

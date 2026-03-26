@@ -4,90 +4,154 @@ import { internal } from "./_generated/api";
 import { GoogleGenAI } from "@google/genai";
 import { PROMPT_AGENTE_01, PROMPT_AGENTE_02 } from "./instructions";
 
+// gemini-2.5-flash: O ápice da inteligência e velocidade em Março/2026
 const MODEL_AGENT_1 = 'gemini-2.5-flash';
 const MODEL_AGENT_2 = 'gemini-2.5-flash';
 
+// Bypass para erro de tipagem circular do Convex em build local
+const internalAgents = (internal as any).agents;
+
+// Pilares de Curadoria (A Roleta)
+const CURATION_PILLARS = [
+  '🔥 Notícias Quentes (Hot News Pop/Business das últimas 48h)',
+  '📱 Cases de Influenciadores e Creators (Bastidores de sucesso ou cancelamento atual)',
+  '♟️ Movimentos de Gigantes (Estratégia, brigas de mercado, fusões, falências)',
+  '🧠 Comportamento e Sociedade (Geração Z, cansaço digital, lógica de consumo)',
+  '🛒 Economia Invisível ATUAL (Novas taxas de apps, inflação disfarçada de HOJE, mudanças de preços recentes)'
+];
+
 /**
- * Agente 1: Busca notícias e salva como pauta pendente
+ * Agente 1: Busca notícias disruptivas conforme Módulo 1 (Código Negro)
  */
 export const runAgent1Fetcher = action({
-  args: {},
-  handler: async (ctx) => {
+  args: { automatic: v.optional(v.boolean()) },
+  handler: async (ctx, args): Promise<{ success: boolean; pauta?: string; message?: string; error?: string }> => {
     const apiKey = process.env.GOOGLE_GENERATIVE_AI_API_KEY;
     if (!apiKey) throw new Error("Missing GOOGLE_GENERATIVE_AI_API_KEY");
     
-    const PRODUCTION_MODE = false;
-    
-    if (PRODUCTION_MODE) {
-      const now = new Date();
-      const hour = now.getUTCHours() - 3;
-      const localHour = hour < 0 ? hour + 24 : hour;
-      if (localHour < 0 || localHour > 5) return { success: false, message: "Outside production hours" };
+    // 1. Início do dia para contagem e janela
+    const now = new Date();
+    const hourUTC = now.getUTCHours();
+    const baseDate = new Date(now);
+    baseDate.setUTCHours(3, 0, 0, 0);
+    const startOfTodayBRT = now.getUTCHours() < 3 ? baseDate.getTime() - 86400000 : baseDate.getTime();
 
-      const startOfDay = new Date();
-      startOfDay.setHours(0, 0, 0, 0);
-      const todaysPautas = await ctx.runQuery(internal.agents.countTodaysPautas, { since: startOfDay.getTime() });
-      if (todaysPautas >= 10) return { success: false, message: "Daily limit reached" };
+    // Verificação de Limite e Horário se for Automático
+    if (args.automatic) {
+      // Janela da Madrugada (BRT 03:00 - 07:00) => UTC 06:00 - 10:00
+      const isDawn = hourUTC >= 6 && hourUTC < 10;
+      if (!isDawn) {
+        return { success: true, message: "Fora da janela de automação (03h-07h BRT). Ignorado." };
+      }
+
+      const todayCount = await ctx.runQuery(internalAgents.countTodaysPautas, { since: startOfTodayBRT });
+      if (todayCount >= 10) {
+        return { success: true, message: "Limite diário de 10 cards atingido. Automação parada hoje." };
+      }
     }
+
+    // 2. Busca de Configurações Dinâmicas (Admin)
+    const settings: any = await ctx.runQuery(internalAgents.getSquadConfig);
+    const config = settings?.value || {};
+    
+    const promptDiretor = config.agente_1?.prompt_diretor || PROMPT_AGENTE_01;
+    const tomGlobal = config.tom_de_voz_global || "";
+    const contextoSquad = config.contexto_squad || "";
+
+    // 3. Seleção do Pilar do Dia (A Roleta)
+    const todayFullCount = await ctx.runQuery(internalAgents.countTodaysPautas, { since: startOfTodayBRT });
+    const pillarIndex = todayFullCount % CURATION_PILLARS.length;
+    const chosenPillar = CURATION_PILLARS[pillarIndex];
+
+    // 4. Memória Anti-Amnésia (Últimas 5 pautas)
+    const recentPautas: any[] = await ctx.runQuery(internalAgents.getRecentPautasTitles);
+    const recentTitles = recentPautas.map(p => {
+      // Tentar extrair título curto se for pauta bruta (Agente 1 usa [TEMA DA PAUTA])
+      const match = p.pauta.match(/\[(?:TEMA DA PAUTA|TÍTULO)\]:\s*(.*)/i);
+      return match ? match[1] : p.pauta.substring(0, 50) + "...";
+    }).join(", ");
+
+    // 5. Construção dos Comandos Injetáveis
+    const systemInstruction = `${promptDiretor}\n\n` +
+      `[CONTEXTO ATUALIZADO]: ${contextoSquad}\n` +
+      `[TOM DE VOZ]: ${tomGlobal}\n\n` +
+      `ORDEM DO SISTEMA: O seu pilar obrigatório para esta busca é: [${chosenPillar}]. Não fuja deste tema.\n\n` +
+      `ATENÇÃO: É ESTRITAMENTE PROIBIDO gerar pautas parecidas com estes temas recentes: [${recentTitles}].`;
 
     const genAI = new GoogleGenAI({ apiKey });
     
-    // Injeção de Instrução de Sistema (Lei do Arquiteto)
-    const model = genAI.getGenerativeModel({ 
-      model: MODEL_AGENT_1,
-      systemInstruction: PROMPT_AGENTE_01 
-    });
-    
-    const result = await (model as any).generateContent({
-      contents: [{ role: 'user', parts: [{ text: "Gere a pauta de HOJE sobre Shopee ou Varejo com dados reais." }] }],
-      generationConfig: { 
-        temperature: 0.7,
-      },
-      tools: [{ googleSearch: {} }] 
-    });
+    try {
+      const result: any = await (genAI as any).models.generateContent({
+        model: MODEL_AGENT_1,
+        contents: [{ 
+          role: 'user', 
+          parts: [{ text: `Execute sua missão viral agora seguindo o pilar: ${chosenPillar}. Busque algo de HOJE.` }] 
+        }],
+        config: {
+          systemInstruction: { role: 'system', parts: [{ text: systemInstruction }] },
+          temperature: 0.8,
+          tools: [{ googleSearch: {} }]
+        }
+      });
 
-    const pauta = result.response?.text() || (result as any).candidates?.[0]?.content?.parts?.[0]?.text || '';
+      const pauta: string = result.response?.text() || result.candidates?.[0]?.content?.parts?.[0]?.text || '';
+      if (!pauta) throw new Error("Falha ao gerar pauta viral.");
 
-    await ctx.runMutation(internal.agents.savePauta, {
-      pauta,
-      type: "noticia"
-    });
+      await ctx.runMutation(internalAgents.savePauta, {
+        pauta,
+        type: "noticia"
+      });
 
-    return { success: true, pauta };
+      return { success: true, pauta };
+    } catch (err: any) {
+      console.error("Erro Agente 1:", err);
+      return { success: false, error: err.message };
+    }
   },
 });
 
 /**
- * Agente 2: Pega uma pauta pendente e gera o carrossel
+ * Agente 2: Transforma a pauta em carrossel estratégico
  */
 export const runAgent2Processor = action({
   args: {},
-  handler: async (ctx) => {
-    const pendingPauta = await ctx.runQuery(internal.agents.getPendingPauta);
-    if (!pendingPauta) return { success: false, message: "No pending pautas" };
+  handler: async (ctx): Promise<{ success: boolean; carrossel?: string; message?: string; error?: string }> => {
+    const pendingPauta: any = await ctx.runQuery(internalAgents.getPendingPauta);
+    if (!pendingPauta) return { success: false, message: "Sem pautas pendentes." };
 
     const apiKey = process.env.GOOGLE_GENERATIVE_AI_API_KEY;
     if (!apiKey) throw new Error("Missing GOOGLE_GENERATIVE_AI_API_KEY");
     
+    // Configurações Dinâmicas (Admin)
+    const settings: any = await ctx.runQuery(internalAgents.getSquadConfig);
+    const config = settings?.value || {};
+    const regrasEscrita = config.agente_2?.regras_escrita || PROMPT_AGENTE_02;
+    const tomGlobal = config.tom_de_voz_global || "";
+
     const genAI = new GoogleGenAI({ apiKey });
-    
-    // Injeção de Instrução de Sistema (Lei do Arquiteto)
-    const model = genAI.getGenerativeModel({ 
-      model: MODEL_AGENT_2,
-      systemInstruction: PROMPT_AGENTE_02 
-    });
 
     try {
-      const result = await (model as any).generateContent({
-        contents: [{ role: 'user', parts: [{ text: `PAUTA:\n${pendingPauta.pauta}` }] }],
-        generationConfig: { temperature: 0.7 }
+      const result: any = await (genAI as any).models.generateContent({
+        model: MODEL_AGENT_2,
+        contents: [{ 
+          role: 'user', 
+          parts: [{ text: `PAUTA PARA DECODIFICAÇÃO VIRAL:\n${pendingPauta.pauta}` }] 
+        }],
+        config: {
+          systemInstruction: { 
+            role: 'system', 
+            parts: [{ text: `${regrasEscrita}\n\nTOM DE VOZ SEGUIDO: ${tomGlobal}` }] 
+          },
+          temperature: 0.7
+        }
       });
 
-      const carrossel = result.response?.text() || (result as any).candidates?.[0]?.content?.parts?.[0]?.text || '';
-
-      const status = carrossel.includes("SLIDE 01:") ? "processed" : "failed";
+      const carrossel: string = result.response?.text() || result.candidates?.[0]?.content?.parts?.[0]?.text || '';
       
-      await ctx.runMutation(internal.agents.updatePautaProcessed, {
+      const hasSlides: boolean = /SLIDE\s*(0?1):/i.test(carrossel);
+      const status: string = hasSlides ? "processed" : "failed";
+      
+      await ctx.runMutation(internalAgents.updatePautaProcessed, {
         id: pendingPauta._id,
         carrossel,
         status
@@ -95,7 +159,7 @@ export const runAgent2Processor = action({
 
       return { success: true, carrossel };
     } catch (err: any) {
-      await ctx.runMutation(internal.agents.updatePautaProcessed, {
+      await ctx.runMutation(internalAgents.updatePautaProcessed, {
         id: pendingPauta._id,
         status: "failed",
         error: err.message
@@ -105,7 +169,7 @@ export const runAgent2Processor = action({
   },
 });
 
-// Mutations (No changes needed below)
+// Mutations (Expostas internamente via internalAgents)
 export const savePauta = mutation({
   args: { pauta: v.string(), type: v.string() },
   handler: async (ctx, args) => {
@@ -141,6 +205,7 @@ export const getPendingPauta = query({
     return await ctx.db
       .query("pautas")
       .withIndex("by_status", (q) => q.eq("status", "pending"))
+      .order("desc") 
       .first();
   },
 });
@@ -170,7 +235,7 @@ export const countTodaysPautas = query({
   handler: async (ctx, args) => {
     const pautas = await ctx.db
       .query("pautas")
-      .filter((q) => q.gt(q.field("createdAt"), args.since))
+      .withIndex("by_created", (q) => q.gt("createdAt", args.since))
       .collect();
     return pautas.length;
   },
@@ -183,6 +248,43 @@ export const approvePauta = mutation({
       status: "approved",
       approvedAt: Date.now()
     });
-    console.log(`Webhook Instagram: ${args.id}`);
+  },
+});
+
+// -- Configurações e Memória --
+
+export const getSquadConfig = query({
+  args: {},
+  handler: async (ctx) => {
+    return await ctx.db
+      .query("settings")
+      .withIndex("by_key", (q) => q.eq("key", "SQUAD_CONFIG"))
+      .unique();
+  },
+});
+
+export const saveSquadConfig = mutation({
+  args: { value: v.any() },
+  handler: async (ctx, args) => {
+    const existing = await ctx.db
+      .query("settings")
+      .withIndex("by_key", (q) => q.eq("key", "SQUAD_CONFIG"))
+      .unique();
+    if (existing) {
+      await ctx.db.patch(existing._id, { value: args.value });
+    } else {
+      await ctx.db.insert("settings", { key: "SQUAD_CONFIG", value: args.value });
+    }
+  },
+});
+
+export const getRecentPautasTitles = query({
+  args: {},
+  handler: async (ctx) => {
+    return await ctx.db
+      .query("pautas")
+      .withIndex("by_created")
+      .order("desc")
+      .take(5);
   },
 });

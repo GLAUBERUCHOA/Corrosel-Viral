@@ -3,6 +3,10 @@
 import { prisma } from '@/lib/prisma';
 import fs from 'fs';
 import path from 'path';
+import { ConvexHttpClient } from "convex/browser";
+import { api } from "@/convex/_generated/api";
+
+const convex = new ConvexHttpClient(process.env.NEXT_PUBLIC_CONVEX_URL!);
 
 export async function salvarConfiguracoes(formData: FormData) {
   try {
@@ -35,7 +39,7 @@ export async function salvarConfiguracoes(formData: FormData) {
       }
     };
 
-    // Save to Database (Serverless friendly)
+    // Save to Database (Prisma / MySQL)
     await prisma.promptSetting.upsert({
       where: { toneKey: 'SQUAD_CONFIG' },
       update: { instruction: JSON.stringify(novasRegras) },
@@ -45,8 +49,15 @@ export async function salvarConfiguracoes(formData: FormData) {
         instruction: JSON.stringify(novasRegras) 
       }
     });
+    
+    // 3. Save to Convex (System Backend)
+    try {
+      await convex.mutation(api.agents.saveSquadConfig, { value: novasRegras });
+    } catch (e) {
+      console.error('Erro ao sincronizar com Convex:', e);
+    }
 
-    return { success: true, message: 'Configurações salvas com sucesso no banco de dados!' };
+    return { success: true, message: 'Configurações salvas e sincronizadas com sucesso!' };
   } catch (error) {
     console.error('Erro ao salvar squad rules:', error);
     return { success: false, message: 'Falha ao salvar o arquivo no banco de dados.' };

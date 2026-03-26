@@ -44,7 +44,7 @@ export default function CuradoriaPage() {
   async function handleDispararAgente1() {
     setIsRunningAgent1(true);
     try {
-      await runAgent1();
+      await runAgent1({ automatic: false });
     } catch (err) {
       console.error("Falha ao disparar Agente 1", err);
     } finally {
@@ -253,14 +253,17 @@ export default function CuradoriaPage() {
             {pautas.map((pauta) => (
               <Card key={pauta._id} className="group flex flex-col border-slate-800 bg-slate-900/50 backdrop-blur-sm text-slate-100 shadow-xl transition-all duration-300 hover:border-blue-500/40 hover:bg-slate-900 hover:shadow-2xl hover:shadow-blue-900/10">
                 <CardHeader className="pb-3">
-                  <div className="flex items-center justify-between mb-4">
-                    <StatusBadge status={pauta.status} />
-                    <span className="text-[11px] font-bold uppercase tracking-widest text-slate-500">
+                  <div className="flex items-center justify-between mb-4 gap-2">
+                    <div className="flex items-center gap-2">
+                      <StatusBadge status={pauta.status} />
+                      <PillarBadge pauta={pauta.pauta} />
+                    </div>
+                    <span className="text-[11px] font-bold uppercase tracking-widest text-slate-500 shrink-0">
                       {new Date(pauta.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
                     </span>
                   </div>
                   <CardTitle className="line-clamp-2 text-xl font-black leading-tight group-hover:text-blue-400 transition-colors">
-                    {pauta.pauta.match(/\[TEMA DA PAUTA\]:\s*(.*)/i)?.[1] || pauta.pauta.split('\n')[0].replace('Qual é a notícia + ', '') || "Sem Título"}
+                    {pauta.pauta.match(/\[(?:TEMA DA PAUTA|TÍTULO)\]:\s*(.*)/i)?.[1] || pauta.pauta.split('\n')[0].replace('Qual é a notícia + ', '') || "Sem Título"}
                   </CardTitle>
                 </CardHeader>
                 <CardContent className="flex-grow">
@@ -335,7 +338,7 @@ function StatusBadge({ status }: { status: string }) {
     case "pending":
       return <Badge className="bg-amber-500/10 text-amber-500 border-amber-500/20 px-3 py-1 font-bold">Pendente</Badge>;
     case "processing":
-      return <Badge className="bg-blue-500/10 text-blue-500 border-blue-500/20 px-3 py-1 font-bold animate-pulse">Agente 2 em Ação</Badge>;
+      return <Badge className="bg-blue-500/10 text-blue-500 border-blue-500/20 px-3 py-1 font-bold animate-pulse">Agente 2</Badge>;
     case "processed":
       return <Badge className="bg-emerald-500/10 text-emerald-400 border-emerald-500/20 px-3 py-1 font-bold">Pronto</Badge>;
     case "approved":
@@ -345,4 +348,24 @@ function StatusBadge({ status }: { status: string }) {
     default:
       return <Badge variant="outline">{status}</Badge>;
   }
+}
+
+function PillarBadge({ pauta }: { pauta: string }) {
+  const pillarMatch = pauta.match(/\[PILAR DA BUSCA\]:\s*(.*)/i);
+  if (!pillarMatch) return null;
+  
+  const pillar = pillarMatch[1];
+  let colorClass = "bg-slate-500/10 text-slate-400 border-slate-500/20";
+  
+  if (pillar.includes("🔥")) colorClass = "bg-orange-600/20 text-orange-400 border-orange-500/30";
+  if (pillar.includes("📱")) colorClass = "bg-purple-600/20 text-purple-400 border-purple-500/30";
+  if (pillar.includes("♟️")) colorClass = "bg-blue-600/20 text-blue-400 border-blue-500/30";
+  if (pillar.includes("🧠")) colorClass = "bg-emerald-600/20 text-emerald-400 border-emerald-500/30";
+  if (pillar.includes("🛒")) colorClass = "bg-yellow-600/20 text-yellow-500 border-yellow-500/30";
+
+  return (
+    <Badge className={`${colorClass} px-2 py-0.5 text-[9px] font-black uppercase tracking-tighter truncate max-w-[120px] border`}>
+      {pillar.split('(')[0].trim()}
+    </Badge>
+  );
 }

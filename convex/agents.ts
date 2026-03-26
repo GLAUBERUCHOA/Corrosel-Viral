@@ -36,8 +36,10 @@ export const runAgent1Fetcher = action({
     baseDate.setUTCHours(3, 0, 0, 0);
     const startOfTodayBRT = now.getUTCHours() < 3 ? baseDate.getTime() - 86400000 : baseDate.getTime();
 
-    // Verificação de Limite e Horário se for Automático
-    if (args.automatic) {
+    // Verificação de Limite e Horário se for Automático (Safe-by-default)
+    const isAutomatic = args.automatic !== false;
+    
+    if (isAutomatic) {
       // Janela da Madrugada (BRT 03:00 - 07:00) => UTC 06:00 - 10:00
       const isDawn = hourUTC >= 6 && hourUTC < 10;
       if (!isDawn) {
@@ -94,8 +96,10 @@ export const runAgent1Fetcher = action({
         }
       });
 
-      const pauta: string = result.response?.text() || result.candidates?.[0]?.content?.parts?.[0]?.text || '';
-      if (!pauta) throw new Error("Falha ao gerar pauta viral.");
+      const pautaRaw: string = result.response?.text() || result.candidates?.[0]?.content?.parts?.[0]?.text || '';
+      if (!pautaRaw) throw new Error("Falha ao gerar pauta viral.");
+
+      const pauta = `[PILAR DA BUSCA]: ${chosenPillar}\n${pautaRaw}`;
 
       await ctx.runMutation(internalAgents.savePauta, {
         pauta,

@@ -36,8 +36,9 @@ export const runAgent1Fetcher = action({
     baseDate.setUTCHours(3, 0, 0, 0);
     const startOfTodayBRT = now.getUTCHours() < 3 ? baseDate.getTime() - 86400000 : baseDate.getTime();
 
-    // Verificação de Limite e Horário se for Automático (Safe-by-default)
-    const isAutomatic = args.automatic !== false;
+    // Verificação de Limite e Horário se for Automático
+    // Apenas a chamada do cron passará 'automatic: true'. Chamadas manuais passarão 'undefined' ou não passarão parâmetro, o que será falso.
+    const isAutomatic = args.automatic === true;
     
     if (isAutomatic) {
       // Janela da Madrugada (BRT 03:00 - 07:00) => UTC 06:00 - 10:00

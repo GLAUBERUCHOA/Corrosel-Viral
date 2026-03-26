@@ -6,7 +6,6 @@ import path from 'path';
 import { ConvexHttpClient } from "convex/browser";
 import { api } from "@/convex/_generated/api";
 
-const convex = new ConvexHttpClient(process.env.NEXT_PUBLIC_CONVEX_URL!);
 
 export async function salvarConfiguracoes(formData: FormData) {
   try {
@@ -39,7 +38,7 @@ export async function salvarConfiguracoes(formData: FormData) {
       }
     };
 
-    // Save to Database (Prisma / MySQL)
+    // 3. Save to Database (Prisma / MySQL)
     await prisma.promptSetting.upsert({
       where: { toneKey: 'SQUAD_CONFIG' },
       update: { instruction: JSON.stringify(novasRegras) },
@@ -50,16 +49,23 @@ export async function salvarConfiguracoes(formData: FormData) {
       }
     });
     
-    // 3. Save to Convex (System Backend)
-    try {
-      await convex.mutation(api.agents.saveSquadConfig, { value: novasRegras });
-    } catch (e) {
-      console.error('Erro ao sincronizar com Convex:', e);
+    // 4. Sincronização com Convex (Backend dos Agentes)
+    // Usamos um bloco separado para garantir que falhas no Convex não travem o Admin
+    const convexUrl = process.env.NEXT_PUBLIC_CONVEX_URL || process.env.CONVEX_URL;
+    if (convexUrl) {
+      try {
+        const convex = new ConvexHttpClient(convexUrl);
+        await convex.mutation(api.agents.saveSquadConfig, { value: novasRegras });
+      } catch (e) {
+        console.error('Erro na sincronização Convex:', e);
+      }
+    } else {
+      console.warn('Sincronização Convex pulada: NEXT_PUBLIC_CONVEX_URL não encontrada.');
     }
 
     return { success: true, message: 'Configurações salvas e sincronizadas com sucesso!' };
   } catch (error) {
     console.error('Erro ao salvar squad rules:', error);
-    return { success: false, message: 'Falha ao salvar o arquivo no banco de dados.' };
+    return { success: false, message: 'Falha ao salvar as configurações.' };
   }
 }

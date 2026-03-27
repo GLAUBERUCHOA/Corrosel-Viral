@@ -1844,7 +1844,7 @@ export default function CarouselGenerator({ onLogout }: { onLogout: () => void }
                                 {/* Branding Flutuante no Topo (Reduzido em 20%) - FIXO NO TOPO */}
                                 <div className="absolute top-6 left-6 z-[60]" style={{ opacity: 1 }}>
                                   {(brandHandle || brandLogo) && (
-                                    <div className="flex items-center gap-[5px] px-2 py-1 bg-black/10 backdrop-blur-sm rounded-full border border-white/10 shadow-lg">
+                                    <div className="flex items-center gap-[5px] px-2 py-1 bg-black/30 rounded-full border border-white/10 shadow-lg overflow-hidden">
                                       {brandLogo && (
                                         <div className="size-[18px] sm:size-[20px] rounded-full overflow-hidden shrink-0 bg-white/40 border border-white/40 shadow-sm">
                                           <img src={brandLogo} alt="Logo" className="w-full h-full object-cover" crossOrigin="anonymous" />
@@ -1893,7 +1893,7 @@ export default function CarouselGenerator({ onLogout }: { onLogout: () => void }
                                       />
                                     )}
                                   </div>
-                                  <div className="absolute bottom-3 right-6 z-30 capture-exclude">
+                                  <div className="absolute bottom-3 right-6 z-30">
                                     <div className={`flex items-center gap-1.5 opacity-40 hover:opacity-100 transition-opacity`} style={{ color: customTextColor }}>
                                       <span className={`text-[9px] font-black tracking-[0.3em] uppercase`} style={{ fontFamily: 'Inter, system-ui, sans-serif' }}>Deslize</span>
                                       <span className="text-[12px] font-bold">&gt;</span>

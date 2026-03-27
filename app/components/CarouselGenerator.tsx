@@ -1808,7 +1808,7 @@ export default function CarouselGenerator({ onLogout }: { onLogout: () => void }
                   const contentOrder = isImageBottom ? 'flex-col-reverse' : 'flex-col';
                   // Padding dinâmico para evitar espaços vazios excessivos
                   const textPadding = isFirst 
-                    ? 'pt-32 pb-16 px-10' // Capa: Mais Respiro no topo para o fade
+                    ? 'pt-20 pb-8 px-10' // Capa: Menos respiro no rodapé conforme pedido
                     : (isImageBottom ? 'pt-10 pb-10 px-8' : 'pt-8 pb-10 px-8'); // Internos: Tighter margins
 
                   return (
@@ -1878,7 +1878,7 @@ export default function CarouselGenerator({ onLogout }: { onLogout: () => void }
                                       <h2 className={`${titleClass} uppercase [&>div]:inline`} 
                                           style={{ 
                                             color: customTextColor, 
-                                            fontSize: `${titleSize}px`
+                                            fontSize: `${isFirst ? Math.min(titleSize, titleLength > 100 ? 20 : titleLength > 60 ? 24 : 32) : titleSize}px`
                                           }} 
                                           dangerouslySetInnerHTML={{ __html: slide.title }} 
                                       />
@@ -1893,10 +1893,10 @@ export default function CarouselGenerator({ onLogout }: { onLogout: () => void }
                                       />
                                     )}
                                   </div>
-                                  <div className="absolute bottom-6 right-6 z-30 capture-exclude">
-                                    <div className="flex items-center gap-1.5 bg-white/[0.1] backdrop-blur-xl border border-white/[0.15] rounded-full px-3 py-1.5 shadow-2xl">
-                                      <span className={`text-[8px] font-bold tracking-[0.2em] opacity-60 uppercase`} style={{ fontFamily: 'Inter, system-ui, sans-serif' }}>Deslize</span>
-                                      <span className="text-[10px] font-bold opacity-50">&gt;</span>
+                                  <div className="absolute bottom-5 right-10 z-30 capture-exclude">
+                                    <div className={`flex items-center gap-1.5 opacity-40 hover:opacity-100 transition-opacity`} style={{ color: customTextColor }}>
+                                      <span className={`text-[9px] font-black tracking-[0.3em] uppercase`} style={{ fontFamily: 'Inter, system-ui, sans-serif' }}>Deslize</span>
+                                      <span className="text-[12px] font-bold">&gt;</span>
                                     </div>
                                   </div>
                                 </div>

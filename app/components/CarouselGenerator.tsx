@@ -1826,12 +1826,16 @@ export default function CarouselGenerator({ onLogout }: { onLogout: () => void }
                               /* --- LAYOUT CAPA (SLIDE 1) --- */
                               <>
                                 {imageSrc && (
-                                  <div className="absolute inset-0 z-0">
+                                  <div className="absolute top-0 left-0 right-0 h-[50%] z-0">
                                     <img
                                       src={imageSrc}
                                       alt={`Slide ${index}`}
-                                      className="absolute inset-0 w-full h-full object-cover transition-transform duration-500"
-                                      style={{ objectPosition: `center ${imagePosMap[index] ?? 50}%` }}
+                                      className="w-full h-full object-cover transition-transform duration-500"
+                                      style={{ 
+                                        objectPosition: `center ${imagePosMap[index] ?? 50}%`,
+                                        maskImage: 'linear-gradient(to bottom, black 80%, transparent 100%)',
+                                        WebkitMaskImage: 'linear-gradient(to bottom, black 80%, transparent 100%)'
+                                      }}
                                       crossOrigin="anonymous"
                                     />
                                   </div>
@@ -1874,8 +1878,7 @@ export default function CarouselGenerator({ onLogout }: { onLogout: () => void }
                                       <h2 className={`${titleClass} uppercase [&>div]:inline`} 
                                           style={{ 
                                             color: customTextColor, 
-                                            fontSize: `${titleSize}px`,
-                                            textShadow: '0 2px 15px rgba(0,0,0,0.4)' 
+                                            fontSize: `${titleSize}px`
                                           }} 
                                           dangerouslySetInnerHTML={{ __html: slide.title }} 
                                       />
@@ -1884,8 +1887,7 @@ export default function CarouselGenerator({ onLogout }: { onLogout: () => void }
                                       <p className={`${subtitleClass} [&>div]:inline leading-tight font-medium opacity-100`} 
                                          style={{ 
                                            color: customTextColor, 
-                                           fontSize: `${subSize}px`,
-                                           textShadow: '0 1px 8px rgba(0,0,0,0.3)' 
+                                           fontSize: `${subSize}px`
                                          }} 
                                          dangerouslySetInnerHTML={{ __html: slide.subtitle }} 
                                       />

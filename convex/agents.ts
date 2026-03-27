@@ -135,12 +135,16 @@ export const runAgent2Processor = action({
 
     const genAI = new GoogleGenAI({ apiKey });
 
+    // Limpar a pauta para remover a tag de Pilar (que é só para exibição na Dashboard)
+    // Isso evita confundir o Agente 2 com metadados do Agente 1
+    const pautaLimpa = pendingPauta.pauta.replace(/\[PILAR DA BUSCA\]:.*\n/i, "").trim();
+
     try {
       const result: any = await (genAI as any).models.generateContent({
         model: MODEL_AGENT_2,
         contents: [{ 
           role: 'user', 
-          parts: [{ text: `PAUTA PARA DECODIFICAÇÃO VIRAL:\n${pendingPauta.pauta}` }] 
+          parts: [{ text: `PAUTA PARA DECODIFICAÇÃO VIRAL:\n${pautaLimpa}` }] 
         }],
         config: {
           systemInstruction: { 

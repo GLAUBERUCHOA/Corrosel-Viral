@@ -1808,7 +1808,7 @@ export default function CarouselGenerator({ onLogout }: { onLogout: () => void }
                   const contentOrder = isImageBottom ? 'flex-col-reverse' : 'flex-col';
                   // Padding dinâmico para evitar espaços vazios excessivos
                   const textPadding = isFirst 
-                    ? 'pt-20 pb-8 px-10' // Capa: Menos respiro no rodapé conforme pedido
+                    ? 'pt-20 pb-10 px-10' // Capa: Margem inferior ajustada para centralizar o deslizador
                     : (isImageBottom ? 'pt-10 pb-10 px-8' : 'pt-8 pb-10 px-8'); // Internos: Tighter margins
 
                   return (
@@ -1819,22 +1819,22 @@ export default function CarouselGenerator({ onLogout }: { onLogout: () => void }
 
                           <div
                             ref={(el) => { slideRefs.current[index] = el; }}
-                            className={`absolute inset-0 flex flex-col ${isFirst ? 'justify-end' : ''} overflow-hidden`}
+                            className={`absolute inset-0 flex flex-col overflow-hidden`}
                             style={{ backgroundColor: customColor }}
                           >
                                 {isFirst ? (
                               /* --- LAYOUT CAPA (SLIDE 1) --- */
                               <>
                                 {imageSrc && (
-                                  <div className="absolute top-0 left-0 right-0 h-[50%] z-0">
+                                  <div className="flex-1 w-full relative z-0 overflow-hidden">
                                     <img
                                       src={imageSrc}
                                       alt={`Slide ${index}`}
                                       className="w-full h-full object-cover transition-transform duration-500"
                                       style={{ 
                                         objectPosition: `center ${imagePosMap[index] ?? 50}%`,
-                                        maskImage: 'linear-gradient(to bottom, black 80%, transparent 100%)',
-                                        WebkitMaskImage: 'linear-gradient(to bottom, black 80%, transparent 100%)'
+                                        maskImage: 'linear-gradient(to bottom, black 85%, transparent 100%)',
+                                        WebkitMaskImage: 'linear-gradient(to bottom, black 85%, transparent 100%)'
                                       }}
                                       crossOrigin="anonymous"
                                     />
@@ -1865,12 +1865,12 @@ export default function CarouselGenerator({ onLogout }: { onLogout: () => void }
                                 </div>
 
                                 {/* Conteúdo da Capa com Gradiente Dinâmico (Escala com o texto) */}
-                                <div className={`w-full ${textPadding} ${textAlign} z-20 relative mt-auto`} 
+                                <div className={`w-full ${textPadding} ${textAlign} z-20 relative`} 
                                      style={{ 
                                        fontFamily, 
                                        color: customTextColor,
-                                       background: `linear-gradient(to top, ${customColor} 0%, ${customColor}F2 45%, ${customColor}A6 75%, ${customColor}00 100%)`,
-                                       paddingTop: '100px' // Ajuste fino no topo do gradiente
+                                       background: `linear-gradient(to top, ${customColor} 0%, ${customColor}F2 60%, ${customColor}A6 85%, ${customColor}00 100%)`,
+                                       paddingTop: '50px' // Margem fixa reduzida acima do título conforme pedido
                                      }}>
                                   
                                   <div className={`flex flex-col gap-4 ${textAlign === 'text-center' ? 'items-center text-center' : textAlign === 'text-right' ? 'items-end text-right' : 'items-start text-left'}`}>

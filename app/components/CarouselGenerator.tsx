@@ -1808,7 +1808,7 @@ export default function CarouselGenerator({ onLogout }: { onLogout: () => void }
                   const contentOrder = isImageBottom ? 'flex-col-reverse' : 'flex-col';
                   // Padding dinâmico para evitar espaços vazios excessivos
                   const textPadding = isFirst 
-                    ? 'pt-20 pb-14 px-10' // Capa: Mais respiro inferior para o indicador de deslize
+                    ? 'pt-20 pb-10 px-10' // Capa: Layout mais compacto
                     : (isImageBottom ? 'pt-10 pb-10 px-8' : 'pt-8 pb-10 px-8'); // Internos: Tighter margins
 
                   return (
@@ -1869,11 +1869,11 @@ export default function CarouselGenerator({ onLogout }: { onLogout: () => void }
                                      style={{
                                        fontFamily,
                                        color: customTextColor,
-                                       background: `linear-gradient(to top, ${customColor} 0%, ${customColor}F2 65%, ${customColor}A6 90%, ${customColor}00 100%)`,
-                                       paddingTop: '32px' // Margem fixa reduzida conforme pedido
+                                       background: `linear-gradient(to top, ${customColor} 0%, ${customColor}F2 75%, ${customColor}A6 95%, ${customColor}00 100%)`,
+                                       paddingTop: '22px' // Margem mínima no topo
                                      }}>
 
-                                  <div className={`flex flex-col gap-4 ${textAlign === 'text-center' ? 'items-center text-center' : textAlign === 'text-right' ? 'items-end text-right' : 'items-start text-left'}`}>
+                                  <div className={`flex flex-col gap-2 ${textAlign === 'text-center' ? 'items-center text-center' : textAlign === 'text-right' ? 'items-end text-right' : 'items-start text-left'}`}>
                                     {!isEmptyHtml(slide.title) && (
                                       <h2 className={`${titleClass} uppercase [&>div]:inline`} 
                                           style={{ 
@@ -1893,7 +1893,7 @@ export default function CarouselGenerator({ onLogout }: { onLogout: () => void }
                                       />
                                     )}
                                   </div>
-                                  <div className="absolute bottom-5 right-10 z-30 capture-exclude">
+                                  <div className="absolute bottom-3 right-6 z-30 capture-exclude">
                                     <div className={`flex items-center gap-1.5 opacity-40 hover:opacity-100 transition-opacity`} style={{ color: customTextColor }}>
                                       <span className={`text-[9px] font-black tracking-[0.3em] uppercase`} style={{ fontFamily: 'Inter, system-ui, sans-serif' }}>Deslize</span>
                                       <span className="text-[12px] font-bold">&gt;</span>

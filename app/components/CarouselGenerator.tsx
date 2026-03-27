@@ -1808,7 +1808,7 @@ export default function CarouselGenerator({ onLogout }: { onLogout: () => void }
                   const contentOrder = isImageBottom ? 'flex-col-reverse' : 'flex-col';
                   // Padding dinâmico para evitar espaços vazios excessivos
                   const textPadding = isFirst 
-                    ? 'pt-20 pb-10 px-10' // Capa: Margem inferior ajustada para centralizar o deslizador
+                    ? 'pt-20 pb-14 px-10' // Capa: Mais respiro inferior para o indicador de deslize
                     : (isImageBottom ? 'pt-10 pb-10 px-8' : 'pt-8 pb-10 px-8'); // Internos: Tighter margins
 
                   return (
@@ -1865,14 +1865,14 @@ export default function CarouselGenerator({ onLogout }: { onLogout: () => void }
                                 </div>
 
                                 {/* Conteúdo da Capa com Gradiente Dinâmico (Escala com o texto) */}
-                                <div className={`w-full ${textPadding} ${textAlign} z-20 relative`} 
-                                     style={{ 
-                                       fontFamily, 
+                                <div className={`w-full ${textPadding} ${textAlign} z-20 relative mt-auto`}
+                                     style={{
+                                       fontFamily,
                                        color: customTextColor,
-                                       background: `linear-gradient(to top, ${customColor} 0%, ${customColor}F2 60%, ${customColor}A6 85%, ${customColor}00 100%)`,
-                                       paddingTop: '50px' // Margem fixa reduzida acima do título conforme pedido
+                                       background: `linear-gradient(to top, ${customColor} 0%, ${customColor}F2 65%, ${customColor}A6 90%, ${customColor}00 100%)`,
+                                       paddingTop: '32px' // Margem fixa reduzida conforme pedido
                                      }}>
-                                  
+
                                   <div className={`flex flex-col gap-4 ${textAlign === 'text-center' ? 'items-center text-center' : textAlign === 'text-right' ? 'items-end text-right' : 'items-start text-left'}`}>
                                     {!isEmptyHtml(slide.title) && (
                                       <h2 className={`${titleClass} uppercase [&>div]:inline`} 

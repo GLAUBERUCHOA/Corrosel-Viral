@@ -1,4 +1,4 @@
-import { action, mutation, query } from "./_generated/server";
+import { action, mutation, query, internalMutation, internalQuery } from "./_generated/server";
 import { v } from "convex/values";
 import { internal } from "./_generated/api";
 import { GoogleGenAI } from "@google/genai";
@@ -9,7 +9,7 @@ const MODEL_AGENT_1 = 'gemini-2.5-flash';
 const MODEL_AGENT_2 = 'gemini-2.5-flash';
 
 // Bypass para erro de tipagem circular do Convex em build local
-const internalAgents = (internal as any).agents;
+const internalAgents = internal.agents;
 
 // Pilares de Curadoria (A Roleta)
 const CURATION_PILLARS = [
@@ -54,12 +54,13 @@ export const runAgent1Fetcher = action({
     }
 
     // 2. Busca de Configurações Dinâmicas (Admin)
-    const settings: any = await ctx.runQuery(internalAgents.getSquadConfig);
-    const config = settings?.value || {};
+    const settings: any = await ctx.runQuery(internalAgents.getSquadConfigInternal);
+    const config = settings || {};
     
-    const promptDiretor = config.agente_1?.prompt_diretor || PROMPT_AGENTE_01;
-    const tomGlobal = config.tom_de_voz_global || "";
-    const contextoSquad = config.contexto_squad || "";
+    // Suporte aos novos campos flat ou ao objeto aninhado antigo
+    const promptDiretor = settings?.promptAgente1 || config.value?.agente_1?.prompt_diretor || PROMPT_AGENTE_01;
+    const tomGlobal = settings?.tomGlobal || config.value?.tom_de_voz_global || "";
+    const contextoSquad = settings?.contextoSquad || config.value?.contexto_squad || "";
 
     // 3. Seleção do Pilar do Dia (A Roleta)
     const todayFullCount = await ctx.runQuery(internalAgents.countTodaysPautas, { since: startOfTodayBRT });
@@ -128,10 +129,10 @@ export const runAgent2Processor = action({
     if (!apiKey) throw new Error("Missing GOOGLE_GENERATIVE_AI_API_KEY");
     
     // Configurações Dinâmicas (Admin)
-    const settings: any = await ctx.runQuery(internalAgents.getSquadConfig);
-    const config = settings?.value || {};
-    const regrasEscrita = config.agente_2?.regras_escrita || PROMPT_AGENTE_02;
-    const tomGlobal = config.tom_de_voz_global || "";
+    const settings: any = await ctx.runQuery(internalAgents.getSquadConfigInternal);
+    const config = settings || {};
+    const regrasEscrita = settings?.promptAgente2 || config.value?.agente_2?.regras_escrita || PROMPT_AGENTE_02;
+    const tomGlobal = settings?.tomGlobal || config.value?.tom_de_voz_global || "";
 
     const genAI = new GoogleGenAI({ apiKey });
 
@@ -179,7 +180,7 @@ export const runAgent2Processor = action({
 });
 
 // Mutations (Expostas internamente via internalAgents)
-export const savePauta = mutation({
+export const savePauta = internalMutation({
   args: { pauta: v.string(), type: v.string() },
   handler: async (ctx, args) => {
     await ctx.db.insert("pautas", {
@@ -191,7 +192,7 @@ export const savePauta = mutation({
   },
 });
 
-export const updatePautaProcessed = mutation({
+export const updatePautaProcessed = internalMutation({
   args: { 
     id: v.id("pautas"), 
     carrossel: v.optional(v.string()), 
@@ -208,7 +209,7 @@ export const updatePautaProcessed = mutation({
   },
 });
 
-export const getPendingPauta = query({
+export const getPendingPauta = internalQuery({
   args: {},
   handler: async (ctx) => {
     return await ctx.db
@@ -239,7 +240,7 @@ export const clearAllPautas = mutation({
   },
 });
 
-export const countTodaysPautas = query({
+export const countTodaysPautas = internalQuery({
   args: { since: v.number() },
   handler: async (ctx, args) => {
     const pautas = await ctx.db
@@ -272,22 +273,48 @@ export const getSquadConfig = query({
   },
 });
 
+export const getSquadConfigInternal = internalQuery({
+  args: {},
+  handler: async (ctx) => {
+    return await ctx.db
+      .query("settings")
+      .withIndex("by_key", (q) => q.eq("key", "SQUAD_CONFIG"))
+      .unique();
+  },
+});
+
 export const saveSquadConfig = mutation({
-  args: { value: v.any() },
+  args: { 
+    promptAgente1: v.optional(v.string()), 
+    promptAgente2: v.optional(v.string()),
+    contextoSquad: v.optional(v.string()),
+    tomGlobal: v.optional(v.string()),
+    value: v.optional(v.any()) 
+  },
   handler: async (ctx, args) => {
     const existing = await ctx.db
       .query("settings")
       .withIndex("by_key", (q) => q.eq("key", "SQUAD_CONFIG"))
       .unique();
+      
+    const dataToSave = {
+      key: "SQUAD_CONFIG",
+      promptAgente1: args.promptAgente1,
+      promptAgente2: args.promptAgente2,
+      contextoSquad: args.contextoSquad,
+      tomGlobal: args.tomGlobal,
+      value: args.value,
+    };
+
     if (existing) {
-      await ctx.db.patch(existing._id, { value: args.value });
+      await ctx.db.patch(existing._id, dataToSave);
     } else {
-      await ctx.db.insert("settings", { key: "SQUAD_CONFIG", value: args.value });
+      await ctx.db.insert("settings", dataToSave);
     }
   },
 });
 
-export const getRecentPautasTitles = query({
+export const getRecentPautasTitles = internalQuery({
   args: {},
   handler: async (ctx) => {
     return await ctx.db

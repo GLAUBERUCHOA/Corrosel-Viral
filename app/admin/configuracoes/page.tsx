@@ -1,6 +1,8 @@
 import { prisma } from '@/lib/prisma';
 import fs from 'fs';
 import path from 'path';
+import { ConvexHttpClient } from "convex/browser";
+import { api } from "@/convex/_generated/api";
 import ClientForm from './ClientForm';
 import Link from 'next/link';
 import { ArrowLeft, LayoutDashboard } from 'lucide-react';
@@ -8,24 +10,39 @@ import { Button } from '@/components/ui/button';
 
 
 export const dynamic = 'force-dynamic';
-export const revalidate = 0;
-
 export default async function ConfiguracoesPage() {
   const jsonPath = path.join(process.cwd(), 'config', 'squad-rules.json');
   let config = null;
 
+  const convexUrl = process.env.NEXT_PUBLIC_CONVEX_URL || process.env.CONVEX_URL;
+  
   try {
-    const setting = await prisma.promptSetting.findUnique({
-      where: { toneKey: 'SQUAD_CONFIG' }
-    });
-    
-    if (setting && setting.instruction) {
-      config = JSON.parse(setting.instruction);
-    } else if (fs.existsSync(jsonPath)) {
+    if (convexUrl) {
+      const convex = new ConvexHttpClient(convexUrl);
+      const convexResult: any = await convex.query(api.agents.getSquadConfig);
+      
+      if (convexResult && convexResult.value) {
+        config = convexResult.value;
+      }
+    }
+
+    // Se não encontrou no Convex, tenta Prisma como backup secundário
+    if (!config) {
+      const prismaSetting = await prisma.promptSetting.findUnique({
+        where: { toneKey: 'SQUAD_CONFIG' }
+      }).catch(() => null); // Não deixa falha no Prisma travar a página
+      
+      if (prismaSetting && prismaSetting.instruction) {
+        config = JSON.parse(prismaSetting.instruction);
+      }
+    }
+
+    // Se ainda não encontrou, tenta o arquivo JSON local
+    if (!config && fs.existsSync(jsonPath)) {
       config = JSON.parse(fs.readFileSync(jsonPath, 'utf8'));
     }
   } catch (error) {
-    console.error('Erro ao ler configurações:', error);
+    console.error('Erro ao ler configurações (Convex/Prisma):', error);
   }
 
   if (!config) {

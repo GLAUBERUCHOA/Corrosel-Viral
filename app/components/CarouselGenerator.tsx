@@ -604,12 +604,15 @@ export default function CarouselGenerator({ onLogout }: { onLogout: () => void }
     setDraggedIndex(index);
   };
 
-  const handleDragOver = (event: React.DragEvent<HTMLDivElement>) => {
-    event.preventDefault();
+  const handleDragOver = (event: React.DragEvent<HTMLDivElement> | React.TouchEvent<HTMLDivElement>) => {
+    if ('preventDefault' in event) event.preventDefault();
   };
 
   const handleDrop = (index: number) => {
-    if (draggedIndex === null || draggedIndex === index) return;
+    if (draggedIndex === null || draggedIndex === index) {
+      setDraggedIndex(null);
+      return;
+    }
     setUploadedImages(prev => {
       const updated = [...prev];
       const temp = updated[draggedIndex];
@@ -618,6 +621,25 @@ export default function CarouselGenerator({ onLogout }: { onLogout: () => void }
       return updated;
     });
     setDraggedIndex(null);
+  };
+
+  const handleTouchStart = (index: number) => {
+    setDraggedIndex(index);
+  };
+
+  const handleTouchEnd = (e: React.TouchEvent) => {
+    if (draggedIndex === null) return;
+    
+    const touch = e.changedTouches[0];
+    const targetEl = document.elementFromPoint(touch.clientX, touch.clientY);
+    const dropTarget = targetEl?.closest('[data-drag-index]');
+    
+    if (dropTarget) {
+      const targetIndex = Number(dropTarget.getAttribute('data-drag-index'));
+      handleDrop(targetIndex);
+    } else {
+      setDraggedIndex(null);
+    }
   };
 
   const handleDeleteSlide = (index: number) => {
@@ -1574,15 +1596,19 @@ export default function CarouselGenerator({ onLogout }: { onLogout: () => void }
                         <div
                           key={i}
                           onClick={() => handleIndividualUploadClick(i)}
-                          className="aspect-[4/5] rounded-xl border-2 border-dashed border-slate-200 flex items-center justify-center group hover:border-primary cursor-pointer relative overflow-hidden"
+                          className={`aspect-[4/5] rounded-xl border-2 border-dashed flex items-center justify-center group transition-all cursor-pointer relative overflow-hidden ${draggedIndex === i ? 'border-primary ring-2 ring-primary/20 scale-95 opacity-50' : 'border-slate-200 hover:border-primary'}`}
                           draggable={!generateWithAI && !!uploadedImages[i]}
                           onDragStart={() => handleDragStart(i)}
                           onDragOver={handleDragOver}
                           onDrop={() => handleDrop(i)}
+                          onTouchStart={() => !generateWithAI && !!uploadedImages[i] && handleTouchStart(i)}
+                          onTouchEnd={handleTouchEnd}
+                          onTouchMove={handleDragOver}
+                          data-drag-index={i}
                         >
                           {uploadedImages[i] ? (
                             <>
-                              <img src={uploadedImages[i] as string} className="w-full h-full object-cover" />
+                              <img src={uploadedImages[i] as string} className="w-full h-full object-cover pointer-events-none" />
                               <button onClick={(e) => handleRemoveImage(i, e)} className="absolute top-1 right-1 size-5 bg-black/50 hover:bg-red-500 rounded-full flex items-center justify-center text-white opacity-0 group-hover:opacity-100 transition-all z-10">
                                 <span className="material-symbols-outlined text-[12px] font-bold">close</span>
                               </button>
@@ -1906,10 +1932,6 @@ export default function CarouselGenerator({ onLogout }: { onLogout: () => void }
                               <div className={`flex flex-col flex-1 ${contentOrder}`}>
                                 <div 
                                   className="flex-1 relative overflow-hidden z-10"
-                                  style={{
-                                    maskImage: `linear-gradient(to ${isImageBottom ? 'top' : 'bottom'}, black 75%, transparent 100%)`,
-                                    WebkitMaskImage: `linear-gradient(to ${isImageBottom ? 'top' : 'bottom'}, black 75%, transparent 100%)`
-                                  }}
                                 >
                                   {imageSrc && (
                                     <img

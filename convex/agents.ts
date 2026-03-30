@@ -285,10 +285,10 @@ export const getSquadConfigInternal = internalQuery({
 
 export const saveSquadConfig = mutation({
   args: { 
-    promptAgente1: v.optional(v.string()), 
-    promptAgente2: v.optional(v.string()),
-    contextoSquad: v.optional(v.string()),
-    tomGlobal: v.optional(v.string()),
+    promptAgente1: v.optional(v.any()), 
+    promptAgente2: v.optional(v.any()),
+    contextoSquad: v.optional(v.any()),
+    tomGlobal: v.optional(v.any()),
     value: v.optional(v.any()) 
   },
   handler: async (ctx, args) => {

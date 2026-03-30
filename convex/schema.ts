@@ -16,8 +16,10 @@ export default defineSchema({
   .index("by_created", ["createdAt"]),
   settings: defineTable({
     key: v.string(), // "SQUAD_CONFIG"
-    promptAgente1: v.optional(v.string()),
-    promptAgente2: v.optional(v.string()),
-    value: v.optional(v.any()), // Fallback para outros dados
+    promptAgente1: v.optional(v.any()),
+    promptAgente2: v.optional(v.any()),
+    contextoSquad: v.optional(v.any()),
+    tomGlobal: v.optional(v.any()),
+    value: v.optional(v.any()),
   }).index("by_key", ["key"]),
 });

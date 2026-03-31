@@ -2,7 +2,7 @@
 import { ReactNode } from "react";
 import { ConvexProvider, ConvexReactClient } from "convex/react";
 
-const convexUrl = process.env.NEXT_PUBLIC_CONVEX_URL || "https://polished-snake-810.convex.cloud";
+const convexUrl = "https://impressive-lion-772.convex.cloud";
 const convex = new ConvexReactClient(convexUrl);
 
 

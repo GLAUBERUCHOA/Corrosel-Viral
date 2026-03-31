@@ -12,7 +12,7 @@ export async function salvarConfiguracoes(formData: FormData) {
     const jsonPath = path.join(process.cwd(), 'config', 'squad-rules.json');
     let existingRules: any = {};
     
-    const convexUrl = process.env.NEXT_PUBLIC_CONVEX_URL || process.env.CONVEX_URL;
+    const convexUrl = "https://impressive-lion-772.convex.cloud";
 
     // 1. Prioritize reading from Convex
     try {

@@ -14,7 +14,7 @@ export default async function ConfiguracoesPage() {
   const jsonPath = path.join(process.cwd(), 'config', 'squad-rules.json');
   let config = null;
 
-  const convexUrl = process.env.NEXT_PUBLIC_CONVEX_URL || process.env.CONVEX_URL;
+  const convexUrl = "https://impressive-lion-772.convex.cloud";
   
   try {
     if (convexUrl) {

@@ -71,7 +71,8 @@ export default function CuradoriaPage() {
   async function handleAprovar(id: any) {
     try {
       await approvePauta({ id });
-      router.push(`/login?pautaId=${id}`);
+      // Abre o LAB em uma nova aba com o ID da pauta
+      window.open(`/login?pautaId=${id}`, '_blank');
     } catch (err) {
       console.error("Erro ao aprovar pauta", err);
     }

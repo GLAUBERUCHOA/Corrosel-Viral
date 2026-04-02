@@ -210,6 +210,7 @@ export default function CarouselGenerator({ onLogout }: { onLogout: () => void }
   const [pautaId, setPautaId] = useState<string | null>(null);
 
   useEffect(() => {
+    // Captura o ID da pauta da URL apenas uma vez na montagem
     const params = new URLSearchParams(window.location.search);
     const id = params.get('pautaId');
     if (id) setPautaId(id);
@@ -217,12 +218,26 @@ export default function CarouselGenerator({ onLogout }: { onLogout: () => void }
 
   const pautaData = useQuery(api.agents.getPautaById, pautaId ? { id: pautaId as any } : "skip");
 
+  // Hook específico para lidar com o preenchimento da pauta
   useEffect(() => {
     if (pautaData && pautaData.carrossel) {
+      console.log("--- AUTOFILL: CARREGANDO PAUTA NO LAB ---", pautaId);
+
+      // 1. Preenche o conteúdo textual
       setContent(pautaData.carrossel);
+
+      // 2. Processa os slides imediatamente para visualização
       processTextIntoSlides(pautaData.carrossel, addCtaSlide, ctaContent);
+
+      // 3. Ativa o preview visual
+      setHasNewPreview(true);
+
+      // Se for mobile, muda para a aba de preview
+      if (window.innerWidth < 768) {
+        setActiveMobileTab('preview');
+      }
     }
-  }, [pautaData]);
+  }, [pautaData, addCtaSlide, ctaContent]);
   const [dbPrompts, setDbPrompts] = useState<Record<string, string>>({});
   const [dbLabels, setDbLabels] = useState<{ key: string, label: string }[]>([]);
   const [dbImagePrompts, setDbImagePrompts] = useState<Record<string, string>>({});

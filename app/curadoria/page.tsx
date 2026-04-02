@@ -28,13 +28,15 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 
 export default function CuradoriaPage() {
+  const router = useRouter();
   const pautas = useQuery(api.agents.getAllPautas);
   const runAgent1 = useAction(api.agents.runAgent1Fetcher);
   const clearPautas = useMutation(api.agents.clearAllPautas);
   const approvePauta = useMutation(api.agents.approvePauta);
-  
+
   const [isRunningAgent1, setIsRunningAgent1] = useState(false);
   const [isClearing, setIsClearing] = useState(false);
   const [selectedPauta, setSelectedPauta] = useState<any>(null);
@@ -69,6 +71,7 @@ export default function CuradoriaPage() {
   async function handleAprovar(id: any) {
     try {
       await approvePauta({ id });
+      router.push(`/login?pautaId=${id}`);
     } catch (err) {
       console.error("Erro ao aprovar pauta", err);
     }
@@ -89,16 +92,16 @@ export default function CuradoriaPage() {
       // Divide por SLIDE XX: ou LEGENDA: ou [FONTE]:
       const sections = carrosselRaw.split(/(SLIDE \d+:|LEGENDA:|\[FONTE\]:)/i);
       const slides: any[] = [];
-      
+
       for (let i = 1; i < sections.length; i += 2) {
         const header = sections[i].toUpperCase();
-        const content = sections[i+1];
-        
+        const content = sections[i + 1];
+
         if (header.includes("SLIDE")) {
           const slideNum = header.match(/\d+/)?.[0] || slides.length + 1;
           const title = content.match(/\[TÍTULO\]:\s*(.*)/i)?.[1]?.trim() || "";
           const subtitle = content.match(/\[SUBTÍTULO\]:\s*(.*)/i)?.[1]?.trim() || "";
-          
+
           slides.push({ slide: slideNum, title, subtitle });
         } else if (header.includes("LEGENDA")) {
           slides.push({ slide: "legenda", legenda: content.trim() });
@@ -155,20 +158,20 @@ export default function CuradoriaPage() {
           </div>
 
           <div className="flex items-center gap-3">
-            <Button 
-                onClick={handleLimparFila}
-                disabled={isClearing || pautas.length === 0}
-                variant="destructive"
-                className="bg-rose-600/10 text-rose-500 border border-rose-500/20 hover:bg-rose-600 hover:text-white font-bold transition-all"
+            <Button
+              onClick={handleLimparFila}
+              disabled={isClearing || pautas.length === 0}
+              variant="destructive"
+              className="bg-rose-600/10 text-rose-500 border border-rose-500/20 hover:bg-rose-600 hover:text-white font-bold transition-all"
             >
               {isClearing ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Trash2 className="mr-2 h-4 w-4" />}
               Limpar Fila
             </Button>
 
-            <Button 
-                onClick={handleDispararAgente1}
-                disabled={isRunningAgent1}
-                className="bg-blue-600 font-bold hover:bg-blue-500 shadow-lg shadow-blue-900/20"
+            <Button
+              onClick={handleDispararAgente1}
+              disabled={isRunningAgent1}
+              className="bg-blue-600 font-bold hover:bg-blue-500 shadow-lg shadow-blue-900/20"
             >
               {isRunningAgent1 ? (
                 <Loader2 className="mr-2 h-4 w-4 animate-spin" />
@@ -194,7 +197,7 @@ export default function CuradoriaPage() {
                     Gerencie o comportamento global do seu squad de agentes.
                   </SheetDescription>
                 </SheetHeader>
-                
+
                 <div className="py-6 space-y-10">
                   <div className="space-y-4">
                     <h3 className="text-sm font-bold uppercase tracking-widest text-slate-500">Regras e Comportamento</h3>
@@ -274,17 +277,17 @@ export default function CuradoriaPage() {
                   </CardDescription>
                 </CardContent>
                 <CardFooter className="grid grid-cols-2 gap-3 border-t border-slate-800/50 p-6 pt-5 bg-slate-900/30">
-                  <Button 
-                    variant="outline" 
-                    className="border-slate-800 bg-slate-900/50 text-slate-200 hover:bg-slate-800 hover:text-white transition-all" 
+                  <Button
+                    variant="outline"
+                    className="border-slate-800 bg-slate-900/50 text-slate-200 hover:bg-slate-800 hover:text-white transition-all"
                     disabled={!pauta.carrossel}
                     onClick={() => { setSelectedPauta(pauta); setIsPreviewOpen(true); }}
                   >
                     <Eye className="mr-2 h-4 w-4" />
                     Preview
                   </Button>
-                  <Button 
-                    className="bg-blue-600 font-bold text-white hover:bg-blue-500 shadow-lg shadow-blue-900/20 disabled:bg-slate-800 disabled:text-slate-500" 
+                  <Button
+                    className="bg-blue-600 font-bold text-white hover:bg-blue-500 shadow-lg shadow-blue-900/20 disabled:bg-slate-800 disabled:text-slate-500"
                     disabled={!pauta.carrossel || pauta.status === "approved"}
                     onClick={() => handleAprovar(pauta._id)}
                   >
@@ -306,22 +309,22 @@ export default function CuradoriaPage() {
                 Copie o texto bruto abaixo para colar diretamente no LAB.
               </DialogDescription>
             </DialogHeader>
-            
+
             <div className="py-4">
               {selectedPauta?.carrossel ? renderRoteiro(selectedPauta.carrossel) : <p className="text-slate-500 italic text-center py-10">Processando roteiro...</p>}
             </div>
 
             <DialogFooter className="flex flex-col sm:flex-row gap-3">
-              <Button 
-                variant="secondary" 
+              <Button
+                variant="secondary"
                 className="bg-slate-800 text-white hover:bg-slate-700 font-bold flex-1"
                 onClick={() => copyToClipboard(selectedPauta?.carrossel || "")}
               >
                 {copied ? <Check className="mr-2 h-4 w-4 text-emerald-400" /> : <Copy className="mr-2 h-4 w-4" />}
                 {copied ? "Texto Copiado!" : "Copiar Texto para o LAB"}
               </Button>
-              <Button 
-                className="bg-blue-600 hover:bg-blue-500 font-bold flex-1" 
+              <Button
+                className="bg-blue-600 hover:bg-blue-500 font-bold flex-1"
                 disabled={selectedPauta?.status === "approved"}
                 onClick={() => { handleAprovar(selectedPauta?._id); setIsPreviewOpen(false); }}
               >
@@ -355,10 +358,10 @@ function StatusBadge({ status }: { status: string }) {
 function PillarBadge({ pauta }: { pauta: string }) {
   const pillarMatch = pauta.match(/\[PILAR DA BUSCA\]:\s*(.*)/i);
   if (!pillarMatch) return null;
-  
+
   const pillar = pillarMatch[1];
   let colorClass = "bg-slate-500/10 text-slate-400 border-slate-500/20";
-  
+
   if (pillar.includes("🔥")) colorClass = "bg-orange-600/20 text-orange-400 border-orange-500/30";
   if (pillar.includes("📱")) colorClass = "bg-purple-600/20 text-purple-400 border-purple-500/30";
   if (pillar.includes("♟️")) colorClass = "bg-blue-600/20 text-blue-400 border-blue-500/30";

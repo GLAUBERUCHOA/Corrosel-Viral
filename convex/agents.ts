@@ -28,7 +28,7 @@ export const runAgent1Fetcher = action({
   handler: async (ctx, args): Promise<{ success: boolean; pauta?: string; message?: string; error?: string }> => {
     const apiKey = process.env.GOOGLE_GENERATIVE_AI_API_KEY;
     if (!apiKey) throw new Error("Missing GOOGLE_GENERATIVE_AI_API_KEY");
-    
+
     // 1. Início do dia para contagem e janela
     const now = new Date();
     const hourUTC = now.getUTCHours();
@@ -39,7 +39,7 @@ export const runAgent1Fetcher = action({
     // Verificação de Limite e Horário se for Automático
     // Apenas a chamada do cron passará 'automatic: true'. Chamadas manuais passarão 'undefined' ou não passarão parâmetro, o que será falso.
     const isAutomatic = args.automatic === true;
-    
+
     if (isAutomatic) {
       // Janela da Madrugada (BRT 03:00 - 07:00) => UTC 06:00 - 10:00
       const isDawn = hourUTC >= 6 && hourUTC < 10;
@@ -56,7 +56,7 @@ export const runAgent1Fetcher = action({
     // 2. Busca de Configurações Dinâmicas (Admin)
     const settings: any = await ctx.runQuery(internalAgents.getSquadConfigInternal);
     const config = settings || {};
-    
+
     // Suporte aos novos campos flat ou ao objeto aninhado antigo
     const promptDiretor = settings?.promptAgente1 || config.value?.agente_1?.prompt_diretor || PROMPT_AGENTE_01;
     const tomGlobal = settings?.tomGlobal || config.value?.tom_de_voz_global || "";
@@ -83,13 +83,13 @@ export const runAgent1Fetcher = action({
       `ATENÇÃO: É ESTRITAMENTE PROIBIDO gerar pautas parecidas com estes temas recentes: [${recentTitles}].`;
 
     const genAI = new GoogleGenAI({ apiKey });
-    
+
     try {
       const result: any = await (genAI as any).models.generateContent({
         model: MODEL_AGENT_1,
-        contents: [{ 
-          role: 'user', 
-          parts: [{ text: `Execute sua missão viral agora seguindo o pilar: ${chosenPillar}. Busque algo de HOJE.` }] 
+        contents: [{
+          role: 'user',
+          parts: [{ text: `Execute sua missão viral agora seguindo o pilar: ${chosenPillar}. Busque algo de HOJE.` }]
         }],
         config: {
           systemInstruction: { role: 'system', parts: [{ text: systemInstruction }] },
@@ -127,7 +127,7 @@ export const runAgent2Processor = action({
 
     const apiKey = process.env.GOOGLE_GENERATIVE_AI_API_KEY;
     if (!apiKey) throw new Error("Missing GOOGLE_GENERATIVE_AI_API_KEY");
-    
+
     // Configurações Dinâmicas (Admin)
     const settings: any = await ctx.runQuery(internalAgents.getSquadConfigInternal);
     const config = settings || {};
@@ -143,24 +143,24 @@ export const runAgent2Processor = action({
     try {
       const result: any = await (genAI as any).models.generateContent({
         model: MODEL_AGENT_2,
-        contents: [{ 
-          role: 'user', 
-          parts: [{ text: `PAUTA PARA DECODIFICAÇÃO VIRAL:\n${pautaLimpa}` }] 
+        contents: [{
+          role: 'user',
+          parts: [{ text: `PAUTA PARA DECODIFICAÇÃO VIRAL:\n${pautaLimpa}` }]
         }],
         config: {
-          systemInstruction: { 
-            role: 'system', 
-            parts: [{ text: `${regrasEscrita}\n\nTOM DE VOZ SEGUIDO: ${tomGlobal}` }] 
+          systemInstruction: {
+            role: 'system',
+            parts: [{ text: `${regrasEscrita}\n\nTOM DE VOZ SEGUIDO: ${tomGlobal}` }]
           },
           temperature: 0.7
         }
       });
 
       const carrossel: string = result.response?.text() || result.candidates?.[0]?.content?.parts?.[0]?.text || '';
-      
+
       const hasSlides: boolean = /SLIDE\s*(0?1):/i.test(carrossel);
       const status: string = hasSlides ? "processed" : "failed";
-      
+
       await ctx.runMutation(internalAgents.updatePautaProcessed, {
         id: pendingPauta._id,
         carrossel,
@@ -193,9 +193,9 @@ export const savePauta = internalMutation({
 });
 
 export const updatePautaProcessed = internalMutation({
-  args: { 
-    id: v.id("pautas"), 
-    carrossel: v.optional(v.string()), 
+  args: {
+    id: v.id("pautas"),
+    carrossel: v.optional(v.string()),
     status: v.string(),
     error: v.optional(v.string())
   },
@@ -215,7 +215,7 @@ export const getPendingPauta = internalQuery({
     return await ctx.db
       .query("pautas")
       .withIndex("by_status", (q) => q.eq("status", "pending"))
-      .order("desc") 
+      .order("desc")
       .first();
   },
 });
@@ -284,19 +284,19 @@ export const getSquadConfigInternal = internalQuery({
 });
 
 export const saveSquadConfig = mutation({
-  args: { 
-    promptAgente1: v.optional(v.any()), 
+  args: {
+    promptAgente1: v.optional(v.any()),
     promptAgente2: v.optional(v.any()),
     contextoSquad: v.optional(v.any()),
     tomGlobal: v.optional(v.any()),
-    value: v.optional(v.any()) 
+    value: v.optional(v.any())
   },
   handler: async (ctx, args) => {
     const existing = await ctx.db
       .query("settings")
       .withIndex("by_key", (q) => q.eq("key", "SQUAD_CONFIG"))
       .unique();
-      
+
     const dataToSave = {
       key: "SQUAD_CONFIG",
       promptAgente1: args.promptAgente1,
@@ -322,5 +322,11 @@ export const getRecentPautasTitles = internalQuery({
       .withIndex("by_created")
       .order("desc")
       .take(5);
+  },
+});
+export const getPautaById = query({
+  args: { id: v.id("pautas") },
+  handler: async (ctx, args) => {
+    return await ctx.db.get(args.id);
   },
 });

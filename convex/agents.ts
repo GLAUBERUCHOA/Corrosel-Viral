@@ -85,18 +85,21 @@ export const runAgent1Fetcher = action({
     const genAI = new GoogleGenAI({ apiKey });
 
     try {
-      const result: any = await (genAI as any).models.generateContent({
+      const model = genAI.getGenerativeModel({
         model: MODEL_AGENT_1,
+        systemInstruction: systemInstruction,
+        tools: [{ googleSearch: {} }] as any
+      } as any);
+
+      const result = await model.generateContent({
         contents: [{
           role: 'user',
           parts: [{ text: `Execute sua missão viral agora seguindo o pilar: ${chosenPillar}. Busque algo de HOJE.` }]
         }],
-        config: {
-          systemInstruction: { role: 'system', parts: [{ text: systemInstruction }] },
+        generationConfig: {
           temperature: 0.8,
-          tools: [{ googleSearch: {} }]
         }
-      });
+      } as any);
 
       const pautaRaw: string = result.response?.text() || result.candidates?.[0]?.content?.parts?.[0]?.text || '';
       if (!pautaRaw) throw new Error("Falha ao gerar pauta viral.");
@@ -108,9 +111,22 @@ export const runAgent1Fetcher = action({
         type: "noticia"
       });
 
+      console.log(`[Agente 1] Pauta salva com sucesso: ${chosenPillar}`);
+
+      // 7. Auto-trigger Agente 2 para roteirizar imediatamente
+      // Usamos a versão internal para evitar problemas de recursão se necessário, 
+      // ou apenas chamamos a action. No Convex, a melhor forma de encadear actions 
+      // é via scheduler ou chamando diretamente se não houver risco de timeout excessivo.
+      try {
+        console.log("[Agente 1] Disparando Agente 2 para roteirização...");
+        await ctx.runAction(internalAgents.runAgent2Processor, {});
+      } catch (agent2Err) {
+        console.error("[Agente 1] Erro ao disparar Agente 2 (roteirização continuará via cron):", agent2Err);
+      }
+
       return { success: true, pauta };
     } catch (err: any) {
-      console.error("Erro Agente 1:", err);
+      console.error("❌ Erro fatal no Agente 1:", err);
       return { success: false, error: err.message };
     }
   },
@@ -122,8 +138,12 @@ export const runAgent1Fetcher = action({
 export const runAgent2Processor = action({
   args: {},
   handler: async (ctx): Promise<{ success: boolean; carrossel?: string; message?: string; error?: string }> => {
+    console.log("[Agente 2] Iniciando processamento de roteiro...");
     const pendingPauta: any = await ctx.runQuery(internalAgents.getPendingPauta);
-    if (!pendingPauta) return { success: false, message: "Sem pautas pendentes." };
+    if (!pendingPauta) {
+      console.log("[Agente 2] Nenhuma pauta pendente para processar.");
+      return { success: false, message: "Sem pautas pendentes." };
+    }
 
     const apiKey = process.env.GOOGLE_GENERATIVE_AI_API_KEY;
     if (!apiKey) throw new Error("Missing GOOGLE_GENERATIVE_AI_API_KEY");
@@ -134,6 +154,7 @@ export const runAgent2Processor = action({
     const regrasEscrita = settings?.promptAgente2 || config.value?.agente_2?.regras_escrita || PROMPT_AGENTE_02;
     const tomGlobal = settings?.tomGlobal || config.value?.tom_de_voz_global || "";
 
+    console.log(`[Agente 2] Processando pauta ID: ${pendingPauta._id}`);
     const genAI = new GoogleGenAI({ apiKey });
 
     // Limpar a pauta para remover a tag de Pilar (que é só para exibição na Dashboard)
@@ -141,25 +162,29 @@ export const runAgent2Processor = action({
     const pautaLimpa = pendingPauta.pauta.replace(/\[PILAR DA BUSCA\]:.*\n/i, "").trim();
 
     try {
-      const result: any = await (genAI as any).models.generateContent({
+      const model = genAI.getGenerativeModel({
         model: MODEL_AGENT_2,
+        systemInstruction: `${regrasEscrita}\n\nTOM DE VOZ SEGUIDO: ${tomGlobal}`
+      });
+
+      const result = await model.generateContent({
         contents: [{
           role: 'user',
           parts: [{ text: `PAUTA PARA DECODIFICAÇÃO VIRAL:\n${pautaLimpa}` }]
         }],
-        config: {
-          systemInstruction: {
-            role: 'system',
-            parts: [{ text: `${regrasEscrita}\n\nTOM DE VOZ SEGUIDO: ${tomGlobal}` }]
-          },
+        generationConfig: {
           temperature: 0.7
         }
       });
 
       const carrossel: string = result.response?.text() || result.candidates?.[0]?.content?.parts?.[0]?.text || '';
+      
+      if (!carrossel) throw new Error("IA retornou resposta vazia no Agente 2.");
 
       const hasSlides: boolean = /SLIDE\s*(0?1):/i.test(carrossel);
       const status: string = hasSlides ? "processed" : "failed";
+
+      console.log(`[Agente 2] Finalizado com status: ${status}`);
 
       await ctx.runMutation(internalAgents.updatePautaProcessed, {
         id: pendingPauta._id,
@@ -169,6 +194,7 @@ export const runAgent2Processor = action({
 
       return { success: true, carrossel };
     } catch (err: any) {
+      console.error("❌ Erro fatal no Agente 2:", err);
       await ctx.runMutation(internalAgents.updatePautaProcessed, {
         id: pendingPauta._id,
         status: "failed",

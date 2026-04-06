@@ -44,13 +44,19 @@ export default function CuradoriaPage() {
   const [copied, setCopied] = useState(false);
 
   async function handleDispararAgente1() {
+    console.log("🚀 Iniciando disparo do Agente 1...");
     setIsRunningAgent1(true);
     try {
       // Ignorando a tipagem estrita para compatibilidade com o backend Convex caso ele ainda não tenha atualizado
       // @ts-ignore
-      await runAgent1();
+      const result = await runAgent1({ automatic: false });
+      console.log("✅ Resposta do Agente 1:", result);
+      if (result && !result.success) {
+        alert("Erro no Agente 1: " + (result.error || result.message || "Erro desconhecido"));
+      }
     } catch (err) {
-      console.error("Falha ao disparar Agente 1", err);
+      console.error("❌ Falha crítica ao disparar Agente 1:", err);
+      alert("Falha ao disparar Agente. Verifique o console para detalhes.");
     } finally {
       setIsRunningAgent1(false);
     }
@@ -58,11 +64,14 @@ export default function CuradoriaPage() {
 
   async function handleLimparFila() {
     if (!confirm("Tem certeza que deseja limpar toda a fila de pautas?")) return;
+    console.log("🧹 Limpando fila de pautas...");
     setIsClearing(true);
     try {
       await clearPautas();
+      console.log("✅ Fila limpa com sucesso!");
     } catch (err) {
-      console.error("Erro ao limpar fila", err);
+      console.error("❌ Erro ao limpar fila:", err);
+      alert("Erro ao limpar fila. Verifique a conexão com o banco.");
     } finally {
       setIsClearing(false);
     }
@@ -100,8 +109,8 @@ export default function CuradoriaPage() {
 
         if (header.includes("SLIDE")) {
           const slideNum = header.match(/\d+/)?.[0] || slides.length + 1;
-          const title = content.match(/\[TÍTULO\]:\s*(.*)/i)?.[1]?.trim() || "";
-          const subtitle = content.match(/\[SUBTÍTULO\]:\s*(.*)/i)?.[1]?.trim() || "";
+          const title = content.match(/\[?TÍTULO\]?:\s*([\s\S]*?)(?=\[SUBTÍTULO\]:|$)/i)?.[1]?.trim() || "";
+          const subtitle = content.match(/\[?SUBTÍTULO\]?:\s*([\s\S]*?)$/i)?.[1]?.trim() || "";
 
           slides.push({ slide: slideNum, title, subtitle });
         } else if (header.includes("LEGENDA")) {
@@ -123,7 +132,7 @@ export default function CuradoriaPage() {
                 {s.slide === "legenda" ? "LEGENDA:" : s.slide === "fonte" ? "FONTE:" : `SLIDE ${s.slide}:`}
               </div>
               {s.title && <div>[TÍTULO]: {s.title}</div>}
-              {s.subtitle && s.slide !== 1 && <div>[SUBTÍTULO]: {s.subtitle}</div>}
+              {s.subtitle && <div>[SUBTÍTULO]: {s.subtitle}</div>}
               {s.fonte && <div className="text-slate-500 underline break-all">{s.fonte}</div>}
               {s.legenda && <div>{s.legenda}</div>}
             </div>

@@ -9,6 +9,7 @@
  */
 
 import type * as agents from "../agents.js";
+import type * as ai_actions from "../ai_actions.js";
 import type * as crons from "../crons.js";
 import type * as instructions from "../instructions.js";
 
@@ -20,6 +21,7 @@ import type {
 
 declare const fullApi: ApiFromModules<{
   agents: typeof agents;
+  ai_actions: typeof ai_actions;
   crons: typeof crons;
   instructions: typeof instructions;
 }>;

@@ -7,7 +7,7 @@ const crons = cronJobs();
 crons.interval(
   "fetch-news-agent-1",
   { minutes: 20 },
-  (internal as any).agents.runAgent1Fetcher,
+  (internal as any).ai_actions.runAgent1Fetcher,
   { automatic: true }
 );
 
@@ -15,7 +15,7 @@ crons.interval(
 crons.interval(
   "process-news-agent-2",
   { minutes: 2 },
-  (internal as any).agents.runAgent2Processor
+  (internal as any).ai_actions.runAgent2Processor
 );
 
 export default crons;

@@ -25,7 +25,7 @@ import { api } from "./_generated/api";
 /**
  * Agente 1 (Ponte): Redireciona para ai_actions.ts para rodar em Node.js
  */
-export const runAgent1Fetcher = action({
+export const runAgent1Fetcher: any = action({
   args: { automatic: v.optional(v.boolean()) },
   handler: async (ctx, args) => {
     console.log("[BRIDGE] Redirecionando Agente 1 para ai_actions.ts...");
@@ -36,7 +36,7 @@ export const runAgent1Fetcher = action({
 /**
  * Agente 2 (Ponte): Redireciona para ai_actions.ts para rodar em Node.js
  */
-export const runAgent2Processor = action({
+export const runAgent2Processor: any = action({
   args: {},
   handler: async (ctx, args) => {
     console.log("[BRIDGE] Redirecionando Agente 2 para ai_actions.ts...");

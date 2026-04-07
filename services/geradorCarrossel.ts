@@ -1,4 +1,4 @@
-import { GoogleGenAI } from '@google/genai';
+import { GoogleGenerativeAI } from '@google/generative-ai';
 import { prisma } from '@/lib/prisma';
 import path from 'path';
 import fs from 'fs';
@@ -8,7 +8,7 @@ function getAIClient() {
   if (!apiKey) {
     throw new Error('GOOGLE_GENERATIVE_AI_API_KEY is not defined in environment variables.');
   }
-  return new GoogleGenAI({ apiKey });
+  return new GoogleGenerativeAI(apiKey);
 }
 
 // Agent 1 (Pesquisador): Flash é ideal para busca rápida.
@@ -50,22 +50,24 @@ export async function gerarIdeias(tipo: 'noticias' | 'perene', temasGerados: str
     console.log(`--- INICIANDO AGENTE 1 (${tipo.toUpperCase()}) --- Key: ${!!process.env.NEXT_PUBLIC_GEMINI_API_KEY}`);
 
     // AGENTE 1: PESQUISADOR E DIRETOR DE PAUTA
-    const reqPautaOptions: any = {
-      model: MODEL_AGENT_1,
-      contents: pautaSetup,
-      config: { 
-        temperature: 0.7, 
-        topP: 0.95,
-        tools: isNoticia ? [{ googleSearch: {} }] : []
-      }
-    };
-
     let pauta = '';
     try {
       const ai = getAIClient();
-      const resultPauta = await (ai as any).models.generateContent(reqPautaOptions);
-      // Tentativa robusta de extração de texto
-      pauta = resultPauta.text || resultPauta.response?.text || (resultPauta as any).candidates?.[0]?.content?.parts?.[0]?.text || '';
+      const modelAgent1 = ai.getGenerativeModel({
+        model: MODEL_AGENT_1,
+        systemInstruction: pautaSetup,
+        tools: isNoticia ? [{ googleSearch: {} }] : [] as any
+      });
+      
+      const resultPauta = await modelAgent1.generateContent({
+        contents: [{ role: 'user', parts: [{ text: "Gere a pauta com base nas instruções e restrições fornecidas." }] }],
+        generationConfig: { 
+          temperature: 0.7, 
+          topP: 0.95
+        }
+      });
+      
+      pauta = resultPauta.response.text() || '';
       
       if (!pauta) throw new Error('O modelo retornou uma resposta vazia (Agente 1).');
 
@@ -77,21 +79,24 @@ export async function gerarIdeias(tipo: 'noticias' | 'perene', temasGerados: str
     }
 
     // AGENTE 2: ROTEIRISTA E COPYWRITER VIRAL
-    const roteiroSetup = `${rules.contexto_squad}\n\n${rules.tom_de_voz_global}\n\n${rules.agente_2.roteirista}\n\n[PAUTA]:\n${pauta}\n\n${rules.agente_2.regras_escrita}`;
+    const roteiroSetup = `${rules.contexto_squad}\n\n${rules.tom_de_voz_global}\n\n${rules.agente_2.roteirista}\n\n${rules.agente_2.regras_escrita}`;
 
     let roteiroParsed;
     try {
       const ai = getAIClient();
-      const resultRoteiro = await (ai as any).models.generateContent({
+      const modelAgent2 = ai.getGenerativeModel({
         model: MODEL_AGENT_2,
-        contents: roteiroSetup,
-        config: {
+        systemInstruction: roteiroSetup,
+      });
+
+      const resultRoteiro = await modelAgent2.generateContent({
+        contents: [{ role: 'user', parts: [{ text: `[PAUTA]:\n${pauta}` }] }],
+        generationConfig: {
           temperature: 0.7,
-          thinkingConfig: { thinkingBudget: 2048 }
         }
       });
 
-      const roteiroRaw = resultRoteiro.text || resultRoteiro.response?.text || (resultRoteiro as any).candidates?.[0]?.content?.parts?.[0]?.text || '';
+      const roteiroRaw = resultRoteiro.response.text() || '';
       roteiroParsed = roteiroRaw.trim();
       
       if (!roteiroParsed) throw new Error('O modelo retornou uma resposta vazia (Agente 2).');

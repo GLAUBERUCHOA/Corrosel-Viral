@@ -307,6 +307,74 @@ export default function CuradoriaPage() {
                     </a>
                   </div>
 
+                  <div className="space-y-4 pt-4 border-t border-slate-800">
+                    <div className="flex justify-between items-center mb-2">
+                       <h3 className="text-sm font-bold uppercase tracking-widest text-slate-500">Perfil do Especialista</h3>
+                       <Button 
+                        onClick={handleSaveSetup} 
+                        disabled={isSavingSetup}
+                        size="sm"
+                        className="bg-emerald-600 hover:bg-emerald-500 text-white font-bold h-8 text-xs"
+                      >
+                        {isSavingSetup ? <Loader2 className="h-3 w-3 animate-spin" /> : <CheckCircle2 className="mr-1 h-3 w-3" />}
+                        Salvar
+                      </Button>
+                    </div>
+                    
+                    <div className="space-y-4 bg-slate-950/40 p-4 rounded-2xl border border-slate-800">
+                      <div className="space-y-2">
+                        <Label className="text-[10px] font-black uppercase tracking-widest text-slate-500">SEU NICHO</Label>
+                        <Input 
+                          value={nicho} onChange={(e) => setNicho(e.target.value)} 
+                          placeholder="Ex: Imóveis de Alto Padrão..." 
+                          className="bg-slate-950 border-slate-800 h-10 text-xs"
+                        />
+                      </div>
+
+                      <div className="space-y-2">
+                        <Label className="text-[10px] font-black uppercase tracking-widest text-slate-500">PÚBLICO-ALVO</Label>
+                        <Input 
+                          value={publicoAlvo} onChange={(e) => setPublicoAlvo(e.target.value)} 
+                          placeholder="Ex: Médicos recém-formados..." 
+                          className="bg-slate-950 border-slate-800 h-10 text-xs"
+                        />
+                      </div>
+
+                      <div className="space-y-2">
+                        <Label className="text-[10px] font-black uppercase tracking-widest text-slate-500">OBJETIVO</Label>
+                        <div className="flex bg-slate-900 p-1 rounded-xl border border-slate-800">
+                          <button 
+                            onClick={() => setObjetivo('atracao')}
+                            className={`flex-1 py-1 px-2 rounded-lg text-[10px] font-bold transition-all ${objetivo === 'atracao' ? 'bg-blue-600 text-white shadow-lg' : 'text-slate-500 hover:text-slate-300'}`}
+                          >
+                            🧲 Atração
+                          </button>
+                          <button 
+                            onClick={() => setObjetivo('engajamento')}
+                            className={`flex-1 py-1 px-2 rounded-lg text-[10px] font-bold transition-all ${objetivo === 'engajamento' ? 'bg-blue-600 text-white shadow-lg' : 'text-slate-500 hover:text-slate-300'}`}
+                          >
+                            💬 Engaj.
+                          </button>
+                          <button 
+                            onClick={() => setObjetivo('conversao')}
+                            className={`flex-1 py-1 px-2 rounded-lg text-[10px] font-bold transition-all ${objetivo === 'conversao' ? 'bg-blue-600 text-white shadow-lg' : 'text-slate-500 hover:text-slate-300'}`}
+                          >
+                            💰 Conv.
+                          </button>
+                        </div>
+                      </div>
+
+                      <div className="space-y-2">
+                        <Label className="text-[10px] font-black uppercase tracking-widest text-slate-500">CTA OFICIAL</Label>
+                        <Input 
+                          value={cta} onChange={(e) => setCta(e.target.value)} 
+                          placeholder="Ex: Clica no link da bio..." 
+                          className="bg-slate-950 border-slate-800 h-10 text-xs"
+                        />
+                      </div>
+                    </div>
+                  </div>
+
                   <div className="space-y-5">
                     <h3 className="text-xs font-black uppercase tracking-widest text-slate-500">Automação (15m News / 2m Agent 2)</h3>
                     <div className="flex items-center justify-between p-5 rounded-2xl bg-slate-950/50 border border-slate-800 transition-colors hover:border-slate-700">
@@ -341,84 +409,6 @@ export default function CuradoriaPage() {
             </Sheet>
           </div>
         </div>
-        {/* Setup SaaS Panel */}
-        <div className="mb-10 bg-slate-900/60 backdrop-blur-md rounded-3xl border border-slate-800 p-6 shadow-2xl">
-          <div className="flex justify-between items-center mb-6">
-            <div>
-              <h2 className="text-xl font-bold flex items-center gap-2">
-                <span className="material-symbols-outlined text-blue-500">settings_account_box</span>
-                Setup do Especialista
-              </h2>
-              <p className="text-sm text-slate-400 mt-1">Configure o perfil dinâmico da IA para a sua conta.</p>
-            </div>
-            <Button 
-              onClick={handleSaveSetup} 
-              disabled={isSavingSetup}
-              className="bg-emerald-600 hover:bg-emerald-500 text-white font-bold"
-            >
-              {isSavingSetup ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <CheckCircle2 className="mr-2 h-4 w-4" />}
-              Salvar Configuração
-            </Button>
-          </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <div className="space-y-4">
-              <div className="space-y-2">
-                <Label className="text-sm font-bold text-slate-300">Seu Nicho de Atuação</Label>
-                <Input 
-                  value={nicho} onChange={(e) => setNicho(e.target.value)} 
-                  placeholder="Ex: Imóveis de Alto Padrão, Nutrição Esportiva..." 
-                  className="bg-slate-950 border-slate-800"
-                />
-              </div>
-
-              <div className="space-y-2">
-                <Label className="text-sm font-bold text-slate-300">Público-Alvo (Persona)</Label>
-                <Input 
-                  value={publicoAlvo} onChange={(e) => setPublicoAlvo(e.target.value)} 
-                  placeholder="Ex: Médicos recém-formados, Casais com filhos pequenos..." 
-                  className="bg-slate-950 border-slate-800"
-                />
-              </div>
-            </div>
-
-            <div className="space-y-4">
-              <div className="space-y-2">
-                <Label className="text-sm font-bold text-slate-300">Objetivo do Carrossel</Label>
-                <div className="flex bg-slate-950 p-1 rounded-xl border border-slate-800">
-                  <button 
-                    onClick={() => setObjetivo('atracao')}
-                    className={`flex-1 py-2 px-3 rounded-lg text-xs font-bold transition-all ${objetivo === 'atracao' ? 'bg-blue-600 text-white shadow-md' : 'text-slate-400 hover:text-slate-200'}`}
-                  >
-                    🧲 Atração
-                  </button>
-                  <button 
-                    onClick={() => setObjetivo('engajamento')}
-                    className={`flex-1 py-2 px-3 rounded-lg text-xs font-bold transition-all ${objetivo === 'engajamento' ? 'bg-blue-600 text-white shadow-md' : 'text-slate-400 hover:text-slate-200'}`}
-                  >
-                    💬 Engajamento
-                  </button>
-                  <button 
-                    onClick={() => setObjetivo('conversao')}
-                    className={`flex-1 py-2 px-3 rounded-lg text-xs font-bold transition-all ${objetivo === 'conversao' ? 'bg-blue-600 text-white shadow-md' : 'text-slate-400 hover:text-slate-200'}`}
-                  >
-                    💰 Conversão
-                  </button>
-                </div>
-              </div>
-
-              <div className="space-y-2">
-                <Label className="text-sm font-bold text-slate-300">Chamada de Ação (CTA Oficial)</Label>
-                <Input 
-                  value={cta} onChange={(e) => setCta(e.target.value)} 
-                  placeholder="Ex: Clica no link da bio para agendar sua consultoria..." 
-                  className="bg-slate-950 border-slate-800"
-                />
-              </div>
-            </div>
-          </div>
-        </div>
-
         {/* Grid of Cards */}
         {pautas.length === 0 ? (
           <div className="flex flex-col items-center justify-center rounded-2xl border-2 border-dashed border-slate-800 p-20 text-center animate-in fade-in zoom-in duration-500">

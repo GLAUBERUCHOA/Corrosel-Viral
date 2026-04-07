@@ -51,10 +51,20 @@ export default function CuradoriaPage() {
   const [objetivo, setObjetivo] = useState("atracao");
   const [cta, setCta] = useState("");
   const [isSavingSetup, setIsSavingSetup] = useState(false);
+  const [isCheckingAuth, setIsCheckingAuth] = useState(true);
 
   useEffect(() => {
-    const email = localStorage.getItem('user_email');
-    if (email) {
+    const checkAuth = () => {
+      const isAuth = localStorage.getItem('is_authenticated');
+      const email = localStorage.getItem('user_email');
+      
+      if (!isAuth || !email) {
+        window.location.href = '/login';
+        return;
+      }
+      
+      setIsCheckingAuth(false);
+      
       fetch(`/api/user/setup?email=${encodeURIComponent(email)}`)
         .then(res => res.json())
         .then(data => {
@@ -66,7 +76,9 @@ export default function CuradoriaPage() {
           }
         })
         .catch(console.error);
-    }
+    };
+
+    checkAuth();
   }, []);
 
   async function handleSaveSetup() {
@@ -220,7 +232,7 @@ export default function CuradoriaPage() {
     }
   };
 
-  if (pautas === undefined) {
+  if (isCheckingAuth || pautas === undefined) {
     return (
       <div className="flex h-screen w-full items-center justify-center bg-slate-950 text-white">
         <Loader2 className="h-8 w-8 animate-spin text-slate-400" />

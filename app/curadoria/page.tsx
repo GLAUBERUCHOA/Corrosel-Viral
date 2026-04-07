@@ -31,6 +31,75 @@ import { Switch } from "@/components/ui/switch";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 
+// Funções auxiliares movidas para fora para evitar recriação no render e erros de Lint
+const getTitle = (pautaStr: string) => {
+  const cleanStr = pautaStr.replace(/\[PILAR DA BUSCA\]:.*\n/i, "").trim();
+  
+  // 1. Tenta capturar [TEMA DA PAUTA] ou [TÍTULO]
+  const match = cleanStr.match(/\[(?:TEMA DA PAUTA|TÍTULO)\]:\s*([\s\S]*?)(?=\n\[|$)/i);
+  if (match && match[1].trim()) return match[1].trim();
+  
+  // 2. Fallback: pega a primeira linha limpa
+  return cleanStr.split('\n')[0].replace('Qual é a notícia + ', '').trim() || "Sem Título";
+};
+
+const getDescription = (pautaStr: string) => {
+  const cleanStr = pautaStr.replace(/\[PILAR DA BUSCA\]:.*\n/i, "").trim();
+  
+  // Tenta capturar o Ângulo genial
+  const match = cleanStr.match(/\[ÂNGULO PROVOCATIVO|ÂNGULO GENIAL\]:\s*([\s\S]*?)(?=\n\[|$)/i);
+  if (match && match[1].trim()) return match[1].trim();
+  
+  // Fallback conservador
+  return cleanStr.split('\n').slice(1, 3).join(' ') || "Aguardando detalhes do processamento...";
+};
+
+const renderRoteiro = (carrosselRaw: string) => {
+  try {
+    const sections = carrosselRaw.split(/(SLIDE \d+:|LEGENDA:|\[FONTE\]:)/i);
+    const slides: any[] = [];
+
+    for (let i = 1; i < sections.length; i += 2) {
+      const header = sections[i].toUpperCase();
+      const content = sections[i + 1];
+
+      if (header.includes("SLIDE")) {
+        const slideNum = header.match(/\d+/)?.[0] || slides.length + 1;
+        const title = content.match(/\[?TÍTULO\]?:\s*([\s\S]*?)(?=\[SUBTÍTULO\]:|$)/i)?.[1]?.trim() || "";
+        const subtitle = content.match(/\[?SUBTÍTULO\]?:\s*([\s\S]*?)$/i)?.[1]?.trim() || "";
+
+        slides.push({ slide: slideNum, title, subtitle });
+      } else if (header.includes("LEGENDA")) {
+        slides.push({ slide: "legenda", legenda: content.trim() });
+      } else if (header.includes("FONTE")) {
+        slides.push({ slide: "fonte", fonte: content.trim() });
+      }
+    }
+
+    if (slides.length === 0) {
+      return <div className="whitespace-pre-wrap font-mono text-slate-300 text-xs leading-relaxed p-4 bg-slate-950 rounded-xl border border-slate-800">{carrosselRaw}</div>;
+    }
+
+    return (
+      <div className="space-y-4 max-h-[60vh] overflow-y-auto pr-4 scrollbar-thin scrollbar-thumb-slate-800">
+        {slides.map((s: any, idx: number) => (
+          <div key={idx} className="p-4 rounded-xl bg-slate-950 border border-slate-800 font-mono text-xs">
+            <div className="text-blue-400 font-bold mb-2">
+              {s.slide === "legenda" ? "LEGENDA:" : s.slide === "fonte" ? "FONTE:" : `SLIDE ${s.slide}:`}
+            </div>
+            {s.title && <div>[TÍTULO]: {s.title}</div>}
+            {s.subtitle && <div>[SUBTÍTULO]: {s.subtitle}</div>}
+            {s.fonte && <div className="text-slate-500 underline break-all">{s.fonte}</div>}
+            {s.legenda && <div>{s.legenda}</div>}
+          </div>
+        ))}
+      </div>
+    );
+  } catch (e) {
+    return <div className="whitespace-pre-wrap text-slate-300 p-4 font-mono text-xs">{carrosselRaw}</div>;
+  }
+};
+
 export default function CuradoriaPage() {
   const router = useRouter();
   const pautas = useQuery(api.agents.getAllPautas);
@@ -162,75 +231,6 @@ export default function CuradoriaPage() {
     }
   }
 
-  const getTitle = (pautaStr: string) => {
-    // 1. Remove qualquer metapilar (como [PILAR DA BUSCA]: ...) do texto para que não polua o Card
-    const cleanStr = pautaStr.replace(/\[PILAR DA BUSCA\]:.*\n/i, "").trim();
-    
-    // 2. Tenta capturar tudo após [TEMA DA PAUTA]: ou [TÍTULO]: até a próxima tag `\n[` ou fim
-    const match = cleanStr.match(/\[(?:TEMA DA PAUTA|TÍTULO)\]:\s*([\s\S]*?)(?=\n\[|$)/i);
-    if (match && match[1].trim()) return match[1].trim();
-    
-    // 3. Fallback: pega a primeira linha limpa
-    return cleanStr.split('\n')[0].replace('Qual é a notícia + ', '').trim() || "Sem Título";
-  };
-
-  const getDescription = (pautaStr: string) => {
-    const cleanStr = pautaStr.replace(/\[PILAR DA BUSCA\]:.*\n/i, "").trim();
-    
-    // Tenta capturar o Ângulo genial
-    const match = cleanStr.match(/\[ÂNGULO PROVOCATIVO|ÂNGULO GENIAL\]:\s*([\s\S]*?)(?=\n\[|$)/i);
-    if (match && match[1].trim()) return match[1].trim();
-    
-    // Fallback conservador
-    return cleanStr.split('\n').slice(1, 3).join(' ') || "Aguardando detalhes do processamento...";
-  };
-
-  const renderRoteiro = (carrosselRaw: string) => {
-    try {
-      // Divide por SLIDE XX: ou LEGENDA: ou [FONTE]:
-      const sections = carrosselRaw.split(/(SLIDE \d+:|LEGENDA:|\[FONTE\]:)/i);
-      const slides: any[] = [];
-
-      for (let i = 1; i < sections.length; i += 2) {
-        const header = sections[i].toUpperCase();
-        const content = sections[i + 1];
-
-        if (header.includes("SLIDE")) {
-          const slideNum = header.match(/\d+/)?.[0] || slides.length + 1;
-          const title = content.match(/\[?TÍTULO\]?:\s*([\s\S]*?)(?=\[SUBTÍTULO\]:|$)/i)?.[1]?.trim() || "";
-          const subtitle = content.match(/\[?SUBTÍTULO\]?:\s*([\s\S]*?)$/i)?.[1]?.trim() || "";
-
-          slides.push({ slide: slideNum, title, subtitle });
-        } else if (header.includes("LEGENDA")) {
-          slides.push({ slide: "legenda", legenda: content.trim() });
-        } else if (header.includes("FONTE")) {
-          slides.push({ slide: "fonte", fonte: content.trim() });
-        }
-      }
-
-      if (slides.length === 0) {
-        return <div className="whitespace-pre-wrap font-mono text-slate-300 text-xs leading-relaxed p-4 bg-slate-950 rounded-xl border border-slate-800">{carrosselRaw}</div>;
-      }
-
-      return (
-        <div className="space-y-4 max-h-[60vh] overflow-y-auto pr-4 scrollbar-thin scrollbar-thumb-slate-800">
-          {slides.map((s: any, idx: number) => (
-            <div key={idx} className="p-4 rounded-xl bg-slate-950 border border-slate-800 font-mono text-xs">
-              <div className="text-blue-400 font-bold mb-2">
-                {s.slide === "legenda" ? "LEGENDA:" : s.slide === "fonte" ? "FONTE:" : `SLIDE ${s.slide}:`}
-              </div>
-              {s.title && <div>[TÍTULO]: {s.title}</div>}
-              {s.subtitle && <div>[SUBTÍTULO]: {s.subtitle}</div>}
-              {s.fonte && <div className="text-slate-500 underline break-all">{s.fonte}</div>}
-              {s.legenda && <div>{s.legenda}</div>}
-            </div>
-          ))}
-        </div>
-      );
-    } catch (e) {
-      return <div className="whitespace-pre-wrap text-slate-300 p-4 font-mono text-xs">{carrosselRaw}</div>;
-    }
-  };
 
   if (isCheckingAuth || pautas === undefined) {
     return (
@@ -416,7 +416,7 @@ export default function CuradoriaPage() {
               <Rocket className="h-10 w-10 text-slate-700" />
             </div>
             <p className="text-xl font-bold text-slate-400">Tudo calmo na curadoria.</p>
-            <p className="text-sm text-slate-600 mt-2">Clique em 'Disparar Agente 1' para iniciar uma nova pauta agora.</p>
+            <p className="text-sm text-slate-600 mt-2">Clique em &apos;Disparar Agente 1&apos; para iniciar uma nova pauta agora.</p>
           </div>
         ) : (
           <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
@@ -479,7 +479,7 @@ export default function CuradoriaPage() {
           <DialogContent className="bg-slate-900 border-slate-800 text-white sm:max-w-2xl">
             <DialogHeader>
               <DialogTitle className="text-2xl font-black">Roteiro Finalizado</DialogTitle>
-              <DialogDescription className="text-slate-400">
+             <DialogDescription className="text-slate-400">
                 Copie o texto bruto abaixo para colar diretamente no LAB.
               </DialogDescription>
             </DialogHeader>

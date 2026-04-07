@@ -7,7 +7,7 @@ export async function GET(req: NextRequest) {
     if (!email) return NextResponse.json({ error: 'Email missing' }, { status: 400 });
 
     const cleanEmail = email.toLowerCase().trim();
-    const user = await prisma.user.findUnique({
+    const user = await (prisma.user as any).findUnique({
       where: { email: cleanEmail },
       select: { nicho: true, publicoAlvo: true, objetivo: true, cta: true }
     });
@@ -27,7 +27,7 @@ export async function POST(req: NextRequest) {
     if (!email) return NextResponse.json({ error: 'Email missing' }, { status: 400 });
 
     const cleanEmail = email.toLowerCase().trim();
-    const user = await prisma.user.update({
+    const user = await (prisma.user as any).update({
       where: { email: cleanEmail },
       data: { nicho, publicoAlvo, objetivo, cta }
     });

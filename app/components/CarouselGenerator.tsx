@@ -1,7 +1,7 @@
 'use client';
 // Version: 1.1 - Added mobile download fixes and layout adjustments
 import React, { useState, useRef, useEffect } from 'react';
-import { GoogleGenAI } from "@google/genai";
+import { GoogleGenerativeAI } from "@google/generative-ai";
 import * as htmlToImage from 'html-to-image';
 import JSZip from 'jszip';
 import { saveAs } from 'file-saver';
@@ -208,9 +208,67 @@ const SimpleRichTextEditor = ({ value, onChange, placeholder }: { value: string,
 
 export default function CarouselGenerator({ onLogout }: { onLogout: () => void }) {
   const [pautaId, setPautaId] = useState<string | null>(null);
+  const [content, setContent] = useState('');
+  const [activeStep, setActiveStep] = useState<number>(1);
+  const [isIuryMode, setIsIuryMode] = useState(false);
+  const [isGeneratingText, setIsGeneratingText] = useState(false);
+  const [toneMode, setToneMode] = useState('PROVOCATIVO');
+  const [addCtaSlide, setAddCtaSlide] = useState(true);
+  const [ctaContent, setCtaContent] = useState('O que você achou? Deixe nos comentários e salve este post para não esquecer!');
+  const [ctaImage, setCtaImage] = useState<string | null>(null);
+  const [parsedSlides, setParsedSlides] = useState<{ title: string; subtitle: string; isCta?: boolean }[]>([{ title: '', subtitle: '', isCta: false }]);
+  const [uploadedImages, setUploadedImages] = useState<(string | null)[]>(Array(10).fill(null));
+  const [activeMobileTab, setActiveMobileTab] = useState<'config' | 'preview'>('config');
+  const [hasNewPreview, setHasNewPreview] = useState(false);
+  const [customApiKey, setCustomApiKey] = useState('');
+  const [isDownloading, setIsDownloading] = useState(false);
+  const [isMobile, setIsMobile] = useState(false);
+  const [viewMode, setViewMode] = useState<'carousel' | 'grid'>('carousel');
+  const [isDarkMode, setIsDarkMode] = useState(false);
+  const [sidebarWidth, setSidebarWidth] = useState(450);
+  const [draggedIndex, setDraggedIndex] = useState<number | null>(null);
+  const [targetUploadIndex, setTargetUploadIndex] = useState<number | null>(null);
+  const [openSlideIndex, setOpenSlideIndex] = useState<number | null>(null);
+  const [editingSlideIndex, setEditingSlideIndex] = useState<number | null>(null);
+  const [editTitle, setEditTitle] = useState('');
+  const [editSubtitle, setEditSubtitle] = useState('');
+  const [currentSlideIndex, setCurrentSlideIndex] = useState(0);
+  const [zoom, setZoom] = useState(100);
+
+  // Estados de Estilo
+  const [brandHandle, setBrandHandle] = useState('');
+  const [brandLogo, setBrandLogo] = useState<string | null>(null);
+  const [saveDefaults, setSaveDefaults] = useState(true);
+  const [styleModel, setStyleModel] = useState('Escuro');
+  const [customColor, setCustomColor] = useState('#6366f1');
+  const [customTextColor, setCustomTextColor] = useState('#ffffff');
+  const [fontFamily, setFontFamily] = useState('var(--font-poppins), sans-serif');
+  const [textAlign, setTextAlign] = useState('text-left');
+  const [aspectRatio, setAspectRatio] = useState('4:5');
+  const [titleSize, setTitleSize] = useState(32);
+  const [subSize, setSubSize] = useState(16);
+  const [ctaBgColor, setCtaBgColor] = useState('#6366f1');
+  const [ctaTextColor, setCtaTextColor] = useState('#ffffff');
+  const [ctaTextSize, setCtaTextSize] = useState(24);
+  const [generateWithAI, setGenerateWithAI] = useState(false);
+  const [generatingImages, setGeneratingImages] = useState<boolean[]>([]);
+
+  // Estados de Configuração Dinâmica
+  const [dbPrompts, setDbPrompts] = useState<Record<string, string>>({});
+  const [dbLabels, setDbLabels] = useState<{ key: string; label: string }[]>([]);
+  const [dbImagePrompts, setDbImagePrompts] = useState<Record<string, string>>({});
+  const [dbImageLabels, setDbImageLabels] = useState<{ key: string; label: string }[]>([]);
+  const [imageNiche, setImageNiche] = useState('OUTROS');
+
+  // Refs
+  const fileInputRef = useRef<HTMLInputElement>(null);
+  const individualFileInputRef = useRef<HTMLInputElement>(null);
+  const brandLogoInputRef = useRef<HTMLInputElement>(null);
+  const ctaImageInputRef = useRef<HTMLInputElement>(null);
+  const slideRefs = useRef<(HTMLDivElement | null)[]>([]);
+  const isInitialized = useRef(false);
 
   useEffect(() => {
-    // Captura o ID da pauta da URL apenas uma vez na montagem
     const params = new URLSearchParams(window.location.search);
     const id = params.get('pautaId');
     if (id) setPautaId(id);
@@ -218,80 +276,17 @@ export default function CarouselGenerator({ onLogout }: { onLogout: () => void }
 
   const pautaData = useQuery(api.agents.getPautaById, pautaId ? { id: pautaId as any } : "skip");
 
-  // Hook específico para lidar com o preenchimento da pauta
-  useEffect(() => {
-    if (pautaData && pautaData.carrossel) {
-      console.log("--- AUTOFILL: CARREGANDO PAUTA NO LAB ---", pautaId);
-
-      // 1. Preenche o conteúdo textual
-      setContent(pautaData.carrossel);
-
-      // 2. Processa os slides imediatamente para visualização
-      processTextIntoSlides(pautaData.carrossel, addCtaSlide, ctaContent);
-
-      // 3. Ativa o preview visual
-      setHasNewPreview(true);
-
-      // Se for mobile, muda para a aba de preview
-      if (window.innerWidth < 768) {
-        setActiveMobileTab('preview');
-      }
-    }
-  }, [pautaData, addCtaSlide, ctaContent]);
-  const [dbPrompts, setDbPrompts] = useState<Record<string, string>>({});
-  const [dbLabels, setDbLabels] = useState<{ key: string, label: string }[]>([]);
-  const [dbImagePrompts, setDbImagePrompts] = useState<Record<string, string>>({});
-  const [dbImageLabels, setDbImageLabels] = useState<{ key: string, label: string }[]>([]);
-  const [imageNiche, setImageNiche] = useState('OUTROS');
-  const [aspectRatio, setAspectRatio] = useState('4:5');
-  const [styleModel, setStyleModel] = useState('Escuro');
-  const [fontFamily, setFontFamily] = useState('var(--font-poppins), sans-serif');
-  const [textAlign, setTextAlign] = useState('text-left');
-  const [generateWithAI, setGenerateWithAI] = useState(false);
-  const [customApiKey, setCustomApiKey] = useState('');
-  const [generatingImages, setGeneratingImages] = useState<boolean[]>([]);
-  const [isIuryMode, setIsIuryMode] = useState(false);
-  const [isGeneratingText, setIsGeneratingText] = useState(false);
-  const [hasNewPreview, setHasNewPreview] = useState(false);
-  const [toneMode, setToneMode] = useState('PROVOCATIVO');
-  const [content, setContent] = useState('');
-  const [zoom, setZoom] = useState(100);
-  const [activeMobileTab, setActiveMobileTab] = useState<'config' | 'preview'>('config');
-  const [activeStep, setActiveStep] = useState<number>(1);
-  const [saveDefaults, setSaveDefaults] = useState(true);
-  const [currentSlideIndex, setCurrentSlideIndex] = useState(0);
-
-  const [addCtaSlide, setAddCtaSlide] = useState(false);
-  const [ctaContent, setCtaContent] = useState('O que você achou? Deixe nos comentários e salve este post para não esquecer!');
-  const [ctaImage, setCtaImage] = useState<string | null>(null);
-  const ctaImageInputRef = useRef<HTMLInputElement>(null);
-
-  const [parsedSlides, setParsedSlides] = useState<{ title: string, subtitle: string, isCta?: boolean }[]>([
-    { title: '', subtitle: '', isCta: false }
-  ]);
-
   const slideCount = parsedSlides.length;
 
-  const [uploadedImages, setUploadedImages] = useState<(string | null)[]>(Array(6).fill(null));
-  const [draggedIndex, setDraggedIndex] = useState<number | null>(null);
-  const [targetUploadIndex, setTargetUploadIndex] = useState<number | null>(null);
-  const [isDownloading, setIsDownloading] = useState(false);
-  const [brandLogo, setBrandLogo] = useState<string | null>(null);
-  const [brandHandle, setBrandHandle] = useState<string>('');
-  const [editingSlideIndex, setEditingSlideIndex] = useState<number | null>(null);
-  const [openSlideIndex, setOpenSlideIndex] = useState<number | null>(null);
-  const [editTitle, setEditTitle] = useState('');
-  const [editSubtitle, setEditSubtitle] = useState('');
-  const [customColor, setCustomColor] = useState('#6366f1');
-  const [customTextColor, setCustomTextColor] = useState('#ffffff');
-  const [isMobile, setIsMobile] = useState(false);
-  const [isDarkMode, setIsDarkMode] = useState(false);
-  const [viewMode, setViewMode] = useState<'grid' | 'carousel'>('grid');
-  const [titleSize, setTitleSize] = useState(30);
-  const [subSize, setSubSize] = useState(16);
-  const [ctaBgColor, setCtaBgColor] = useState('#111827');
-  const [ctaTextColor, setCtaTextColor] = useState('#ffffff');
-  const [ctaTextSize, setCtaTextSize] = useState(24);
+  useEffect(() => {
+    if (pautaId && pautaData && pautaData.carrossel) {
+      console.log("--- AUTOFILL: CARREGANDO PAUTA NO LAB ---", pautaId);
+      setContent(pautaData.carrossel);
+      processTextIntoSlides(pautaData.carrossel, addCtaSlide, ctaContent);
+      setHasNewPreview(true);
+      if (window.innerWidth < 768) setActiveMobileTab('preview');
+    }
+  }, [pautaData, addCtaSlide, ctaContent, pautaId]);
 
   // Dark Mode Logic
   useEffect(() => {
@@ -419,12 +414,6 @@ export default function CarouselGenerator({ onLogout }: { onLogout: () => void }
     const clientY = 'touches' in e ? e.touches[0].clientY : (e as React.MouseEvent).clientY;
     isDraggingImg.current = { index, startY: clientY, startPos: currentPos };
   };
-
-  const fileInputRef = useRef<HTMLInputElement>(null);
-  const individualFileInputRef = useRef<HTMLInputElement>(null);
-  const brandLogoInputRef = useRef<HTMLInputElement>(null);
-  const slideRefs = useRef<(HTMLDivElement | null)[]>([]);
-  const isInitialized = useRef(false);
 
   useEffect(() => {
     const savedKey = localStorage.getItem('gemini_api_key');
@@ -577,8 +566,6 @@ export default function CarouselGenerator({ onLogout }: { onLogout: () => void }
       localStorage.removeItem('gemini_api_key');
     }
   };
-
-  const [sidebarWidth, setSidebarWidth] = useState(450);
 
   const startResizing = React.useCallback((mouseDownEvent: React.MouseEvent) => {
     mouseDownEvent.preventDefault();
@@ -890,13 +877,13 @@ export default function CarouselGenerator({ onLogout }: { onLogout: () => void }
     });
 
     try {
-      const ai = new GoogleGenAI({ apiKey });
+      const genAI = new GoogleGenerativeAI(apiKey);
+      const model = genAI.getGenerativeModel({ model: 'gemini-2.5-flash' });
       const prompt = getImagePrompt(imageNiche, dbImagePrompts, slide.title, slide.subtitle);
 
-      const response = await ai.models.generateContent({
-        model: 'gemini-2.5-flash',
+      const response = await model.generateContent({
         contents: [{ role: 'user', parts: [{ text: prompt }] }],
-      }) as any;
+      });
 
       const parts = response.response?.candidates?.[0]?.content?.parts || [];
       for (const part of parts) {
@@ -939,18 +926,18 @@ export default function CarouselGenerator({ onLogout }: { onLogout: () => void }
 
       setIsGeneratingText(true);
       try {
-        const ai = new GoogleGenAI({ apiKey });
+        const genAI = new GoogleGenerativeAI(apiKey);
+        const model = genAI.getGenerativeModel({ model: 'gemini-2.5-flash' });
         const promptFinal = `${getIuryPrompt(toneMode, dbPrompts)}\n\nRASCUNHO DO USUÁRIO:\n${content}`;
 
         // Gemini 2.5 Flash - Estabilizado para restauração do Modo Iury
         console.log('--- PIPELINE: GERANDO TEXTO COM IURY ---');
 
-        const response = await ai.models.generateContent({
-          model: 'gemini-2.5-flash',
-          contents: promptFinal,
+        const response = await model.generateContent({
+          contents: [{ role: 'user', parts: [{ text: promptFinal }] }],
         });
 
-        finalContent = response.text || '';
+        finalContent = response.response.text();
         setContent(finalContent); // Atualiza a caixa de texto visualmente
       } catch (error) {
         console.error("Erro no Pipeline (Texto):", error);
@@ -973,21 +960,22 @@ export default function CarouselGenerator({ onLogout }: { onLogout: () => void }
         return;
       }
 
-      const ai = new GoogleGenAI({ apiKey });
+      const genAI = new GoogleGenerativeAI(apiKey);
       const newGenerating = Array(newSlides.length).fill(true);
       setGeneratingImages(newGenerating);
 
       const newImages = [...uploadedImages];
       while (newImages.length < newSlides.length) newImages.push(null);
 
+      const imageModel = genAI.getGenerativeModel({ model: 'gemini-2.5-flash' });
+
       for (let i = 0; i < newSlides.length; i++) {
         try {
           const prompt = getImagePrompt(imageNiche, dbImagePrompts, newSlides[i].title, newSlides[i].subtitle);
 
-          const response = await ai.models.generateContent({
-            model: 'gemini-2.5-flash',
+          const response = await imageModel.generateContent({
             contents: [{ role: 'user', parts: [{ text: prompt }] }],
-          }) as any;
+          });
 
           const parts = response.response?.candidates?.[0]?.content?.parts || [];
           for (const part of parts) {

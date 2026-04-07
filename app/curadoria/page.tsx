@@ -33,8 +33,9 @@ import { useRouter } from "next/navigation";
 export default function CuradoriaPage() {
   const router = useRouter();
   const pautas = useQuery(api.agents.getAllPautas);
-  const runAgent1 = useAction(api.agents.runAgent1Fetcher);
+  const runAgent1 = useAction(api.ai_actions.runAgent1Fetcher);
   const clearPautas = useMutation(api.agents.clearAllPautas);
+  const deletePauta = useMutation(api.agents.deletePauta);
   const approvePauta = useMutation(api.agents.approvePauta);
 
   const [isRunningAgent1, setIsRunningAgent1] = useState(false);
@@ -87,6 +88,14 @@ export default function CuradoriaPage() {
     }
   }
 
+  async function handleExcluir(id: any) {
+    try {
+      await deletePauta({ id });
+    } catch (err) {
+      console.error("Erro ao excluir pauta", err);
+    }
+  }
+
   async function copyToClipboard(text: string) {
     try {
       await navigator.clipboard.writeText(text);
@@ -96,6 +105,29 @@ export default function CuradoriaPage() {
       console.error("Erro ao copiar", err);
     }
   }
+
+  const getTitle = (pautaStr: string) => {
+    // 1. Remove qualquer metapilar (como [PILAR DA BUSCA]: ...) do texto para que não polua o Card
+    const cleanStr = pautaStr.replace(/\[PILAR DA BUSCA\]:.*\n/i, "").trim();
+    
+    // 2. Tenta capturar tudo após [TEMA DA PAUTA]: ou [TÍTULO]: até a próxima tag `\n[` ou fim
+    const match = cleanStr.match(/\[(?:TEMA DA PAUTA|TÍTULO)\]:\s*([\s\S]*?)(?=\n\[|$)/i);
+    if (match && match[1].trim()) return match[1].trim();
+    
+    // 3. Fallback: pega a primeira linha limpa
+    return cleanStr.split('\n')[0].replace('Qual é a notícia + ', '').trim() || "Sem Título";
+  };
+
+  const getDescription = (pautaStr: string) => {
+    const cleanStr = pautaStr.replace(/\[PILAR DA BUSCA\]:.*\n/i, "").trim();
+    
+    // Tenta capturar o Ângulo genial
+    const match = cleanStr.match(/\[ÂNGULO PROVOCATIVO|ÂNGULO GENIAL\]:\s*([\s\S]*?)(?=\n\[|$)/i);
+    if (match && match[1].trim()) return match[1].trim();
+    
+    // Fallback conservador
+    return cleanStr.split('\n').slice(1, 3).join(' ') || "Aguardando detalhes do processamento...";
+  };
 
   const renderRoteiro = (carrosselRaw: string) => {
     try {
@@ -267,23 +299,32 @@ export default function CuradoriaPage() {
           <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
             {pautas.map((pauta) => (
               <Card key={pauta._id} className="group flex flex-col border-slate-800 bg-slate-900/50 backdrop-blur-sm text-slate-100 shadow-xl transition-all duration-300 hover:border-blue-500/40 hover:bg-slate-900 hover:shadow-2xl hover:shadow-blue-900/10">
-                <CardHeader className="pb-3">
+                <CardHeader className="pb-3 relative">
                   <div className="flex items-center justify-between mb-4 gap-2">
                     <div className="flex items-center gap-2">
                       <StatusBadge status={pauta.status} />
                       <PillarBadge pauta={pauta.pauta} />
                     </div>
-                    <span className="text-[11px] font-bold uppercase tracking-widest text-slate-500 shrink-0">
-                      {new Date(pauta.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
-                    </span>
+                    <div className="flex items-center gap-2">
+                      <span className="text-[11px] font-bold uppercase tracking-widest text-slate-500 shrink-0">
+                        {new Date(pauta.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                      </span>
+                      <button 
+                        onClick={() => handleExcluir(pauta._id)} 
+                        className="text-slate-600 hover:text-rose-500 hover:bg-rose-500/10 p-1.5 rounded-full transition-colors flex -mt-1 -mr-2"
+                        title="Excluir card"
+                      >
+                        <Trash2 className="h-4 w-4" />
+                      </button>
+                    </div>
                   </div>
                   <CardTitle className="line-clamp-2 text-xl font-black leading-tight group-hover:text-blue-400 transition-colors">
-                    {pauta.pauta.match(/\[(?:TEMA DA PAUTA|TÍTULO)\]:\s*(.*)/i)?.[1] || pauta.pauta.split('\n')[0].replace('Qual é a notícia + ', '') || "Sem Título"}
+                    {getTitle(pauta.pauta)}
                   </CardTitle>
                 </CardHeader>
                 <CardContent className="flex-grow">
                   <CardDescription className="text-slate-400 leading-relaxed font-medium line-clamp-3">
-                    {pauta.pauta.match(/\[ÂNGULO PROVOCATIVO\]:\s*(.*)/i)?.[1] || pauta.pauta.split('\n')[1] || "Aguardando geração do ângulo provocativo..."}
+                    {getDescription(pauta.pauta)}
                   </CardDescription>
                 </CardContent>
                 <CardFooter className="grid grid-cols-2 gap-3 border-t border-slate-800/50 p-6 pt-5 bg-slate-900/30">

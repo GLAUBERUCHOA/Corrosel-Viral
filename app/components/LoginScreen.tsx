@@ -78,6 +78,7 @@ export default function LoginScreen({ onLogin }: { onLogin: (email: string) => v
 
       const data = await response.json();
 
+      if (response.ok) {
         if (data.isVerified || (isFirstAccess && !data.error)) {
            // Admin bypass ou verificado
           onLogin(cleanEmail);

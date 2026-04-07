@@ -23,6 +23,10 @@ export default function AdminLogin() {
             const data = await res.json();
 
             if (res.ok && data.success) {
+                // Sincroniza o contexto do Editor para a Curadoria
+                localStorage.setItem('user_email', email);
+                localStorage.setItem('is_authenticated', 'true');
+                
                 // Get callbackUrl from query params
                 const params = new URLSearchParams(window.location.search);
                 const callbackUrl = params.get('callbackUrl') || '/admin';

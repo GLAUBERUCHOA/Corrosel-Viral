@@ -130,6 +130,13 @@ export default function CuradoriaPage() {
   const [copied, setCopied] = useState(false);
   const [isCheckingAuth, setIsCheckingAuth] = useState(true);
 
+  // Setup SaaS
+  const [nicho, setNicho] = useState("");
+  const [publicoAlvo, setPublicoAlvo] = useState("");
+  const [objetivo, setObjetivo] = useState("atracao");
+  const [cta, setCta] = useState("");
+  const [isSavingSetup, setIsSavingSetup] = useState(false);
+
   useEffect(() => {
     const checkAuth = () => {
       const isAuth = localStorage.getItem('is_authenticated');
@@ -140,18 +147,50 @@ export default function CuradoriaPage() {
         return;
       }
       setIsCheckingAuth(false);
+
+      // Carregar setup do usuário
+      fetch(`/api/user/setup?email=${encodeURIComponent(email)}`)
+        .then(res => res.json())
+        .then(data => {
+          if (data.success && data.data) {
+            setNicho(data.data.nicho || "");
+            setPublicoAlvo(data.data.publicoAlvo || "");
+            setObjetivo(data.data.objetivo || "atracao");
+            setCta(data.data.cta || "");
+          }
+        })
+        .catch(console.error);
     };
 
     checkAuth();
   }, []);
 
+  async function handleSaveSetup() {
+    const email = localStorage.getItem('user_email');
+    if (!email) return;
+    setIsSavingSetup(true);
+    try {
+      await fetch('/api/user/setup', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email, nicho, publicoAlvo, objetivo, cta })
+      });
+      alert("Configurações do Especialista salvas!");
+    } catch (err) {
+      console.error('Erro ao salvar setup', err);
+    } finally {
+      setIsSavingSetup(false);
+    }
+  }
+
   async function handleDispararAgente1() {
-    console.log("🚀 Iniciando disparo do Agente 1 (Modo Configurações Globais)...");
+    console.log("🚀 Iniciando disparo do Agente 1 (Passando Setup Local)...");
     setIsRunningAgent1(true);
     try {
       // @ts-ignore
       const result = await runAgent1({ 
-        automatic: false
+        automatic: false,
+        setup: { nicho, publicoAlvo, objetivo, cta }
       });
       console.log("✅ Resposta do Agente 1:", result);
       if (result && !result.success) {
@@ -273,7 +312,75 @@ export default function CuradoriaPage() {
                   </SheetDescription>
                 </SheetHeader>
 
-                <div className="py-6 space-y-10">
+                <div className="py-6 space-y-8">
+                  {/* SETUP DO ESPECIALISTA (DENTRO DA GAVETA AGORA) */}
+                  <div className="space-y-6 pb-6 border-b border-slate-800">
+                    <div className="flex items-center justify-between">
+                      <h3 className="text-sm font-bold uppercase tracking-widest text-slate-500 flex items-center gap-2">
+                        <Settings className="h-4 w-4 text-blue-500" />
+                        Setup do Especialista
+                      </h3>
+                      <Button 
+                        size="sm" 
+                        onClick={handleSaveSetup} 
+                        disabled={isSavingSetup}
+                        className="bg-emerald-600 hover:bg-emerald-500 h-8 text-xs font-bold"
+                      >
+                        {isSavingSetup ? <Loader2 className="h-3 w-3 animate-spin mr-1" /> : <CheckCircle2 className="h-3 w-3 mr-1" />}
+                        Salvar
+                      </Button>
+                    </div>
+
+                    <div className="space-y-4">
+                      <div className="space-y-2">
+                        <Label className="text-[10px] font-bold uppercase text-slate-500 tracking-wider">Seu Nicho de Atuação</Label>
+                        <Input 
+                          value={nicho} 
+                          onChange={(e) => setNicho(e.target.value)}
+                          placeholder="Ex: Imóveis de Luxo..."
+                          className="bg-slate-950 border-slate-800 h-10 text-sm focus:border-blue-500"
+                        />
+                      </div>
+
+                      <div className="space-y-2">
+                        <Label className="text-[10px] font-bold uppercase text-slate-500 tracking-wider">Público-Alvo (Persona)</Label>
+                        <Input 
+                          value={publicoAlvo} 
+                          onChange={(e) => setPublicoAlvo(e.target.value)}
+                          placeholder="Ex: Médicos em São Paulo..."
+                          className="bg-slate-950 border-slate-800 h-10 text-sm focus:border-blue-500"
+                        />
+                      </div>
+
+                      <div className="space-y-2">
+                        <Label className="text-[10px] font-bold uppercase text-slate-500 tracking-wider">Objetivo do Carrossel</Label>
+                        <div className="flex bg-slate-950 p-1 rounded-lg border border-slate-800 gap-1">
+                          {['atracao', 'engajamento', 'conversao'].map((opt) => (
+                            <button
+                              key={opt}
+                              onClick={() => setObjetivo(opt)}
+                              className={`flex-1 py-2 text-[10px] font-bold uppercase rounded-md transition-all ${
+                                objetivo === opt ? 'bg-blue-600 text-white shadow-lg' : 'text-slate-500 hover:text-slate-300'
+                              }`}
+                            >
+                              {opt === 'atracao' ? '🧲 Atração' : opt === 'engajamento' ? '💬 Engajo' : '💰 Venda'}
+                            </button>
+                          ))}
+                        </div>
+                      </div>
+
+                      <div className="space-y-2">
+                        <Label className="text-[10px] font-bold uppercase text-slate-500 tracking-wider">Chamada de Ação (CTA Oficial)</Label>
+                        <Input 
+                          value={cta} 
+                          onChange={(e) => setCta(e.target.value)}
+                          placeholder="Ex: Link na bio..."
+                          className="bg-slate-950 border-slate-800 h-10 text-sm focus:border-blue-500"
+                        />
+                      </div>
+                    </div>
+                  </div>
+
                   <div className="space-y-4">
                     <h3 className="text-sm font-bold uppercase tracking-widest text-slate-500">Regras e Comportamento</h3>
                     <a href="/admin/configuracoes" className="block w-full">

@@ -33,65 +33,6 @@ export default function ClientForm({ initialConfig }: { initialConfig: any }) {
   return (
     <form onSubmit={handleSubmit} className="space-y-8 pb-32">
       
-      {/* PERFIL DO ESPECIALISTA (SETUP) */}
-      <Card className="border-slate-800 bg-slate-900/50 backdrop-blur-sm text-slate-100 shadow-xl overflow-hidden transition-all hover:border-blue-500/30">
-        <CardHeader className="bg-slate-900/50 border-b border-slate-800/50">
-          <CardTitle className="text-xl font-black flex items-center gap-3">
-            <Settings className="h-6 w-6 text-blue-500" />
-            Perfil do Especialista
-          </CardTitle>
-          <CardDescription className="text-slate-400 font-medium">Configure o perfil dinâmico da IA para a sua conta.</CardDescription>
-        </CardHeader>
-        <CardContent className="p-8 space-y-6">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <div className="space-y-3">
-              <Label className="text-sm font-bold uppercase tracking-widest text-slate-500">Seu Nicho de Atuação</Label>
-              <input 
-                name="nicho"
-                defaultValue={initialConfig.nicho || ''}
-                placeholder="Ex: Imóveis de Alto Padrão..."
-                className="w-full flex h-12 rounded-xl border border-slate-800 bg-slate-950 px-4 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 disabled:cursor-not-allowed disabled:opacity-50 font-medium"
-              />
-            </div>
-
-            <div className="space-y-3">
-              <Label className="text-sm font-bold uppercase tracking-widest text-slate-500">Público-Alvo (Persona)</Label>
-              <input 
-                name="publicoAlvo"
-                defaultValue={initialConfig.publicoAlvo || ''}
-                placeholder="Ex: Médicos recém-formados..."
-                className="w-full flex h-12 rounded-xl border border-slate-800 bg-slate-950 px-4 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 disabled:cursor-not-allowed disabled:opacity-50 font-medium"
-              />
-            </div>
-          </div>
-
-          <div className="space-y-3">
-            <Label className="text-sm font-bold uppercase tracking-widest text-slate-500">Objetivo do Carrossel</Label>
-            <div className="flex bg-slate-950 p-1 rounded-xl border border-slate-800">
-               <select 
-                 name="objetivo"
-                 defaultValue={initialConfig.objetivo || 'atracao'}
-                 className="w-full bg-transparent h-10 px-3 outline-none font-bold text-slate-200"
-               >
-                 <option value="atracao" className="bg-slate-950 text-white">🧲 Atração</option>
-                 <option value="engajamento" className="bg-slate-950 text-white">💬 Engajamento</option>
-                 <option value="conversao" className="bg-slate-950 text-white">💰 Conversão</option>
-               </select>
-            </div>
-          </div>
-
-          <div className="space-y-3">
-            <Label className="text-sm font-bold uppercase tracking-widest text-slate-500">Chamada de Ação (CTA Oficial)</Label>
-            <input 
-              name="cta"
-              defaultValue={initialConfig.cta || ''}
-              placeholder="Ex: Clica no link da bio..."
-              className="w-full flex h-12 rounded-xl border border-slate-800 bg-slate-950 px-4 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 disabled:cursor-not-allowed disabled:opacity-50 font-medium"
-            />
-          </div>
-        </CardContent>
-      </Card>
-
       {/* SEÇÃO GERAL */}
       <Card className="border-slate-800 bg-slate-900/50 backdrop-blur-sm text-slate-100 shadow-xl overflow-hidden transition-all hover:border-blue-500/30">
         <CardHeader className="bg-slate-900/50 border-b border-slate-800/50">

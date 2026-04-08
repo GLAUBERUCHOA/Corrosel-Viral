@@ -81,7 +81,7 @@ export const runAgent1Fetcher = action({
     };
 
     const personaInjection = activeSetup.nicho && activeSetup.publicoAlvo
-      ? `[PERFIL DO USUÁRIO SAAS]\nAtue como um especialista no nicho de ${activeSetup.nicho}, falando para ${activeSetup.publicoAlvo}. O objetivo do carrossel é ${activeSetup.objetivo} com a chamada final de CTA: "${activeSetup.cta}". MÁXIMO CUIDADO para escrever uma pauta cirurgicamente focada nesse avatar.\n\n`
+      ? `[PERFIL DO CONTEÚDO]\n- Nicho: ${activeSetup.nicho}\n- Público-Alvo: ${activeSetup.publicoAlvo}\n- Objetivo: ${activeSetup.objetivo}\n- CTA: ${activeSetup.cta}\n\n`
       : "";
 
     // 3. Seleção do Pilar do Dia (A Roleta)
@@ -99,10 +99,10 @@ export const runAgent1Fetcher = action({
     // 5. Construção dos Comandos Injetáveis
     const systemInstruction = `${promptDiretor}\n\n` +
       personaInjection +
-      `[CONTEXTO ATUALIZADO]: ${contextoSquad}\n` +
-      `[TOM DE VOZ]: ${tomGlobal}\n\n` +
-      `ORDEM DO SISTEMA: O seu pilar obrigatório para esta busca é: [${chosenPillar}]. Não fuja deste tema.\n\n` +
-      `ATENÇÃO: É ESTRITAMENTE PROIBIDO gerar pautas parecidas com estes temas recentes: [${recentTitles}].`;
+      `[CONTEXTO]: ${contextoSquad}\n` +
+      `[ESTILO]: ${tomGlobal}\n\n` +
+      `[PILAR OBRIGATÓRIO]: ${chosenPillar}\n\n` +
+      `[EVITAR REPETIÇÃO]: ${recentTitles}`;
 
     console.log("[AI_ACTIONS] Instanciando SDK do Gemini...");
     
@@ -188,7 +188,7 @@ export const runAgent2Processor = action({
     try {
       const model = genAI.getGenerativeModel({
         model: MODEL_AGENT_2,
-        systemInstruction: `${regrasEscrita}\n\nTOM DE VOZ SEGUIDO: ${tomGlobal}`
+        systemInstruction: `${regrasEscrita}\n\n[ESTILO]: ${tomGlobal}`
       });
 
       const result = await model.generateContent({

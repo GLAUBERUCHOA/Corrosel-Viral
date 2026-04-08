@@ -36,6 +36,10 @@ export async function salvarConfiguracoes(formData: FormData) {
       ...existingRules,
       contexto_squad: formData.get('contexto_squad'),
       tom_de_voz_global: formData.get('tom_de_voz_global'),
+      nicho: formData.get('nicho'),
+      publicoAlvo: formData.get('publicoAlvo'),
+      objetivo: formData.get('objetivo'),
+      cta: formData.get('cta'),
       agente_1: {
         ...(existingRules.agente_1 || {}),
         prompt_diretor: formData.get('prompt_diretor')

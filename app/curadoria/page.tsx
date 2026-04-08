@@ -32,26 +32,41 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 
 // Funções auxiliares movidas para fora para evitar recriação no render e erros de Lint
+const cleanTags = (str: string) => {
+  return str
+    .replace(/\[.*?\]\s*:?/g, '') // remove any brackets and optional colons
+    .replace(/^[\s:]+/gm, '') // remove leading colons or spaces
+    .trim();
+};
+
 const getTitle = (pautaStr: string) => {
-  const cleanStr = pautaStr.replace(/\[PILAR DA BUSCA\]:.*\n/i, "").trim();
+  // Try to capture Tema da Pauta or Título
+  const match = pautaStr.match(/\[(?:TEMA DA PAUTA|TÍTULO)\]:?\s*([^\n]+)/i);
+  if (match && match[1].trim()) {
+    return cleanTags(match[1]).trim();
+  }
   
-  // 1. Tenta capturar [TEMA DA PAUTA] ou [TÍTULO]
-  const match = cleanStr.match(/\[(?:TEMA DA PAUTA|TÍTULO)\]:\s*([\s\S]*?)(?=\n\[|$)/i);
-  if (match && match[1].trim()) return match[1].trim();
-  
-  // 2. Fallback: pega a primeira linha limpa
-  return cleanStr.split('\n')[0].replace('Qual é a notícia + ', '').trim() || "Sem Título";
+  // Aggressive fallback
+  const cleaned = cleanTags(pautaStr);
+  const lines = cleaned.split('\n').map(l => l.trim()).filter(l => l.length > 3);
+  return lines.length > 0 ? lines[0] : "Sem Título";
 };
 
 const getDescription = (pautaStr: string) => {
-  const cleanStr = pautaStr.replace(/\[PILAR DA BUSCA\]:.*\n/i, "").trim();
+  const match = pautaStr.match(/\[Â(?:NGULO)? PROVOCATIVO\]:?\s*([\s\S]*?)(?=\n\[|$)/i) || pautaStr.match(/\[Â(?:NGULO)? GENIAL\]:?\s*([\s\S]*?)(?=\n\[|$)/i);
+  if (match && match[1].trim() && match[1].length > 10) {
+    let desc = cleanTags(match[1]).trim();
+    if (desc.length > 140) return desc.substring(0, 140) + "...";
+    return desc;
+  }
   
-  // Tenta capturar o Ângulo genial
-  const match = cleanStr.match(/\[ÂNGULO PROVOCATIVO|ÂNGULO GENIAL\]:\s*([\s\S]*?)(?=\n\[|$)/i);
-  if (match && match[1].trim()) return match[1].trim();
-  
-  // Fallback conservador
-  return cleanStr.split('\n').slice(1, 3).join(' ') || "Aguardando detalhes do processamento...";
+  // Fallback
+  const cleaned = cleanTags(pautaStr);
+  const lines = cleaned.split('\n').map(l => l.trim()).filter(l => l.length > 10);
+  let desc = lines.length > 1 ? lines.slice(1, 3).join(' ') : lines[0];
+  if (!desc) return "Aguardando detalhes...";
+  if (desc.length > 140) return desc.substring(0, 140) + "...";
+  return desc;
 };
 
 const renderRoteiro = (carrosselRaw: string) => {
@@ -113,13 +128,6 @@ export default function CuradoriaPage() {
   const [selectedPauta, setSelectedPauta] = useState<any>(null);
   const [isPreviewOpen, setIsPreviewOpen] = useState(false);
   const [copied, setCopied] = useState(false);
-
-  // Setup SaaS
-  const [nicho, setNicho] = useState("");
-  const [publicoAlvo, setPublicoAlvo] = useState("");
-  const [objetivo, setObjetivo] = useState("atracao");
-  const [cta, setCta] = useState("");
-  const [isSavingSetup, setIsSavingSetup] = useState(false);
   const [isCheckingAuth, setIsCheckingAuth] = useState(true);
 
   useEffect(() => {
@@ -131,50 +139,19 @@ export default function CuradoriaPage() {
         window.location.href = '/login';
         return;
       }
-      
       setIsCheckingAuth(false);
-      
-      fetch(`/api/user/setup?email=${encodeURIComponent(email)}`)
-        .then(res => res.json())
-        .then(data => {
-          if (data.success && data.data) {
-            setNicho(data.data.nicho || "");
-            setPublicoAlvo(data.data.publicoAlvo || "");
-            setObjetivo(data.data.objetivo || "atracao");
-            setCta(data.data.cta || "");
-          }
-        })
-        .catch(console.error);
     };
 
     checkAuth();
   }, []);
 
-  async function handleSaveSetup() {
-    const email = localStorage.getItem('user_email');
-    if (!email) return;
-    setIsSavingSetup(true);
-    try {
-      await fetch('/api/user/setup', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email, nicho, publicoAlvo, objetivo, cta })
-      });
-    } catch (err) {
-      console.error('Erro ao salvar setup', err);
-    } finally {
-      setIsSavingSetup(false);
-    }
-  }
-
   async function handleDispararAgente1() {
-    console.log("🚀 Iniciando disparo do Agente 1...");
+    console.log("🚀 Iniciando disparo do Agente 1 (Modo Configurações Globais)...");
     setIsRunningAgent1(true);
     try {
       // @ts-ignore
       const result = await runAgent1({ 
-        automatic: false,
-        setup: { nicho, publicoAlvo, objetivo, cta }
+        automatic: false
       });
       console.log("✅ Resposta do Agente 1:", result);
       if (result && !result.success) {
@@ -308,90 +285,24 @@ export default function CuradoriaPage() {
                   </div>
 
                   <div className="space-y-4 pt-4 border-t border-slate-800">
-                    <div className="flex justify-between items-center mb-2">
-                       <h3 className="text-sm font-bold uppercase tracking-widest text-slate-500">Perfil do Especialista</h3>
-                       <Button 
-                        onClick={handleSaveSetup} 
-                        disabled={isSavingSetup}
-                        size="sm"
-                        className="bg-emerald-600 hover:bg-emerald-500 text-white font-bold h-8 text-xs"
-                      >
-                        {isSavingSetup ? <Loader2 className="h-3 w-3 animate-spin" /> : <CheckCircle2 className="mr-1 h-3 w-3" />}
-                        Salvar
-                      </Button>
-                    </div>
-                    
-                    <div className="space-y-4 bg-slate-950/40 p-4 rounded-2xl border border-slate-800">
-                      <div className="space-y-2">
-                        <Label className="text-[10px] font-black uppercase tracking-widest text-slate-500">SEU NICHO</Label>
-                        <Input 
-                          value={nicho} onChange={(e) => setNicho(e.target.value)} 
-                          placeholder="Ex: Imóveis de Alto Padrão..." 
-                          className="bg-slate-950 border-slate-800 h-10 text-xs"
-                        />
-                      </div>
-
-                      <div className="space-y-2">
-                        <Label className="text-[10px] font-black uppercase tracking-widest text-slate-500">PÚBLICO-ALVO</Label>
-                        <Input 
-                          value={publicoAlvo} onChange={(e) => setPublicoAlvo(e.target.value)} 
-                          placeholder="Ex: Médicos recém-formados..." 
-                          className="bg-slate-950 border-slate-800 h-10 text-xs"
-                        />
-                      </div>
-
-                      <div className="space-y-2">
-                        <Label className="text-[10px] font-black uppercase tracking-widest text-slate-500">OBJETIVO</Label>
-                        <div className="flex bg-slate-900 p-1 rounded-xl border border-slate-800">
-                          <button 
-                            onClick={() => setObjetivo('atracao')}
-                            className={`flex-1 py-1 px-2 rounded-lg text-[10px] font-bold transition-all ${objetivo === 'atracao' ? 'bg-blue-600 text-white shadow-lg' : 'text-slate-500 hover:text-slate-300'}`}
-                          >
-                            🧲 Atração
-                          </button>
-                          <button 
-                            onClick={() => setObjetivo('engajamento')}
-                            className={`flex-1 py-1 px-2 rounded-lg text-[10px] font-bold transition-all ${objetivo === 'engajamento' ? 'bg-blue-600 text-white shadow-lg' : 'text-slate-500 hover:text-slate-300'}`}
-                          >
-                            💬 Engaj.
-                          </button>
-                          <button 
-                            onClick={() => setObjetivo('conversao')}
-                            className={`flex-1 py-1 px-2 rounded-lg text-[10px] font-bold transition-all ${objetivo === 'conversao' ? 'bg-blue-600 text-white shadow-lg' : 'text-slate-500 hover:text-slate-300'}`}
-                          >
-                            💰 Conv.
-                          </button>
+                    <div className="space-y-5">
+                      <h3 className="text-xs font-black uppercase tracking-widest text-slate-500">Automação (15m News / 2m Agent 2)</h3>
+                      <div className="flex items-center justify-between p-5 rounded-2xl bg-slate-950/50 border border-slate-800 transition-colors hover:border-slate-700">
+                        <div className="space-y-1">
+                          <Label className="text-base font-bold">Modo Produção</Label>
+                          <p className="text-xs text-slate-500 font-medium">Ativar agendamento 00:00 - 05:00</p>
                         </div>
-                      </div>
-
-                      <div className="space-y-2">
-                        <Label className="text-[10px] font-black uppercase tracking-widest text-slate-500">CTA OFICIAL</Label>
-                        <Input 
-                          value={cta} onChange={(e) => setCta(e.target.value)} 
-                          placeholder="Ex: Clica no link da bio..." 
-                          className="bg-slate-950 border-slate-800 h-10 text-xs"
-                        />
+                        <Switch className="data-[state=checked]:bg-blue-600" />
                       </div>
                     </div>
-                  </div>
 
-                  <div className="space-y-5">
-                    <h3 className="text-xs font-black uppercase tracking-widest text-slate-500">Automação (15m News / 2m Agent 2)</h3>
-                    <div className="flex items-center justify-between p-5 rounded-2xl bg-slate-950/50 border border-slate-800 transition-colors hover:border-slate-700">
-                      <div className="space-y-1">
-                        <Label className="text-base font-bold">Modo Produção</Label>
-                        <p className="text-xs text-slate-500 font-medium">Ativar agendamento 00:00 - 05:00</p>
-                      </div>
-                      <Switch className="data-[state=checked]:bg-blue-600" />
-                    </div>
-                  </div>
-
-                  <div className="space-y-5">
-                    <h3 className="text-xs font-black uppercase tracking-widest text-slate-500">Modelos Ativos</h3>
-                    <div className="grid gap-5">
-                      <div className="space-y-3">
-                        <Label className="text-sm font-bold text-slate-400 uppercase tracking-tight">Agente 1 (Status: Variedade Ativa)</Label>
-                        <Input className="bg-slate-950 border-slate-800 h-12 font-mono text-blue-400" placeholder="gemini-2.5-flash" disabled />
+                    <div className="space-y-5">
+                      <h3 className="text-xs font-black uppercase tracking-widest text-slate-500">Modelos Ativos</h3>
+                      <div className="grid gap-5">
+                        <div className="space-y-3">
+                          <Label className="text-sm font-bold text-slate-400 uppercase tracking-tight">Agente 1 (Status: Variedade Ativa)</Label>
+                          <Input className="bg-slate-950 border-slate-800 h-12 font-mono text-blue-400" placeholder="gemini-2.5-flash" disabled />
+                        </div>
                       </div>
                     </div>
                   </div>

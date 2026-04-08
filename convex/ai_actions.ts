@@ -72,6 +72,18 @@ export const runAgent1Fetcher = action({
     const tomGlobal = settings?.tomGlobal || config.value?.tom_de_voz_global || "";
     const contextoSquad = settings?.contextoSquad || config.value?.contexto_squad || "";
 
+    // Prioridade para o perfil: 1. Argumentos da chamada | 2. Configurações Globais (Convex/Squad)
+    const activeSetup = args.setup || {
+      nicho: settings?.nicho || config.value?.nicho || "",
+      publicoAlvo: settings?.publicoAlvo || config.value?.publicoAlvo || "",
+      objetivo: settings?.objetivo || config.value?.objetivo || "atracao",
+      cta: settings?.cta || config.value?.cta || ""
+    };
+
+    const personaInjection = activeSetup.nicho && activeSetup.publicoAlvo
+      ? `[PERFIL DO USUÁRIO SAAS]\nAtue como um especialista no nicho de ${activeSetup.nicho}, falando para ${activeSetup.publicoAlvo}. O objetivo do carrossel é ${activeSetup.objetivo} com a chamada final de CTA: "${activeSetup.cta}". MÁXIMO CUIDADO para escrever uma pauta cirurgicamente focada nesse avatar.\n\n`
+      : "";
+
     // 3. Seleção do Pilar do Dia (A Roleta)
     const todayFullCount = await ctx.runQuery(internalAgents.countTodaysPautas, { since: startOfTodayBRT });
     const pillarIndex = todayFullCount % CURATION_PILLARS.length;
@@ -83,10 +95,6 @@ export const runAgent1Fetcher = action({
       const match = p.pauta.match(/\[(?:TEMA DA PAUTA|TÍTULO)\]:\s*(.*)/i);
       return match ? match[1] : p.pauta.substring(0, 50) + "...";
     }).join(", ");
-
-    const personaInjection = args.setup 
-      ? `[PERFIL DO USUÁRIO SAAS]\nAtue como um especialista no nicho de ${args.setup.nicho}, falando para ${args.setup.publicoAlvo}. O objetivo do carrossel é ${args.setup.objetivo} com a chamada final de CTA: "${args.setup.cta}". MÁXIMO CUIDADO para escrever uma pauta cirurgicamente focada nesse avatar.\n\n`
-      : "";
 
     // 5. Construção dos Comandos Injetáveis
     const systemInstruction = `${promptDiretor}\n\n` +

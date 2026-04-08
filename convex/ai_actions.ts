@@ -118,18 +118,17 @@ export const runAgent1Fetcher = action({
       const model = genAI.getGenerativeModel({
         model: MODEL_AGENT_1,
         systemInstruction: systemInstruction,
-        tools: [{ googleSearch: {} }] as any
-      } as any);
+      });
 
       console.log("[AI_ACTIONS] Chamando model.generateContent...");
       const result = await model.generateContent({
         contents: [{
           role: 'user',
-          parts: [{ text: `Execute sua missão viral agora seguindo o pilar: ${chosenPillar}. Busque algo de HOJE.` }]
+          parts: [{ text: `MISSÃO VIRAL: Execute sua pesquisa agora seguindo o pilar: ${chosenPillar}.\n\nBusque uma notícia ou acontecimento CONCRETO e REAL das últimas 48-72 horas. Seja específico com nomes, números e datas reais. Entregue o resultado IMEDIATAMENTE no formato exigido pelo sistema.` }]
         }],
         generationConfig: {
-          temperature: 0.8,
-          maxOutputTokens: 1000,
+          temperature: 0.85,
+          maxOutputTokens: 1024,
         }
       });
 

@@ -3,7 +3,10 @@ import { prisma } from '@/lib/prisma';
 import bcrypt from 'bcryptjs';
 import { Resend } from 'resend';
 
-const resend = new Resend(process.env.RESEND_API_KEY);
+// IMPORTANTE: Não instanciar o Resend no nível do módulo.
+// O Next.js executa código de módulo durante o build e RESEND_API_KEY não existe nesse momento.
+// Usar função factory (lazy) para garantir que só seja criado em runtime.
+const getResend = () => new Resend(process.env.RESEND_API_KEY);
 
 function generateOTP() {
   return Math.floor(100000 + Math.random() * 900000).toString();
@@ -58,7 +61,7 @@ export async function POST(req: NextRequest) {
       });
 
       // Dispara o email
-      await resend.emails.send({
+      await getResend().emails.send({
         from: 'onboarding@resend.dev',
         to: cleanEmail,
         subject: 'Seu Código de Ativação do Carrossel Viral Lab',
@@ -84,7 +87,7 @@ export async function POST(req: NextRequest) {
           data: { verificationCode: otpCode }
         });
 
-        await resend.emails.send({
+        await getResend().emails.send({
           from: 'onboarding@resend.dev',
           to: cleanEmail,
           subject: 'Seu Código de Ativação do Carrossel Viral Lab (Reenvio)',

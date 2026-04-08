@@ -24,9 +24,18 @@ import { api } from "./_generated/api";
 
 /**
  * Agente 1 (Ponte): Redireciona para ai_actions.ts para rodar em Node.js
+ * NOTA: args deve espelhar exatamente o schema de ai_actions.runAgent1Fetcher
  */
 export const runAgent1Fetcher: any = action({
-  args: { automatic: v.optional(v.boolean()) },
+  args: { 
+    automatic: v.optional(v.boolean()),
+    setup: v.optional(v.object({
+      nicho: v.string(),
+      publicoAlvo: v.string(),
+      objetivo: v.string(),
+      cta: v.string()
+    }))
+  },
   handler: async (ctx, args) => {
     console.log("[BRIDGE] Redirecionando Agente 1 para ai_actions.ts...");
     return await ctx.runAction(api.ai_actions.runAgent1Fetcher, args);

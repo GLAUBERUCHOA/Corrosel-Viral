@@ -7,7 +7,7 @@ import { Id } from "../../convex/_generated/dataModel";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Loader2, Eye, Send, RefreshCw, Rocket, Settings, Info, Newspaper, Trash2, CheckCircle2, Copy, Check } from "lucide-react";
+import { Loader2, Eye, Send, Rocket, Settings, Info, Newspaper, Trash2, CheckCircle2, Copy, Check } from "lucide-react";
 import {
   Sheet,
   SheetContent,
@@ -15,7 +15,6 @@ import {
   SheetHeader,
   SheetTitle,
   SheetTrigger,
-  SheetFooter,
 } from "@/components/ui/sheet";
 import {
   Dialog,
@@ -34,8 +33,11 @@ import { useRouter } from "next/navigation";
 // Funções auxiliares movidas para fora para evitar recriação no render e erros de Lint
 const cleanTags = (str: string) => {
   return str
-    .replace(/\[.*?\]\s*:?/g, '') // remove any brackets and optional colons
-    .replace(/^[\s:]+/gm, '') // remove leading colons or spaces
+    .replace(/\[TEMA DA PAUTA\]:?/gi, '')
+    .replace(/\[PILAR DA BUSCA\]:?/gi, '')
+    .replace(/\[TÍTULO\]:?/gi, '')
+    .replace(/\[.*?\]\s*:?/g, '') // remove any other brackets
+    .replace(/^[\s:]+/gm, '') 
     .trim();
 };
 
@@ -264,7 +266,7 @@ export default function CuradoriaPage() {
           <div>
             <h1 className="text-4xl font-black tracking-tight text-white flex items-center gap-3">
               <Newspaper className="h-10 w-10 text-blue-500" />
-              Curadoria <span className="text-blue-500">Viral</span>
+              Curadoria <span className="text-blue-500">Viral</span> v2.1
             </h1>
             <p className="mt-2 text-slate-400 font-medium">
               Painel de Controle dos Agentes & Fila de Produção
@@ -358,6 +360,7 @@ export default function CuradoriaPage() {
                           {['atracao', 'engajamento', 'conversao'].map((opt) => (
                             <button
                               key={opt}
+                              type="button"
                               onClick={() => setObjetivo(opt)}
                               className={`flex-1 py-2 text-[10px] font-bold uppercase rounded-md transition-all ${
                                 objetivo === opt ? 'bg-blue-600 text-white shadow-lg' : 'text-slate-500 hover:text-slate-300'
@@ -383,12 +386,12 @@ export default function CuradoriaPage() {
 
                   <div className="space-y-4">
                     <h3 className="text-sm font-bold uppercase tracking-widest text-slate-500">Regras e Comportamento</h3>
-                    <a href="/admin/configuracoes" className="block w-full">
+                    <Link href="/admin/configuracoes" className="block w-full">
                       <Button variant="secondary" className="w-full bg-slate-800 text-slate-200 hover:bg-slate-700 h-12 font-bold flex items-center gap-2">
                         <Settings className="h-4 w-4" />
                         Gerenciar Prompts dos Agentes
                       </Button>
-                    </a>
+                    </Link>
                   </div>
 
                   <div className="space-y-4 pt-4 border-t border-slate-800">
@@ -451,8 +454,9 @@ export default function CuradoriaPage() {
                         {new Date(pauta.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
                       </span>
                       <button 
+                        type="button"
                         onClick={() => handleExcluir(pauta._id)} 
-                        className="text-slate-600 hover:text-rose-500 hover:bg-rose-500/10 p-1.5 rounded-full transition-colors flex -mt-1 -mr-2"
+                        className="text-slate-600 hover:text-rose-500 hover:bg-rose-500/10 p-1.5 rounded-full transition-colors flex -mt-1 -mr-2 shadow-none border-none outline-none"
                         title="Excluir card"
                       >
                         <Trash2 className="h-4 w-4" />
@@ -548,10 +552,10 @@ function StatusBadge({ status }: { status: string }) {
 }
 
 function PillarBadge({ pauta }: { pauta: string }) {
-  const pillarMatch = pauta.match(/\[PILAR DA BUSCA\]:\s*(.*)/i);
+  const pillarMatch = pauta.match(/\[PILAR DA BUSCA\]:\s*([^\[\n]*)/i);
   if (!pillarMatch) return null;
 
-  const pillar = pillarMatch[1];
+  const pillar = pillarMatch[1].trim();
   let colorClass = "bg-slate-500/10 text-slate-400 border-slate-500/20";
 
   if (pillar.includes("🔥")) colorClass = "bg-orange-600/20 text-orange-400 border-orange-500/30";

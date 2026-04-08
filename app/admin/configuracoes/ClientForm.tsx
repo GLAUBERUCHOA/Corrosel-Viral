@@ -13,6 +13,10 @@ export default function ClientForm({ initialConfig }: { initialConfig: any }) {
   const [salvando, setSalvando] = useState(false);
   const router = useRouter();
 
+  if (!initialConfig || !initialConfig.agente_1 || !initialConfig.agente_2) {
+    return <div className="p-12 text-center text-slate-500 italic">Carregando configurações do Squad...</div>;
+  }
+
   async function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
     setSalvando(true);

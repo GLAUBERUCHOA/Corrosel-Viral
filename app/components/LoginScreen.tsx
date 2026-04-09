@@ -1,38 +1,72 @@
 'use client';
 import React, { useState } from 'react';
 
+type LoginStep = 'email_check' | 'password_enter' | 'password_create';
+
 export default function LoginScreen({ onLogin }: { onLogin: (email: string) => void }) {
+  const [step, setStep] = useState<LoginStep>('email_check');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
-  const [isFirstAccess, setIsFirstAccess] = useState(false);
-  const [isOtpMode, setIsOtpMode] = useState(false);
-  const [otpCode, setOtpCode] = useState('');
+  
   const [error, setError] = useState('');
   const [successMsg, setSuccessMsg] = useState('');
   const [isLoading, setIsLoading] = useState(false);
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  const handleEmailCheck = async (e: React.FormEvent) => {
     e.preventDefault();
     const cleanEmail = email.toLowerCase().trim();
 
-    // Always allow the admin email for testing/fallback
+    if (!cleanEmail) {
+      setError('O e-mail é obrigatório.');
+      return;
+    }
+
     if (cleanEmail === 'drglauberabreu@gmail.com') {
       onLogin(cleanEmail);
       return;
     }
 
-    if (!email) {
-      setError('O e-mail é obrigatório.');
-      return;
-    }
+    setIsLoading(true);
+    setError('');
+    
+    try {
+      const response = await fetch('/api/auth/check', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email: cleanEmail }),
+      });
 
-    if (!password && cleanEmail !== 'drglauberabreu@gmail.com') {
+      const data = await response.json();
+
+      if (response.ok) {
+        if (data.isFirstAccess) {
+          setStep('password_create');
+          setSuccessMsg('E-mail encontrado! Como este é o seu primeiro acesso, crie uma senha segura abaixo.');
+        } else {
+          setStep('password_enter');
+          setSuccessMsg('Bem-vindo de volta! Digite sua senha para entrar no LAB.');
+        }
+      } else {
+        setError(data.message || data.error || 'Erro ao verificar o e-mail. Tente novamente.');
+      }
+    } catch (err) {
+      setError('Erro ao conectar com o servidor. Tente novamente mais tarde.');
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handleLoginSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    const cleanEmail = email.toLowerCase().trim();
+
+    if (!password) {
       setError('A senha é obrigatória.');
       return;
     }
 
-    if (isFirstAccess && password !== confirmPassword) {
+    if (step === 'password_create' && password !== confirmPassword) {
       setError('As senhas não coincidem. Verifique e digite novamente.');
       return;
     }
@@ -40,28 +74,6 @@ export default function LoginScreen({ onLogin }: { onLogin: (email: string) => v
     setIsLoading(true);
     setError('');
     setSuccessMsg('');
-
-    if (isOtpMode) {
-      try {
-        const response = await fetch('/api/auth/verify', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ email: cleanEmail, code: otpCode }),
-        });
-        const data = await response.json();
-        if (response.ok && data.success) {
-          setSuccessMsg('Conta ativada com sucesso! Redirecionando...');
-          setTimeout(() => onLogin(cleanEmail), 1500);
-        } else {
-          setError(data.error || 'Código inválido.');
-        }
-      } catch (err) {
-        setError('Erro ao verificar código.');
-      } finally {
-        setIsLoading(false);
-      }
-      return;
-    }
 
     try {
       const response = await fetch('/api/auth/login', {
@@ -72,27 +84,16 @@ export default function LoginScreen({ onLogin }: { onLogin: (email: string) => v
         body: JSON.stringify({
           email: cleanEmail,
           password,
-          isSettingPassword: isFirstAccess
+          isSettingPassword: step === 'password_create'
         }),
       });
 
       const data = await response.json();
 
       if (response.ok) {
-        if (data.isVerified || (isFirstAccess && !data.error)) {
-           // Admin bypass ou verificado
-          onLogin(cleanEmail);
-        }
+        onLogin(cleanEmail);
       } else {
-        if (data.error === 'FIRST_ACCESS') {
-          setIsFirstAccess(true);
-          setError('Este é o seu primeiro acesso. Crie uma senha para continuar.');
-        } else if (data.error === 'OTP_REQUIRED') {
-          setIsOtpMode(true);
-          setSuccessMsg(data.message || 'Código enviado para o seu e-mail.');
-        } else {
-          setError(data.error || 'Erro ao realizar login. Tente novamente.');
-        }
+        setError(data.error || 'Erro ao realizar login. Tente novamente.');
       }
     } catch (err) {
       setError('Erro ao conectar com o servidor. Tente novamente mais tarde.');
@@ -109,109 +110,110 @@ export default function LoginScreen({ onLogin }: { onLogin: (email: string) => v
         <div className="absolute -bottom-24 -left-24 w-48 h-48 bg-indigo-500/10 rounded-full blur-3xl pointer-events-none"></div>
 
         <div className="relative z-10">
-          <div className="flex justify-center mb-8">
-            <div className="size-16 flex items-center justify-center bg-primary/10 rounded-2xl text-primary shadow-inner">
-              <span className="material-symbols-outlined text-4xl">view_carousel</span>
+          {step === 'email_check' ? (
+            <div className="flex justify-center mb-8">
+              <div className="size-16 flex items-center justify-center bg-primary/10 rounded-2xl text-primary shadow-inner">
+                <span className="material-symbols-outlined text-4xl">view_carousel</span>
+              </div>
             </div>
-          </div>
+          ) : (
+            <div className="flex mb-8">
+              <button 
+                onClick={() => {
+                  setStep('email_check');
+                  setPassword('');
+                  setConfirmPassword('');
+                  setError('');
+                  setSuccessMsg('');
+                }}
+                className="flex items-center text-sm font-medium text-slate-500 hover:text-slate-900 dark:text-slate-400 dark:hover:text-white transition-colors"
+                type="button"
+              >
+                <span className="material-symbols-outlined mr-1 text-lg">arrow_back</span>
+                Acessar com outro e-mail
+              </button>
+            </div>
+          )}
 
           <h2 className="text-3xl font-extrabold text-center text-slate-900 dark:text-white mb-2 tracking-tight">
-            Bem-vindo de volta
+            {step === 'email_check' ? 'Bem-vindo ao LAB' : step === 'password_create' ? 'Primeiro Acesso' : 'Bem-vindo de volta'}
           </h2>
           <p className="text-center text-slate-500 dark:text-slate-400 mb-10 text-sm font-medium">
-            Faça login para acessar o Carrossel Viral Lab
+            {step === 'email_check' 
+              ? 'Informe seu e-mail de compra para acessar o Carrossel Viral Lab' 
+              : step === 'password_create'
+                ? 'Crie sua senha de acesso exclusivo'
+                : 'Faça login no Carrossel Viral Lab'
+            }
           </p>
 
-          <form onSubmit={handleSubmit} className="space-y-6">
-            {isOtpMode ? (
-              <div className="space-y-4 animate-in fade-in slide-in-from-right-4">
-                <div className="p-4 bg-indigo-50 dark:bg-indigo-900/20 text-indigo-700 dark:text-indigo-300 rounded-xl text-sm font-medium border border-indigo-100 dark:border-indigo-800/30">
-                  <span className="material-symbols-outlined align-middle mr-2 text-lg">mark_email_read</span>
-                  Enviamos um código de 6 dígitos para o seu e-mail para validar o primeiro acesso.
+          <form onSubmit={step === 'email_check' ? handleEmailCheck : handleLoginSubmit} className="space-y-6">
+            
+            <div className="space-y-2">
+              <label htmlFor="email" className="block text-sm font-semibold text-slate-700 dark:text-slate-300">
+                E-mail de acesso
+              </label>
+              <div className="relative">
+                <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
+                  <span className="material-symbols-outlined text-slate-400 text-[20px]">mail</span>
                 </div>
-                <div className="space-y-2 relative">
-                  <label htmlFor="otpCode" className="block text-sm font-semibold text-slate-700 dark:text-slate-300">
-                    Código de Ativação
-                  </label>
+                <input
+                  id="email"
+                  type="email"
+                  value={email}
+                  disabled={step !== 'email_check'}
+                  onChange={(e) => { setEmail(e.target.value); setError(''); }}
+                  placeholder="Seu e-mail cadastrado na Kiwify"
+                  className={`w-full pl-11 pr-4 py-3.5 rounded-xl border ${error && step === 'email_check' ? 'border-red-300 dark:border-red-500/50 bg-red-50 dark:bg-red-500/10' : 'border-slate-200 dark:border-border-dark bg-slate-50 dark:bg-surface-darker'} text-slate-900 dark:text-white focus:ring-2 focus:ring-primary focus:border-transparent transition-all outline-none font-medium disabled:opacity-50`}
+                  required
+                  autoFocus={step === 'email_check'}
+                />
+              </div>
+            </div>
+
+            {step !== 'email_check' && (
+              <div className="space-y-2 relative animate-in fade-in slide-in-from-top-2">
+                <label htmlFor="password" className="block text-sm font-semibold text-slate-700 dark:text-slate-300">
+                  {step === 'password_create' ? 'Crie sua Senha' : 'Senha'}
+                </label>
+                <div className="relative">
+                  <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
+                    <span className="material-symbols-outlined text-slate-400 text-[20px]">lock</span>
+                  </div>
                   <input
-                    id="otpCode"
-                    type="text"
-                    maxLength={6}
-                    value={otpCode}
-                    onChange={(e) => { setOtpCode(e.target.value.replace(/\D/g, '')); setError(''); }}
-                    placeholder="000000"
-                    className={`w-full px-4 py-3.5 text-center text-2xl tracking-[0.5em] rounded-xl border ${error ? 'border-red-300 dark:border-red-500/50 bg-red-50 dark:bg-red-500/10' : 'border-slate-200 dark:border-border-dark bg-slate-50 dark:bg-surface-darker'} text-slate-900 dark:text-white focus:ring-2 focus:ring-primary focus:border-transparent transition-all outline-none font-bold`}
+                    id="password"
+                    type="password"
+                    value={password}
+                    onChange={(e) => { setPassword(e.target.value); setError(''); }}
+                    placeholder="Sua senha"
+                    className={`w-full pl-11 pr-4 py-3.5 rounded-xl border ${error && password ? 'border-red-300 dark:border-red-500/50 bg-red-50 dark:bg-red-500/10' : 'border-slate-200 dark:border-border-dark bg-slate-50 dark:bg-surface-darker'} text-slate-900 dark:text-white focus:ring-2 focus:ring-primary focus:border-transparent transition-all outline-none font-medium`}
                     required
-                    autoFocus
+                    autoFocus={step !== 'email_check'}
                   />
                 </div>
               </div>
-            ) : (
-              <>
-                <div className="space-y-2">
-                  <label htmlFor="email" className="block text-sm font-semibold text-slate-700 dark:text-slate-300">
-                    E-mail de acesso
-                  </label>
-                  <div className="relative">
-                    <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
-                      <span className="material-symbols-outlined text-slate-400 text-[20px]">mail</span>
-                    </div>
-                    <input
-                      id="email"
-                      type="email"
-                      value={email}
-                      disabled={isFirstAccess}
-                      onChange={(e) => { setEmail(e.target.value); setError(''); }}
-                      placeholder="seu@email.com"
-                      className={`w-full pl-11 pr-4 py-3.5 rounded-xl border ${error && !password ? 'border-red-300 dark:border-red-500/50 bg-red-50 dark:bg-red-500/10' : 'border-slate-200 dark:border-border-dark bg-slate-50 dark:bg-surface-darker'} text-slate-900 dark:text-white focus:ring-2 focus:ring-primary focus:border-transparent transition-all outline-none font-medium disabled:opacity-50`}
-                      required
-                    />
-                  </div>
-                </div>
+            )}
 
-                <div className="space-y-2 relative animate-in fade-in slide-in-from-top-2">
-                  <label htmlFor="password" className="block text-sm font-semibold text-slate-700 dark:text-slate-300">
-                    {isFirstAccess ? 'Crie sua Senha' : 'Senha'}
-                  </label>
-                  <div className="relative">
-                    <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
-                      <span className="material-symbols-outlined text-slate-400 text-[20px]">lock</span>
-                    </div>
-                    <input
-                      id="password"
-                      type="password"
-                      value={password}
-                      onChange={(e) => { setPassword(e.target.value); setError(''); }}
-                      placeholder="Sua senha"
-                      className={`w-full pl-11 pr-4 py-3.5 rounded-xl border ${error && password ? 'border-red-300 dark:border-red-500/50 bg-red-50 dark:bg-red-500/10' : 'border-slate-200 dark:border-border-dark bg-slate-50 dark:bg-surface-darker'} text-slate-900 dark:text-white focus:ring-2 focus:ring-primary focus:border-transparent transition-all outline-none font-medium`}
-                      required
-                      autoFocus={isFirstAccess}
-                    />
+            {step === 'password_create' && (
+              <div className="space-y-2 relative animate-in fade-in slide-in-from-top-2">
+                <label htmlFor="confirmPassword" className="block text-sm font-semibold text-slate-700 dark:text-slate-300">
+                  Confirmar Senha
+                </label>
+                <div className="relative">
+                  <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
+                    <span className="material-symbols-outlined text-slate-400 text-[20px]">lock</span>
                   </div>
+                  <input
+                    id="confirmPassword"
+                    type="password"
+                    value={confirmPassword}
+                    onChange={(e) => { setConfirmPassword(e.target.value); setError(''); }}
+                    placeholder="Repita sua senha"
+                    className={`w-full pl-11 pr-4 py-3.5 rounded-xl border ${error && confirmPassword ? 'border-red-300 dark:border-red-500/50 bg-red-50 dark:bg-red-500/10' : 'border-slate-200 dark:border-border-dark bg-slate-50 dark:bg-surface-darker'} text-slate-900 dark:text-white focus:ring-2 focus:ring-primary focus:border-transparent transition-all outline-none font-medium`}
+                    required={step === 'password_create'}
+                  />
                 </div>
-
-                {isFirstAccess && (
-                  <div className="space-y-2 relative animate-in fade-in slide-in-from-top-2">
-                    <label htmlFor="confirmPassword" className="block text-sm font-semibold text-slate-700 dark:text-slate-300">
-                      Confirmar Senha
-                    </label>
-                    <div className="relative">
-                      <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
-                        <span className="material-symbols-outlined text-slate-400 text-[20px]">lock</span>
-                      </div>
-                      <input
-                        id="confirmPassword"
-                        type="password"
-                        value={confirmPassword}
-                        onChange={(e) => { setConfirmPassword(e.target.value); setError(''); }}
-                        placeholder="Repita sua senha"
-                        className={`w-full pl-11 pr-4 py-3.5 rounded-xl border ${error && confirmPassword ? 'border-red-300 dark:border-red-500/50 bg-red-50 dark:bg-red-500/10' : 'border-slate-200 dark:border-border-dark bg-slate-50 dark:bg-surface-darker'} text-slate-900 dark:text-white focus:ring-2 focus:ring-primary focus:border-transparent transition-all outline-none font-medium`}
-                        required={isFirstAccess}
-                      />
-                    </div>
-                  </div>
-                )}
-              </>
+              </div>
             )}
 
             {error && (
@@ -223,8 +225,8 @@ export default function LoginScreen({ onLogin }: { onLogin: (email: string) => v
             )}
 
             {successMsg && (
-              <div className="p-3 bg-orange-50 dark:bg-orange-500/10 border border-orange-200 dark:border-orange-500/20 rounded-lg animate-in fade-in slide-in-from-top-1">
-                <p className="text-sm font-medium text-orange-600 dark:text-orange-400 flex items-start gap-2">
+              <div className="p-3 bg-emerald-50 dark:bg-emerald-500/10 border border-emerald-200 dark:border-emerald-500/20 rounded-lg animate-in fade-in slide-in-from-top-1">
+                <p className="text-sm font-medium text-emerald-600 dark:text-emerald-400 flex items-start gap-2">
                   <span className="material-symbols-outlined text-[18px] translate-y-0.5">check_circle</span> {successMsg}
                 </p>
               </div>
@@ -242,16 +244,21 @@ export default function LoginScreen({ onLogin }: { onLogin: (email: string) => v
                 </>
               ) : (
                 <>
-                  {isOtpMode ? 'Ativar Conta' : (isFirstAccess ? 'Criar Senha' : 'Entrar na Curadoria')}
-                  <span className="material-symbols-outlined text-[20px]">{isOtpMode ? 'check_circle' : 'arrow_forward'}</span>
+                  {step === 'email_check' ? 'Continuar' : step === 'password_create' ? 'Criar Senha e Entrar' : 'Entrar no LAB'}
+                  <span className="material-symbols-outlined text-[20px]">arrow_forward</span>
                 </>
               )}
             </button>
           </form>
 
           <div className="mt-8 text-center">
-            <p className="text-xs text-slate-400 dark:text-slate-500">
-              Acesso restrito a usuários autorizados.
+            <p className="text-xs text-slate-400 dark:text-slate-500 flex flex-col gap-1 items-center">
+              <span>Acesso restrito a usuários autorizados.</span>
+              {step === 'email_check' && (
+                <span className="font-medium text-slate-500">
+                  Use sempre o mesmo e-mail que usou na sua compra da Kiwify.
+                </span>
+              )}
             </p>
           </div>
         </div>

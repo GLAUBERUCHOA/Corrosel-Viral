@@ -1,4 +1,4 @@
-﻿import { NextRequest, NextResponse } from 'next/server';
+import { NextRequest, NextResponse } from 'next/server';
 import crypto from 'crypto';
 import { prisma } from '@/lib/prisma';
 
@@ -7,24 +7,25 @@ const KIWIFY_TOKEN = '2v3wadrhc4p';
 export async function POST(req: NextRequest) {
   try {
     const rawBody = await req.text();
+    const urlToken = req.nextUrl.searchParams.get('token');
     const signature = req.headers.get('x-kiwify-signature');
 
-    if (!signature) {
-      return NextResponse.json({ error: 'Missing signature' }, { status: 401 });
+    // Se tiver o token correto na URL, ignora a assinatura (Passe Livre)
+    let isAuthorized = false;
+    
+    if (urlToken === KIWIFY_TOKEN) {
+      isAuthorized = true;
+    } else if (signature) {
+      const hmac = crypto.createHmac('sha1', KIWIFY_TOKEN);
+      hmac.update(rawBody);
+      const calculatedSignature = hmac.digest('hex');
+      if (signature === calculatedSignature) {
+        isAuthorized = true;
+      }
     }
 
-    // Verify signature
-    const hmac = crypto.createHmac('sha1', KIWIFY_TOKEN);
-    hmac.update(rawBody);
-    const calculatedSignature = hmac.digest('hex');
-
-    if (signature !== calculatedSignature) {
-      // If signature verification fails, we can also check if the token is in the URL as a fallback
-      const urlToken = req.nextUrl.searchParams.get('token');
-      if (urlToken !== KIWIFY_TOKEN) {
-        console.error('Invalid signature or token');
-        return NextResponse.json({ error: 'Invalid signature' }, { status: 401 });
-      }
+    if (!isAuthorized) {
+      return NextResponse.json({ error: 'Missing or invalid signature/token' }, { status: 401 });
     }
 
     const payload = JSON.parse(rawBody);

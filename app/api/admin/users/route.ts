@@ -1,4 +1,4 @@
-﻿import { NextResponse } from 'next/server';
+import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { getSession } from '@/lib/auth/session';
 import bcrypt from 'bcryptjs';
@@ -46,6 +46,7 @@ export async function POST(request: Request) {
                 email,
                 password: hashedPassword,
                 role: role || 'ADMIN',
+                isVerified: true, // Auto-verify manually created users so they don't get stuck in OTP loop
             },
             select: { id: true, name: true, email: true, role: true }
         });
@@ -73,6 +74,7 @@ export async function PUT(request: Request) {
 
         if (password) {
             dataToUpdate.password = await bcrypt.hash(password, 10);
+            dataToUpdate.isVerified = true; // Auto-verify so the user doesn't get stuck in OTP loop
         }
 
         const user = await prisma.user.update({

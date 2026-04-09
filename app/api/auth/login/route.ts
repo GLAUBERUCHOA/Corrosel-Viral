@@ -1,16 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import bcrypt from 'bcryptjs';
-import { Resend } from 'resend';
-
-// IMPORTANTE: Não instanciar o Resend no nível do módulo.
-// O Next.js executa código de módulo durante o build e RESEND_API_KEY não existe nesse momento.
-// Usar função factory (lazy) para garantir que só seja criado em runtime.
-const getResend = () => new Resend(process.env.RESEND_API_KEY);
-
-function generateOTP() {
-  return Math.floor(100000 + Math.random() * 900000).toString();
-}
 
 export async function POST(req: NextRequest) {
   try {
@@ -36,10 +26,8 @@ export async function POST(req: NextRequest) {
     });
 
     if (!user || user.status !== 'ativo') {
-      return NextResponse.json({ error: 'Acesso negado. Verifique se você comprou o produto e se a compra foi aprovada.' }, { status: 403 });
+      return NextResponse.json({ error: 'Acesso negado. Verifique se você usou o mesmo e-mail da compra e se ela foi aprovada.' }, { status: 403 });
     }
-
-    let isPasswordValid = false;
 
     if (!user.password) {
       // Primeiro Acesso
@@ -47,65 +35,31 @@ export async function POST(req: NextRequest) {
         return NextResponse.json({ error: 'FIRST_ACCESS', message: 'Primeiro acesso detectado.' }, { status: 400 });
       }
 
+      // Cria a senha e já deixa a conta verificada! Sem enviar e-mail.
       const hashedPassword = await bcrypt.hash(password, 10);
-      
-      const otpCode = generateOTP();
       
       await prisma.user.update({
         where: { id: user.id },
         data: { 
           password: hashedPassword,
-          verificationCode: otpCode,
-          isVerified: false
+          isVerified: true
         }
       });
 
-      // Dispara o email
-      await getResend().emails.send({
-        from: 'onboarding@resend.dev',
-        to: cleanEmail,
-        subject: 'Seu Código de Ativação do Carrossel Viral Lab',
-        html: `<p>Olá!</p>
-               <p>Seu código de ativação de 6 dígitos para o Carrossel Viral Lab é:</p>
-               <h2 style="font-size: 24px; font-family: monospace; letter-spacing: 5px;">${otpCode}</h2>
-               <p>Se você não solicitou este código, ignore este e-mail.</p>`
-      });
-
-      return NextResponse.json({ error: 'OTP_REQUIRED', message: 'Código enviado para o seu e-mail.' }, { status: 200 });
+      return NextResponse.json({ success: true, isVerified: true });
     } else {
       // Validar senha existente
-      isPasswordValid = await bcrypt.compare(password, user.password);
+      const isPasswordValid = await bcrypt.compare(password, user.password);
       if (!isPasswordValid) {
         return NextResponse.json({ error: 'A senha inserida está incorreta.' }, { status: 401 });
       }
 
-      // Senha certa, mas não verificado? Manda OTP de novo.
-      if (!user.isVerified) {
-        const otpCode = generateOTP();
-        await prisma.user.update({
-          where: { id: user.id },
-          data: { verificationCode: otpCode }
-        });
-
-        await getResend().emails.send({
-          from: 'onboarding@resend.dev',
-          to: cleanEmail,
-          subject: 'Seu Código de Ativação do Carrossel Viral Lab (Reenvio)',
-          html: `<p>Olá!</p>
-                 <p>Seu código de ativação de 6 dígitos para o Carrossel Viral Lab é:</p>
-                 <h2 style="font-size: 24px; font-family: monospace; letter-spacing: 5px;">${otpCode}</h2>
-                 <p>Se você não solicitou este código, ignore este e-mail.</p>`
-        });
-
-        return NextResponse.json({ error: 'OTP_REQUIRED', message: 'Código de ativação reenviado para o seu e-mail.' }, { status: 200 });
-      }
-
-      // Tudo certo
+      // Tudo certo!
       return NextResponse.json({ success: true, isVerified: true });
     }
 
-  } catch (error) {
+  } catch (error: any) {
     console.error('Error in login:', error);
-    return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
+    return NextResponse.json({ error: `INTERNAL ERRO: ${error.message} - ${error.stack}` }, { status: 500 });
   }
 }

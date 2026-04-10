@@ -48,12 +48,16 @@ export const runAgent1Fetcher: any = action({
  * Agente 2 (Ponte): Redireciona para ai_actions.ts para rodar em Node.js
  */
 export const runAgent2Processor: any = action({
-  args: {},
+  args: {
+    pautaId: v.optional(v.id("pautas")),
+    userApiKey: v.optional(v.string())
+  },
   handler: async (ctx, args) => {
     console.log("[BRIDGE] Redirecionando Agente 2 para ai_actions.ts...");
     return await ctx.runAction(api.ai_actions.runAgent2Processor, args);
   },
 });
+
 
 // Mutations (Expostas internamente via internalAgents)
 export const savePauta = internalMutation({

@@ -7,7 +7,7 @@ import { Id } from "../../convex/_generated/dataModel";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Loader2, Eye, Send, Rocket, Settings, Info, Newspaper, Trash2, CheckCircle2, Copy, Check, LogOut } from "lucide-react";
+import { Loader2, Eye, Send, Rocket, Settings, Info, Newspaper, Trash2, CheckCircle2, Copy, Check, LogOut, Wand2 } from "lucide-react";
 import {
   Sheet,
   SheetContent,
@@ -123,11 +123,14 @@ export default function CuradoriaPage() {
   const [userRole, setUserRole] = useState("USER");
   const pautas = useQuery(api.agents.getAllPautas, userEmail ? { userEmail } : "skip");
   const runAgent1 = useAction(api.ai_actions.runAgent1Fetcher);
+  // @ts-ignore
+  const runAgent2 = useAction(api.agents.runAgent2Processor);
   const clearPautas = useMutation(api.agents.clearAllPautas);
   const deletePauta = useMutation(api.agents.deletePauta);
   const approvePauta = useMutation(api.agents.approvePauta);
 
   const [isRunningAgent1, setIsRunningAgent1] = useState(false);
+  const [isProcessingAgent2, setIsProcessingAgent2] = useState<Record<string, boolean>>({});
   const [isClearing, setIsClearing] = useState(false);
   const [selectedPauta, setSelectedPauta] = useState<any>(null);
   const [isPreviewOpen, setIsPreviewOpen] = useState(false);
@@ -240,6 +243,39 @@ export default function CuradoriaPage() {
       alert("Falha ao disparar Agente. Verifique o console.");
     } finally {
       setIsRunningAgent1(false);
+    }
+  }
+
+  async function handleDispararAgente2(pautaId: string) {
+    if (!hasApiKey && !isAdmin) {
+      alert("⚠️ Configure sua Chave da API Gemini no Setup do Especialista.");
+      return;
+    }
+    
+    setIsProcessingAgent2(prev => ({...prev, [pautaId]: true}));
+    try {
+      // Busca a API key real do MySQL
+      let resolvedApiKey: string | undefined;
+      if (hasApiKey) {
+        const keyRes = await fetch('/api/user/apikey', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ email: userEmail })
+        });
+        const keyData = await keyRes.json();
+        resolvedApiKey = keyData.apiKey || undefined;
+      }
+
+      // @ts-ignore
+      const result = await runAgent2({ pautaId, userApiKey: resolvedApiKey });
+      if (result && !result.success) {
+        alert("Erro no Agente 2: " + (result.error || result.message || "Erro desconhecido"));
+      }
+    } catch (err) {
+      console.error("❌ Falha ao disparar Agente 2:", err);
+      alert("Falha ao processar roteiro. Verifique o console.");
+    } finally {
+      setIsProcessingAgent2(prev => ({...prev, [pautaId]: false}));
     }
   }
 
@@ -554,23 +590,39 @@ export default function CuradoriaPage() {
                   </CardDescription>
                 </CardContent>
                 <CardFooter className="grid grid-cols-2 gap-3 border-t border-slate-800/50 p-6 pt-5 bg-slate-900/30">
-                  <Button
-                    variant="outline"
-                    className="border-slate-800 bg-slate-900/50 text-slate-200 hover:bg-slate-800 hover:text-white transition-all"
-                    disabled={!pauta.carrossel}
-                    onClick={() => { setSelectedPauta(pauta); setIsPreviewOpen(true); }}
-                  >
-                    <Eye className="mr-2 h-4 w-4" />
-                    Preview
-                  </Button>
-                  <Button
-                    className="bg-blue-600 font-bold text-white hover:bg-blue-500 shadow-lg shadow-blue-900/20 disabled:bg-slate-800 disabled:text-slate-500"
-                    disabled={!pauta.carrossel || pauta.status === "approved"}
-                    onClick={() => handleAprovar(pauta._id)}
-                  >
-                    {pauta.status === "approved" ? <CheckCircle2 className="mr-2 h-4 w-4 text-emerald-400" /> : <Send className="mr-2 h-4 w-4" />}
-                    {pauta.status === "approved" ? "Aprovado" : "Aprovar"}
-                  </Button>
+                  {pauta.status === "pending" || pauta.status === "failed" ? (
+                    <Button
+                      className="col-span-2 bg-blue-600 font-bold text-white hover:bg-blue-500 shadow-lg shadow-blue-900/20"
+                      onClick={() => handleDispararAgente2(pauta._id)}
+                      disabled={isProcessingAgent2[pauta._id]}
+                    >
+                      {isProcessingAgent2[pauta._id] ? (
+                        <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                      ) : (
+                        <Wand2 className="mr-2 h-4 w-4" />
+                      )}
+                      Gerar Roteiro Desta Pauta
+                    </Button>
+                  ) : (
+                    <>
+                      <Button
+                        variant="outline"
+                        className="border-slate-800 bg-slate-900/50 text-slate-200 hover:bg-slate-800 hover:text-white transition-all"
+                        onClick={() => { setSelectedPauta(pauta); setIsPreviewOpen(true); }}
+                      >
+                        <Eye className="mr-2 h-4 w-4" />
+                        Preview
+                      </Button>
+                      <Button
+                        className="bg-blue-600 font-bold text-white hover:bg-blue-500 shadow-lg shadow-blue-900/20 disabled:bg-slate-800 disabled:text-slate-500"
+                        disabled={pauta.status === "approved"}
+                        onClick={() => handleAprovar(pauta._id)}
+                      >
+                        {pauta.status === "approved" ? <CheckCircle2 className="mr-2 h-4 w-4 text-emerald-400" /> : <Send className="mr-2 h-4 w-4" />}
+                        {pauta.status === "approved" ? "Aprovado" : "Aprovar"}
+                      </Button>
+                    </>
+                  )}
                 </CardFooter>
               </Card>
             ))}

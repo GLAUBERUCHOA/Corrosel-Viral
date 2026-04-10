@@ -2,7 +2,7 @@
 
 import { action } from "./_generated/server";
 import { v } from "convex/values";
-import { internal } from "./_generated/api";
+import { internal, api } from "./_generated/api";
 import { GoogleGenerativeAI } from "@google/generative-ai";
 import { PROMPT_AGENTE_01, PROMPT_AGENTE_02 } from "./instructions";
 
@@ -154,15 +154,20 @@ export const runAgent1Fetcher = action({
       return match ? match[1] : p.pauta.substring(0, 50) + "...";
     }).join(", ");
 
-    // 5. Construção do System Instruction
     const systemInstruction = `${promptDiretor}\n\n` +
-      personaInjection +
-      `[CONTEXTO]: ${contextoSquad}\n` +
-      `[ESTILO]: ${tomGlobal}\n\n` +
-      `[PILAR OBRIGATÓRIO]: ${chosenPillar}\n\n` +
-      `[EVITAR REPETIÇÃO]: ${recentTitles}`;
+      `[CONTEXTO E ESTILO DA EQUIPE]\n${contextoSquad}\nTom Global: ${tomGlobal}\n\n` +
+      `[EVITAR REPETIÇÃO - MODO ANTI-AMNÉSIA]\nNão use estes temas recentes: ${recentTitles}\n\n` +
+      `===================================\n` +
+      `🎯 DIRETRIZES ABSOLUTAS DO CLIENTE\n` +
+      `===================================\n` +
+      `NICHO OBRIGATÓRIO: "${activeSetup.nicho}"\n` +
+      `PÚBLICO-ALVO: "${activeSetup.publicoAlvo}"\n` +
+      `OBJETIVO: "${activeSetup.objetivo}"\n` +
+      `CTA: "${activeSetup.cta}"\n\n` +
+      `LENTE / ÂNGULO DE BUSCA PARA HOJE:\n${chosenPillar}\n\n` +
+      `REGRA DE OURO: A sua busca, notícia ou curiosidade DEVE OBRIGATORIAMENTE ser sobre o Nicho "${activeSetup.nicho}". Utilize a Lente (Ângulo de Busca) apenas como fio condutor, premissa ou curiosidade para fisgar o público, mas o CÓRREGO CENTRAL do conteúdo tem que girar em torno de ${activeSetup.nicho}. Jamais fuja do nicho do cliente!\n`;
 
-    console.log("[AI_ACTIONS] personaInjection ativo:", personaInjection ? "SIM" : "NÃO (vazio)");
+    console.log("[AI_ACTIONS] Nicho garantido:", activeSetup.nicho);
     console.log("[AI_ACTIONS] Nicho:", activeSetup.nicho || "(nenhum)");
     console.log("[AI_ACTIONS] Pilar:", chosenPillar);
 
@@ -205,13 +210,25 @@ export const runAgent1Fetcher = action({
  * Agente 2: Decodificador Viral (Transforma Pauta em Roteiro de Carrossel)
  */
 export const runAgent2Processor = action({
-  args: {},
-  handler: async (ctx): Promise<{ success: boolean; carrossel?: string; message?: string }> => {
-    const apiKey = process.env.GOOGLE_GENERATIVE_AI_API_KEY;
-    if (!apiKey) throw new Error("Missing GOOGLE_GENERATIVE_AI_API_KEY");
+  args: { 
+    pautaId: v.optional(v.id("pautas")),
+    userApiKey: v.optional(v.string())
+  },
+  handler: async (ctx, args): Promise<{ success: boolean; carrossel?: string; message?: string }> => {
+    // 1. Definição da Chave API: Chave do Cliente ou Chave Global
+    const apiKey = args.userApiKey || process.env.GOOGLE_GENERATIVE_AI_API_KEY;
+    if (!apiKey) throw new Error("Missing GOOGLE_GENERATIVE_AI_API_KEY as fallback.");
 
-    // 1. Busca pauta pendente
-    const pendingPauta: any = await ctx.runQuery(internalAgents.getPendingPauta);
+    let pendingPauta: any = null;
+
+    // 2. Busca a pauta específica (disparo manual) ou a primeira pendente (CRON)
+    if (args.pautaId) {
+       // Buscar a pauta específica usando a API externa exposta para leitura
+       pendingPauta = await ctx.runQuery(api.agents.getPautaById, { id: args.pautaId });
+    } else {
+       pendingPauta = await ctx.runQuery(internalAgents.getPendingPauta);
+    }
+    
     if (!pendingPauta) {
       return { success: true, message: "Nenhuma pauta pendente encontrada." };
     }

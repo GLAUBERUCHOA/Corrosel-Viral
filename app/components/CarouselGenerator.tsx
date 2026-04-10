@@ -227,6 +227,7 @@ export default function CarouselGenerator({ onLogout }: { onLogout: () => void }
   const [isDarkMode, setIsDarkMode] = useState(false);
   const [sidebarWidth, setSidebarWidth] = useState(450);
   const [draggedIndex, setDraggedIndex] = useState<number | null>(null);
+  const [dragOverIndex, setDragOverIndex] = useState<number | null>(null);
   const [targetUploadIndex, setTargetUploadIndex] = useState<number | null>(null);
   const [openSlideIndex, setOpenSlideIndex] = useState<number | null>(null);
   const [editingSlideIndex, setEditingSlideIndex] = useState<number | null>(null);
@@ -358,18 +359,31 @@ export default function CarouselGenerator({ onLogout }: { onLogout: () => void }
           const reader = new FileReader();
           reader.onload = (event) => {
             const result = event.target?.result as string;
-            // Alvo prioritário: Slide aberto (menu ativo)
-            // Alvo secundário: Slide visível no centro
             const targetIndex = openSlideIndex !== null ? openSlideIndex : currentSlideIndex;
 
             if (targetIndex < parsedSlides.length) {
               setUploadedImages(prev => {
                 const updated = [...prev];
                 while (updated.length <= targetIndex) updated.push(null);
-                updated[targetIndex] = result;
+                
+                if (updated[targetIndex] !== null) {
+                  // Insere a imagem e empurra as outras (reordena) em vez de apenas sobrepor
+                  updated.splice(targetIndex, 0, result);
+                  
+                  // Se exceder o tamanho, aparamos o último null (que foi gerado ao adicionar a text slide)
+                  if (updated.length > parsedSlides.length) {
+                    const lastNullIndex = updated.lastIndexOf(null);
+                    if (lastNullIndex !== -1) {
+                      updated.splice(lastNullIndex, 1);
+                    }
+                  }
+                } else {
+                  // Se o slot estava vazio, apenas preenche
+                  updated[targetIndex] = result;
+                }
+                
                 return updated;
               });
-              // Feedback visual (opcional/implícito pela atualização da imagem)
             }
           };
           reader.readAsDataURL(blob);
@@ -624,11 +638,38 @@ export default function CarouselGenerator({ onLogout }: { onLogout: () => void }
     setDraggedIndex(index);
   };
 
-  const handleDragOver = (event: React.DragEvent<HTMLDivElement> | React.TouchEvent<HTMLDivElement>) => {
+  const handleDragOver = (event: React.DragEvent<HTMLDivElement> | React.TouchEvent<HTMLDivElement>, index?: number) => {
     if ('preventDefault' in event) event.preventDefault();
+    if (index !== undefined && dragOverIndex !== index) {
+      setDragOverIndex(index);
+    }
   };
 
-  const handleDrop = (index: number) => {
+  const handleDragLeave = () => {
+    setDragOverIndex(null);
+  };
+
+  const handleDrop = (index: number, event?: React.DragEvent<HTMLDivElement>) => {
+    setDragOverIndex(null);
+    if (event?.dataTransfer?.files && event.dataTransfer.files.length > 0) {
+      const file = event.dataTransfer.files[0];
+      if (file.type.startsWith('image/')) {
+        const reader = new FileReader();
+        reader.onload = (e) => {
+          if (e.target?.result && typeof e.target.result === 'string') {
+            setUploadedImages(prev => {
+              const updated = [...prev];
+              updated[index] = e.target!.result as string;
+              return updated;
+            });
+          }
+        };
+        reader.readAsDataURL(file);
+      }
+      if ('preventDefault' in event) event.preventDefault();
+      return;
+    }
+
     if (draggedIndex === null || draggedIndex === index) {
       setDraggedIndex(null);
       return;
@@ -647,8 +688,22 @@ export default function CarouselGenerator({ onLogout }: { onLogout: () => void }
     setDraggedIndex(index);
   };
 
+  const handleTouchMove = (e: React.TouchEvent) => {
+    if (draggedIndex === null) return;
+    const touch = e.touches[0];
+    const targetEl = document.elementFromPoint(touch.clientX, touch.clientY);
+    const dropTarget = targetEl?.closest('[data-drag-index]');
+    if (dropTarget) {
+      const targetIndex = Number(dropTarget.getAttribute('data-drag-index'));
+      if (dragOverIndex !== targetIndex) setDragOverIndex(targetIndex);
+    } else {
+      setDragOverIndex(null);
+    }
+  };
+
   const handleTouchEnd = (e: React.TouchEvent) => {
     if (draggedIndex === null) return;
+    setDragOverIndex(null);
 
     const touch = e.changedTouches[0];
     const targetEl = document.elementFromPoint(touch.clientX, touch.clientY);
@@ -1082,23 +1137,21 @@ export default function CarouselGenerator({ onLogout }: { onLogout: () => void }
   };
 
   const prepareSlideForCapture = async (slideElement: HTMLElement) => {
-    // Garante que o slide esteja visível e focado
-    slideElement.scrollIntoView({ block: 'center', behavior: 'instant' as any });
+    // ScrollIntoView removido para evitar a animação estranha ao baixar
 
     // Espera garantir que imagens estejam carregadas e posicionamento ok
     const imgs = Array.from(slideElement.querySelectorAll('img'));
     await Promise.all(imgs.map(img => {
       if (img.complete && img.naturalWidth !== 0) return Promise.resolve();
       return new Promise(resolve => {
-        const timer = setTimeout(resolve, 3000); // Segurança: não trava se uma imagem falhar
+        const timer = setTimeout(resolve, 1500); // Segurança mais rápida
         img.onload = () => { clearTimeout(timer); resolve(null); };
         img.onerror = () => { clearTimeout(timer); resolve(null); };
       });
     }));
 
-    // Delay maior para mobile ou grid mode, onde o layout pode demorar a estabilizar
-    const settleDelay = window.innerWidth < 768 ? 1200 : 800;
-    await new Promise(resolve => setTimeout(resolve, settleDelay));
+    // Retirado o delay longo de estabilização da interface (um tick é suficiente e não afeta a usabilidade)
+    await new Promise(resolve => setTimeout(resolve, 100));
   };
 
   const handleDownloadSingle = async (index: number) => {
@@ -1120,8 +1173,8 @@ export default function CarouselGenerator({ onLogout }: { onLogout: () => void }
       const dataUrl = await htmlToImage.toPng(slideElement, {
         width: width,
         height: height,
-        quality: 0.95,
-        pixelRatio: window.innerWidth < 768 ? 2 : 3, // Qualidade superior no desktop, balanceado no mobile
+        quality: 1.0,
+        pixelRatio: window.innerWidth < 768 ? 2 : 3, // Qualidade superior no desktop, altíssima no mobile
         skipFonts: false,
         cacheBust: false,
         filter: filter,
@@ -1163,8 +1216,8 @@ export default function CarouselGenerator({ onLogout }: { onLogout: () => void }
           const dataUrl = await htmlToImage.toPng(slideElement, {
             width: width,
             height: height,
-            quality: 0.9,
-            pixelRatio: window.innerWidth < 768 ? 1.5 : 2, // Reduzido ligeiramente no mobile para evitar estouro de memória no ZIP
+            quality: 1.0,
+            pixelRatio: window.innerWidth < 768 ? 2 : 3, // Restaurado para qualidade altíssima no mobile e desktop
             skipFonts: false,
             cacheBust: false,
             filter: filter,
@@ -1617,14 +1670,15 @@ export default function CarouselGenerator({ onLogout }: { onLogout: () => void }
                         <div
                           key={i}
                           onClick={() => handleIndividualUploadClick(i)}
-                          className={`aspect-[4/5] rounded-xl border-2 border-dashed flex items-center justify-center group transition-all cursor-pointer relative overflow-hidden ${draggedIndex === i ? 'border-primary ring-2 ring-primary/20 scale-95 opacity-50' : 'border-slate-200 hover:border-primary'}`}
+                          className={`aspect-[4/5] rounded-xl border-2 flex items-center justify-center group transition-all cursor-pointer relative overflow-hidden ${dragOverIndex === i ? 'border-primary ring-4 ring-primary/30 scale-105 bg-primary/10 border-solid' : draggedIndex === i ? 'border-dashed border-primary ring-2 ring-primary/20 scale-95 opacity-50' : 'border-dashed border-slate-200 hover:border-primary'}`}
                           draggable={!generateWithAI && !!uploadedImages[i]}
                           onDragStart={() => handleDragStart(i)}
-                          onDragOver={handleDragOver}
-                          onDrop={() => handleDrop(i)}
+                          onDragOver={(e) => handleDragOver(e, i)}
+                          onDragLeave={handleDragLeave}
+                          onDrop={(e) => handleDrop(i, e)}
                           onTouchStart={() => !generateWithAI && !!uploadedImages[i] && handleTouchStart(i)}
                           onTouchEnd={handleTouchEnd}
-                          onTouchMove={handleDragOver}
+                          onTouchMove={handleTouchMove}
                           data-drag-index={i}
                         >
                           {uploadedImages[i] ? (

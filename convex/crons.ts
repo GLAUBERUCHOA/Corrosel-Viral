@@ -3,18 +3,26 @@ import { internal } from "./_generated/api";
 
 const crons = cronJobs();
 
-// Agente 1: Busca novas notícias a cada 15 minutos (para testes rápidos)
+// ============================================================
+// JANELA NOTURNA — 22h BRT até 06h BRT
+// O controle de horário fica dentro do handler do próprio agente
+// (ai_actions.ts verifica se está dentro da janela antes de agir)
+// ============================================================
+
+// Agente 1: Busca novas pautas a cada 90 minutos
+// Na janela de 8h (22h-06h), isso dá ~5 disparos = ~5 pautas/noite
 crons.interval(
   "fetch-news-agent-1",
-  { minutes: 20 },
+  { minutes: 90 },
   (internal as any).ai_actions.runAgent1Fetcher,
-  { automatic: true }
+  { automatic: true, userEmail: "drglauberabreu@gmail.com" }
 );
 
-// Agente 2: Processa notícias pendentes a cada 2 minutos enquanto houver pautas pending
+// Agente 2: Processa pautas pendentes a cada 20 minutos
+// Só consome API se houver pauta pendente, senão retorna sem chamar o Gemini
 crons.interval(
   "process-news-agent-2",
-  { minutes: 2 },
+  { minutes: 20 },
   (internal as any).ai_actions.runAgent2Processor
 );
 

@@ -29,6 +29,8 @@ import { api } from "./_generated/api";
 export const runAgent1Fetcher: any = action({
   args: { 
     automatic: v.optional(v.boolean()),
+    userApiKey: v.optional(v.string()),
+    userEmail: v.optional(v.string()),
     setup: v.optional(v.object({
       nicho: v.string(),
       publicoAlvo: v.string(),
@@ -55,12 +57,13 @@ export const runAgent2Processor: any = action({
 
 // Mutations (Expostas internamente via internalAgents)
 export const savePauta = internalMutation({
-  args: { pauta: v.string(), type: v.string() },
+  args: { pauta: v.string(), type: v.string(), userEmail: v.optional(v.string()) },
   handler: async (ctx, args) => {
     await ctx.db.insert("pautas", {
       pauta: args.pauta,
       type: args.type,
       status: "pending",
+      userEmail: args.userEmail,
       createdAt: Date.now(),
     });
   },
@@ -95,8 +98,17 @@ export const getPendingPauta = internalQuery({
 });
 
 export const getAllPautas = query({
-  args: {},
-  handler: async (ctx) => {
+  args: { userEmail: v.optional(v.string()) },
+  handler: async (ctx, args) => {
+    if (args.userEmail) {
+      // Multi-tenant: retorna só as pautas do usuário
+      return await ctx.db
+        .query("pautas")
+        .withIndex("by_user", (q) => q.eq("userEmail", args.userEmail))
+        .order("desc")
+        .take(50);
+    }
+    // Admin fallback: retorna tudo
     return await ctx.db
       .query("pautas")
       .order("desc")
@@ -105,9 +117,17 @@ export const getAllPautas = query({
 });
 
 export const clearAllPautas = mutation({
-  args: {},
-  handler: async (ctx) => {
-    const all = await ctx.db.query("pautas").collect();
+  args: { userEmail: v.optional(v.string()) },
+  handler: async (ctx, args) => {
+    let all;
+    if (args.userEmail) {
+      all = await ctx.db
+        .query("pautas")
+        .withIndex("by_user", (q) => q.eq("userEmail", args.userEmail))
+        .collect();
+    } else {
+      all = await ctx.db.query("pautas").collect();
+    }
     for (const pauta of all) {
       await ctx.db.delete(pauta._id);
     }
@@ -170,7 +190,12 @@ export const saveSquadConfig = mutation({
     promptAgente2: v.optional(v.any()),
     contextoSquad: v.optional(v.any()),
     tomGlobal: v.optional(v.any()),
-    value: v.optional(v.any())
+    value: v.optional(v.any()),
+    // Setup do Especialista (SaaS)
+    nicho: v.optional(v.string()),
+    publicoAlvo: v.optional(v.string()),
+    objetivo: v.optional(v.string()),
+    cta: v.optional(v.string()),
   },
   handler: async (ctx, args) => {
     const existing = await ctx.db
@@ -178,19 +203,22 @@ export const saveSquadConfig = mutation({
       .withIndex("by_key", (q) => q.eq("key", "SQUAD_CONFIG"))
       .unique();
 
-    const dataToSave = {
-      key: "SQUAD_CONFIG",
-      promptAgente1: args.promptAgente1,
-      promptAgente2: args.promptAgente2,
-      contextoSquad: args.contextoSquad,
-      tomGlobal: args.tomGlobal,
-      value: args.value,
-    };
+    // Só salva campos que vieram nos args (evita apagar os existentes com undefined)
+    const dataToSave: Record<string, any> = { key: "SQUAD_CONFIG" };
+    if (args.promptAgente1 !== undefined) dataToSave.promptAgente1 = args.promptAgente1;
+    if (args.promptAgente2 !== undefined) dataToSave.promptAgente2 = args.promptAgente2;
+    if (args.contextoSquad !== undefined) dataToSave.contextoSquad = args.contextoSquad;
+    if (args.tomGlobal !== undefined) dataToSave.tomGlobal = args.tomGlobal;
+    if (args.value !== undefined) dataToSave.value = args.value;
+    if (args.nicho !== undefined) dataToSave.nicho = args.nicho;
+    if (args.publicoAlvo !== undefined) dataToSave.publicoAlvo = args.publicoAlvo;
+    if (args.objetivo !== undefined) dataToSave.objetivo = args.objetivo;
+    if (args.cta !== undefined) dataToSave.cta = args.cta;
 
     if (existing) {
-      await ctx.db.patch(existing._id, dataToSave);
+      await ctx.db.patch(existing._id, dataToSave as any);
     } else {
-      await ctx.db.insert("settings", dataToSave);
+      await ctx.db.insert("settings", dataToSave as any);
     }
   },
 });

@@ -6,11 +6,10 @@ import { internal } from "./_generated/api";
 import { GoogleGenerativeAI } from "@google/generative-ai";
 import { PROMPT_AGENTE_01, PROMPT_AGENTE_02 } from "./instructions";
 
-// gemini-2.5-flash: O ápice da inteligência e velocidade em Março/2026
-const MODEL_AGENT_1 = 'gemini-2.5-flash';
-const MODEL_AGENT_2 = 'gemini-2.5-flash';
+// Modelos com fallback — gemini-2.0-flash tem cota separada e mais generosa
+const MODEL_PRIMARY = 'gemini-2.5-flash';
+const MODEL_FALLBACK = 'gemini-2.0-flash';
 
-// Bypass para erro de tipagem circular do Convex em build local
 const internalAgents = internal.agents;
 
 // Pilares de Curadoria (A Roleta)
@@ -23,11 +22,68 @@ const CURATION_PILLARS = [
 ];
 
 /**
- * Agente 1: Busca notícias disruptivas conforme Módulo 1 (Código Negro)
+ * Helper: Chama o Gemini com retry + fallback de modelo
+ * Se o modelo primário retornar 429/503, espera 15s e tenta o modelo fallback
+ */
+async function callGeminiWithRetry(
+  apiKey: string,
+  systemInstruction: string,
+  userPrompt: string,
+  temperature: number = 0.85,
+  maxOutputTokens: number = 1024
+): Promise<string> {
+  const genAI = new GoogleGenerativeAI(apiKey);
+
+  const models = [MODEL_PRIMARY, MODEL_FALLBACK];
+
+  for (const modelName of models) {
+    try {
+      console.log(`[GEMINI] Tentando modelo: ${modelName}...`);
+      const model = genAI.getGenerativeModel({
+        model: modelName,
+        systemInstruction,
+      });
+
+      const result = await model.generateContent({
+        contents: [{ role: 'user', parts: [{ text: userPrompt }] }],
+        generationConfig: { temperature, maxOutputTokens },
+      });
+
+      const text = result.response.text();
+      if (text) {
+        console.log(`[GEMINI] ✅ Resposta obtida com ${modelName} (${text.length} chars)`);
+        return text;
+      }
+      console.warn(`[GEMINI] Resposta vazia de ${modelName}, tentando fallback...`);
+    } catch (err: any) {
+      const status = err?.status || err?.httpStatusCode || 0;
+      const isRetryable = status === 429 || status === 503 || 
+        err?.message?.includes('429') || err?.message?.includes('503') ||
+        err?.message?.includes('Too Many Requests') || err?.message?.includes('RESOURCE_EXHAUSTED');
+
+      console.warn(`[GEMINI] ❌ ${modelName} falhou (status=${status}): ${err.message?.substring(0, 150)}`);
+
+      if (isRetryable && modelName === MODEL_PRIMARY) {
+        console.log(`[GEMINI] ⏳ Aguardando 15s antes de tentar ${MODEL_FALLBACK}...`);
+        await new Promise(resolve => setTimeout(resolve, 15000));
+        continue; // Tenta o próximo modelo
+      }
+
+      throw err; // Se o fallback também falhou, propaga o erro
+    }
+  }
+
+  throw new Error("Todos os modelos falharam.");
+}
+
+/**
+ * Agente 1: Busca notícias disruptivas
  */
 export const runAgent1Fetcher = action({
   args: { 
     automatic: v.optional(v.boolean()),
+    userApiKey: v.optional(v.string()),
+    userEmail: v.optional(v.string()),
     setup: v.optional(v.object({
       nicho: v.string(),
       publicoAlvo: v.string(),
@@ -36,35 +92,37 @@ export const runAgent1Fetcher = action({
     }))
   },
   handler: async (ctx, args): Promise<{ success: boolean; pauta?: string; message?: string; error?: string }> => {
-    const apiKey = process.env.GOOGLE_GENERATIVE_AI_API_KEY;
-    if (!apiKey) throw new Error("Missing GOOGLE_GENERATIVE_AI_API_KEY");
+    // Prioridade: Key do cliente > Key do admin (.env)
+    const apiKey = args.userApiKey || process.env.GOOGLE_GENERATIVE_AI_API_KEY;
+    if (!apiKey) throw new Error("Nenhuma API Key do Gemini configurada. Adicione sua chave no Setup do Especialista.");
 
     console.log("[AI_ACTIONS] Iniciando runAgent1Fetcher...");
 
-    // 1. Início do dia para contagem e janela
+    // 1. Controle temporal
     const now = new Date();
     const hourUTC = now.getUTCHours();
     const baseDate = new Date(now);
     baseDate.setUTCHours(3, 0, 0, 0);
-    const startOfTodayBRT = now.getUTCHours() < 3 ? baseDate.getTime() - 86400000 : baseDate.getTime();
+    const startOfTodayBRT = hourUTC < 3 ? baseDate.getTime() - 86400000 : baseDate.getTime();
 
-    // Verificação de Limite e Horário se for Automático
     const isAutomatic = args.automatic === true;
 
     if (isAutomatic) {
-      // Janela da Madrugada (BRT 03:00 - 07:00) => UTC 06:00 - 10:00
-      const isDawn = hourUTC >= 6 && hourUTC < 10;
-      if (!isDawn) {
-        return { success: true, message: "Fora da janela de automação (03h-07h BRT). Ignorado." };
+      // Janela Noturna BRT: 22:00 - 06:00 = UTC 01:00 - 09:00
+      const isNightWindow = hourUTC >= 1 && hourUTC < 9;
+      if (!isNightWindow) {
+        console.log(`[AI_ACTIONS] Fora da janela noturna (hora UTC: ${hourUTC}). Ignorado.`);
+        return { success: true, message: `Fora da janela noturna (22h-06h BRT). Hora UTC: ${hourUTC}. Ignorado.` };
       }
 
       const todayCount = await ctx.runQuery(internalAgents.countTodaysPautas, { since: startOfTodayBRT });
-      if (todayCount >= 10) {
-        return { success: true, message: "Limite diário de 10 cards atingido. Automação parada hoje." };
+      if (todayCount >= 8) {
+        console.log(`[AI_ACTIONS] Limite diário de 8 cards atingido (${todayCount}).`);
+        return { success: true, message: `Limite diário de 8 cards atingido (${todayCount}). Automação pausada.` };
       }
     }
 
-    // 2. Busca de Configurações Dinâmicas (Admin)
+    // 2. Busca de Configurações Dinâmicas (Admin) — SQUAD_CONFIG do Convex
     const settings: any = await ctx.runQuery(internalAgents.getSquadConfigInternal);
     const config = settings || {};
 
@@ -72,7 +130,7 @@ export const runAgent1Fetcher = action({
     const tomGlobal = settings?.tomGlobal || config.value?.tom_de_voz_global || "";
     const contextoSquad = settings?.contextoSquad || config.value?.contexto_squad || "";
 
-    // Prioridade para o perfil: 1. Argumentos da chamada | 2. Configurações Globais (Convex/Squad)
+    // Setup do Especialista: 1º args da UI manual → 2º SQUAD_CONFIG do Convex → 3º vazio
     const activeSetup = args.setup || {
       nicho: settings?.nicho || config.value?.nicho || "",
       publicoAlvo: settings?.publicoAlvo || config.value?.publicoAlvo || "",
@@ -81,7 +139,7 @@ export const runAgent1Fetcher = action({
     };
 
     const personaInjection = activeSetup.nicho && activeSetup.publicoAlvo
-      ? `[PERFIL DO CONTEÚDO]\n- Nicho: ${activeSetup.nicho}\n- Público-Alvo: ${activeSetup.publicoAlvo}\n- Objetivo: ${activeSetup.objetivo}\n- CTA: ${activeSetup.cta}\n\n`
+      ? `[PERFIL DO CONTEÚDO]\n- Nicho: ${activeSetup.nicho}\n- Público-Alvo: ${activeSetup.publicoAlvo}\n- Objetivo: ${activeSetup.objetivo}\n- CTA: ${activeSetup.cta}\n\nATENÇÃO: Toda busca e curadoria DEVE ser 100% focada no nicho "${activeSetup.nicho}" e voltada para o público "${activeSetup.publicoAlvo}". Ignore completamente qualquer outro assunto que não se relacione diretamente a este nicho.\n\n`
       : "";
 
     // 3. Seleção do Pilar do Dia (A Roleta)
@@ -96,7 +154,7 @@ export const runAgent1Fetcher = action({
       return match ? match[1] : p.pauta.substring(0, 50) + "...";
     }).join(", ");
 
-    // 5. Construção dos Comandos Injetáveis
+    // 5. Construção do System Instruction
     const systemInstruction = `${promptDiretor}\n\n` +
       personaInjection +
       `[CONTEXTO]: ${contextoSquad}\n` +
@@ -104,56 +162,41 @@ export const runAgent1Fetcher = action({
       `[PILAR OBRIGATÓRIO]: ${chosenPillar}\n\n` +
       `[EVITAR REPETIÇÃO]: ${recentTitles}`;
 
-    console.log("[AI_ACTIONS] Instanciando SDK do Gemini...");
-    
-    // Verificação de segurança para o tipo importado
-    if (typeof GoogleGenerativeAI !== 'function') {
-      console.error("[AI_ACTIONS] ERRO: GoogleGenerativeAI não é uma função/classe!", typeof GoogleGenerativeAI);
-      throw new Error("SDK Import Failure: GoogleGenerativeAI is not a constructor");
-    }
-
-    const genAI = new GoogleGenerativeAI(apiKey);
+    console.log("[AI_ACTIONS] personaInjection ativo:", personaInjection ? "SIM" : "NÃO (vazio)");
+    console.log("[AI_ACTIONS] Nicho:", activeSetup.nicho || "(nenhum)");
+    console.log("[AI_ACTIONS] Pilar:", chosenPillar);
 
     try {
-      const model = genAI.getGenerativeModel({
-        model: MODEL_AGENT_1,
-        systemInstruction: systemInstruction,
+      const text = await callGeminiWithRetry(
+        apiKey,
+        systemInstruction,
+        `MISSÃO VIRAL: Execute sua pesquisa agora seguindo o pilar: ${chosenPillar}.\n\nBusque uma notícia ou acontecimento CONCRETO e REAL das últimas 48-72 horas. Seja específico com nomes, números e datas reais. Entregue o resultado IMEDIATAMENTE no formato exigido pelo sistema.`,
+        0.85,
+        1024
+      );
+
+      const pautaCompleta = `[PILAR DA BUSCA]: ${chosenPillar}\n${text}`;
+      
+      await ctx.runMutation(internalAgents.savePauta, {
+        pauta: pautaCompleta,
+        type: "noticia",
+        userEmail: args.userEmail
       });
-
-      console.log("[AI_ACTIONS] Chamando model.generateContent...");
-      const result = await model.generateContent({
-        contents: [{
-          role: 'user',
-          parts: [{ text: `MISSÃO VIRAL: Execute sua pesquisa agora seguindo o pilar: ${chosenPillar}.\n\nBusque uma notícia ou acontecimento CONCRETO e REAL das últimas 48-72 horas. Seja específico com nomes, números e datas reais. Entregue o resultado IMEDIATAMENTE no formato exigido pelo sistema.` }]
-        }],
-        generationConfig: {
-          temperature: 0.85,
-          maxOutputTokens: 1024,
-        }
-      });
-
-      const response = result.response;
-      const text = response.text();
-
-      if (text) {
-        // Enriquecer a pauta com o metadado do pilar para a Dashboard
-        const pautaCompleta = `[PILAR DA BUSCA]: ${chosenPillar}\n${text}`;
-        
-        await ctx.runMutation(internalAgents.savePauta, {
-          pauta: pautaCompleta,
-          type: "noticia"
-        });
-        
-        console.log("[AI_ACTIONS] Pauta salva com sucesso.");
-        return { success: true, pauta: pautaCompleta };
-      }
-
-      console.warn("[AI_ACTIONS] Resposta da IA veio vazia.");
-      return { success: false, message: "A IA retornou resposta vazia." };
+      
+      console.log("[AI_ACTIONS] ✅ Pauta salva com sucesso.");
+      return { success: true, pauta: pautaCompleta };
 
     } catch (err: any) {
-      console.error("❌ Erro fatal no Agente 1 (AI_ACTIONS):", err);
-      return { success: false, error: err.message };
+      console.error("❌ Erro fatal no Agente 1:", err.message?.substring(0, 300));
+
+      // Salva a pauta como "failed" com detalhes do erro para diagnóstico
+      await ctx.runMutation(internalAgents.savePauta, {
+        pauta: `[ERRO] Falha ao gerar pauta — ${err.message?.substring(0, 200)}`,
+        type: "noticia",
+        userEmail: args.userEmail
+      });
+      // Marca como failed imediatamente
+      return { success: false, error: err.message?.substring(0, 300) };
     }
   },
 });
@@ -173,6 +216,16 @@ export const runAgent2Processor = action({
       return { success: true, message: "Nenhuma pauta pendente encontrada." };
     }
 
+    // Pula pautas que são mensagens de erro do sistema
+    if (pendingPauta.pauta.startsWith("[ERRO]")) {
+      await ctx.runMutation(internalAgents.updatePautaProcessed, {
+        id: pendingPauta._id,
+        status: "failed",
+        error: "Pauta de erro do sistema — não processável"
+      });
+      return { success: true, message: "Pauta de erro pulada." };
+    }
+
     // Configurações Dinâmicas (Admin)
     const settings: any = await ctx.runQuery(internalAgents.getSquadConfigInternal);
     const config = settings || {};
@@ -180,35 +233,23 @@ export const runAgent2Processor = action({
     const tomGlobal = settings?.tomGlobal || config.value?.tom_de_voz_global || "";
 
     console.log(`[Agente 2] Processando pauta ID: ${pendingPauta._id}`);
-    const genAI = new GoogleGenerativeAI(apiKey);
 
-    // Limpar a pauta para remover a tag de Pilar
+    // Limpar a pauta
     const pautaLimpa = pendingPauta.pauta.replace(/\[PILAR DA BUSCA\]:.*\n/i, "").trim();
 
     try {
-      const model = genAI.getGenerativeModel({
-        model: MODEL_AGENT_2,
-        systemInstruction: `${regrasEscrita}\n\n[ESTILO]: ${tomGlobal}`
-      });
-
-      const result = await model.generateContent({
-        contents: [{
-          role: 'user',
-          parts: [{ text: `PAUTA PARA DECODIFICAÇÃO VIRAL:\n${pautaLimpa}` }]
-        }],
-        generationConfig: {
-          temperature: 0.7
-        }
-      });
-
-      const carrossel = result.response.text();
-      
-      if (!carrossel) throw new Error("IA retornou resposta vazia no Agente 2.");
+      const carrossel = await callGeminiWithRetry(
+        apiKey,
+        `${regrasEscrita}\n\n[ESTILO]: ${tomGlobal}`,
+        `PAUTA PARA DECODIFICAÇÃO VIRAL:\n${pautaLimpa}`,
+        0.7,
+        2048
+      );
 
       const hasSlides: boolean = /SLIDE\s*(0?1):/i.test(carrossel);
       const status: string = hasSlides ? "processed" : "failed";
 
-      console.log(`[Agente 2] Finalizado com status: ${status}`);
+      console.log(`[Agente 2] ✅ Finalizado com status: ${status}`);
 
       await ctx.runMutation(internalAgents.updatePautaProcessed, {
         id: pendingPauta._id,
@@ -218,12 +259,13 @@ export const runAgent2Processor = action({
 
       return { success: true, carrossel };
     } catch (err: any) {
-      console.error("❌ Erro fatal no Agente 2:", err);
+      console.error("❌ Erro fatal no Agente 2:", err.message?.substring(0, 300));
       await ctx.runMutation(internalAgents.updatePautaProcessed, {
         id: pendingPauta._id,
-        status: "failed"
+        status: "failed",
+        error: err.message?.substring(0, 200)
       });
-      return { success: false, message: err.message };
+      return { success: false, message: err.message?.substring(0, 300) };
     }
   },
 });

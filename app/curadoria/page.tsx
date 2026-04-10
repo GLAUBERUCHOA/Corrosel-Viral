@@ -119,7 +119,9 @@ const renderRoteiro = (carrosselRaw: string) => {
 
 export default function CuradoriaPage() {
   const router = useRouter();
-  const pautas = useQuery(api.agents.getAllPautas);
+  const [userEmail, setUserEmail] = useState("");
+  const [userRole, setUserRole] = useState("USER");
+  const pautas = useQuery(api.agents.getAllPautas, userEmail ? { userEmail } : "skip");
   const runAgent1 = useAction(api.ai_actions.runAgent1Fetcher);
   const clearPautas = useMutation(api.agents.clearAllPautas);
   const deletePauta = useMutation(api.agents.deletePauta);
@@ -137,7 +139,10 @@ export default function CuradoriaPage() {
   const [publicoAlvo, setPublicoAlvo] = useState("");
   const [objetivo, setObjetivo] = useState("atracao");
   const [cta, setCta] = useState("");
+  const [geminiApiKey, setGeminiApiKey] = useState("");
+  const [hasApiKey, setHasApiKey] = useState(false);
   const [isSavingSetup, setIsSavingSetup] = useState(false);
+  const isAdmin = userRole === "ADMIN";
 
   useEffect(() => {
     const checkAuth = () => {
@@ -148,6 +153,7 @@ export default function CuradoriaPage() {
         window.location.href = '/login';
         return;
       }
+      setUserEmail(email);
       setIsCheckingAuth(false);
 
       // Carregar setup do usuário
@@ -159,6 +165,9 @@ export default function CuradoriaPage() {
             setPublicoAlvo(data.data.publicoAlvo || "");
             setObjetivo(data.data.objetivo || "atracao");
             setCta(data.data.cta || "");
+            setGeminiApiKey(data.data.geminiApiKey || "");
+            setHasApiKey(data.data.hasApiKey || false);
+            setUserRole(data.data.role || "USER");
           }
         })
         .catch(console.error);
@@ -167,40 +176,68 @@ export default function CuradoriaPage() {
     checkAuth();
   }, []);
 
+  const saveSquadConfig = useMutation(api.agents.saveSquadConfig);
+
   async function handleSaveSetup() {
-    const email = localStorage.getItem('user_email');
-    if (!email) return;
+    if (!userEmail) return;
     setIsSavingSetup(true);
     try {
+      // 1. Salva no MySQL (perfil do usuário + API key)
       await fetch('/api/user/setup', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email, nicho, publicoAlvo, objetivo, cta })
+        body: JSON.stringify({ email: userEmail, nicho, publicoAlvo, objetivo, cta, geminiApiKey })
       });
-      alert("Configurações do Especialista salvas!");
+
+      // 2. Sincroniza no Convex (para o CRON noturno do admin ler)
+      if (isAdmin) {
+        await saveSquadConfig({
+          nicho, publicoAlvo, objetivo, cta
+        } as any);
+      }
+
+      setHasApiKey(geminiApiKey.length > 0 && !geminiApiKey.startsWith('••••'));
+      alert("✅ Configurações salvas com sucesso!");
     } catch (err) {
       console.error('Erro ao salvar setup', err);
+      alert("Erro ao salvar. Tente novamente.");
     } finally {
       setIsSavingSetup(false);
     }
   }
 
   async function handleDispararAgente1() {
-    console.log("🚀 Iniciando disparo do Agente 1 (Passando Setup Local)...");
+    if (!hasApiKey && !isAdmin) {
+      alert("⚠️ Configure sua Chave da API Gemini no Setup do Especialista antes de disparar.");
+      return;
+    }
     setIsRunningAgent1(true);
     try {
+      // Busca a API key real do MySQL (não a mascarada)
+      let resolvedApiKey: string | undefined;
+      if (hasApiKey) {
+        const keyRes = await fetch('/api/user/apikey', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ email: userEmail })
+        });
+        const keyData = await keyRes.json();
+        resolvedApiKey = keyData.apiKey || undefined;
+      }
+
       // @ts-ignore
       const result = await runAgent1({ 
         automatic: false,
+        userEmail,
+        userApiKey: resolvedApiKey,
         setup: { nicho, publicoAlvo, objetivo, cta }
       });
-      console.log("✅ Resposta do Agente 1:", result);
       if (result && !result.success) {
         alert("Erro no Agente 1: " + (result.error || result.message || "Erro desconhecido"));
       }
     } catch (err) {
-      console.error("❌ Falha crítica ao disparar Agente 1:", err);
-      alert("Falha ao disparar Agente. Verifique o console para detalhes.");
+      console.error("❌ Falha ao disparar Agente 1:", err);
+      alert("Falha ao disparar Agente. Verifique o console.");
     } finally {
       setIsRunningAgent1(false);
     }
@@ -208,14 +245,12 @@ export default function CuradoriaPage() {
 
   async function handleLimparFila() {
     if (!confirm("Tem certeza que deseja limpar toda a fila de pautas?")) return;
-    console.log("🧹 Limpando fila de pautas...");
     setIsClearing(true);
     try {
-      await clearPautas();
-      console.log("✅ Fila limpa com sucesso!");
+      await clearPautas({ userEmail });
     } catch (err) {
       console.error("❌ Erro ao limpar fila:", err);
-      alert("Erro ao limpar fila. Verifique a conexão com o banco.");
+      alert("Erro ao limpar fila.");
     } finally {
       setIsClearing(false);
     }
@@ -381,50 +416,61 @@ export default function CuradoriaPage() {
                           className="bg-slate-950 border-slate-800 h-10 text-sm focus:border-blue-500"
                         />
                       </div>
-                    </div>
-                  </div>
 
-                  <div className="space-y-4">
-                    <h3 className="text-sm font-bold uppercase tracking-widest text-slate-500">Regras e Comportamento</h3>
-                    <Link href="/admin/configuracoes" className="block w-full">
-                      <Button variant="secondary" className="w-full bg-slate-800 text-slate-200 hover:bg-slate-700 h-12 font-bold flex items-center gap-2">
-                        <Settings className="h-4 w-4" />
-                        Gerenciar Prompts dos Agentes
-                      </Button>
-                    </Link>
-                  </div>
-
-                  <div className="space-y-4 pt-4 border-t border-slate-800">
-                    <div className="space-y-5">
-                      <h3 className="text-xs font-black uppercase tracking-widest text-slate-500">Automação (15m News / 2m Agent 2)</h3>
-                      <div className="flex items-center justify-between p-5 rounded-2xl bg-slate-950/50 border border-slate-800 transition-colors hover:border-slate-700">
-                        <div className="space-y-1">
-                          <Label className="text-base font-bold">Modo Produção</Label>
-                          <p className="text-xs text-slate-500 font-medium">Ativar agendamento 00:00 - 05:00</p>
-                        </div>
-                        <Switch className="data-[state=checked]:bg-blue-600" />
-                      </div>
-                    </div>
-
-                    <div className="space-y-5">
-                      <h3 className="text-xs font-black uppercase tracking-widest text-slate-500">Modelos Ativos</h3>
-                      <div className="grid gap-5">
-                        <div className="space-y-3">
-                          <Label className="text-sm font-bold text-slate-400 uppercase tracking-tight">Agente 1 (Status: Variedade Ativa)</Label>
-                          <Input className="bg-slate-950 border-slate-800 h-12 font-mono text-blue-400" placeholder="gemini-2.5-flash" disabled />
-                        </div>
+                      {/* Campo de API Key do Gemini */}
+                      <div className="space-y-2 pt-3 border-t border-slate-800/50">
+                        <Label className="text-[10px] font-bold uppercase text-slate-500 tracking-wider">🔑 Chave da API Gemini</Label>
+                        <Input 
+                          type="password"
+                          value={geminiApiKey} 
+                          onChange={(e) => setGeminiApiKey(e.target.value)}
+                          placeholder="Cole aqui sua API Key do Google AI Studio..."
+                          className="bg-slate-950 border-slate-800 h-10 text-sm focus:border-blue-500 font-mono"
+                        />
+                        <p className="text-[9px] text-slate-600">
+                          {hasApiKey ? '✅ Chave configurada' : '⚠️ Obrigatório para gerar conteúdo'} — Obtenha em aistudio.google.com
+                        </p>
                       </div>
                     </div>
                   </div>
 
-                  <div className="p-6 rounded-2xl bg-blue-500/5 border border-blue-500/10 backdrop-blur-sm">
-                    <div className="flex gap-4">
-                      <Info className="h-6 w-6 text-blue-500 shrink-0" />
-                      <p className="text-xs text-blue-300 leading-relaxed font-semibold">
-                        Código Negro Ativo: Variedade total (Shopee, iFood, Consumo, Psicologia). Foco em Ganho e Indignação.
-                      </p>
-                    </div>
-                  </div>
+                  {/* CONTROLES ADMIN — Só visíveis para role=ADMIN */}
+                  {isAdmin && (
+                    <>
+                      <div className="space-y-4">
+                        <h3 className="text-sm font-bold uppercase tracking-widest text-slate-500">Regras e Comportamento</h3>
+                        <Link href="/admin/configuracoes" className="block w-full">
+                          <Button variant="secondary" className="w-full bg-slate-800 text-slate-200 hover:bg-slate-700 h-12 font-bold flex items-center gap-2">
+                            <Settings className="h-4 w-4" />
+                            Gerenciar Prompts dos Agentes
+                          </Button>
+                        </Link>
+                      </div>
+
+                      <div className="space-y-4 pt-4 border-t border-slate-800">
+                        <div className="space-y-5">
+                          <h3 className="text-xs font-black uppercase tracking-widest text-slate-500">Automação Noturna (22h-06h BRT)</h3>
+                          <div className="flex items-center justify-between p-5 rounded-2xl bg-slate-950/50 border border-slate-800 transition-colors hover:border-slate-700">
+                            <div className="space-y-1">
+                              <Label className="text-base font-bold">CRON Admin</Label>
+                              <p className="text-xs text-slate-500 font-medium">Agente 1 a cada 90min / Agente 2 a cada 20min</p>
+                            </div>
+                            <Switch className="data-[state=checked]:bg-blue-600" />
+                          </div>
+                        </div>
+
+                        <div className="space-y-5">
+                          <h3 className="text-xs font-black uppercase tracking-widest text-slate-500">Modelos Ativos</h3>
+                          <div className="grid gap-5">
+                            <div className="space-y-3">
+                              <Label className="text-sm font-bold text-slate-400 uppercase tracking-tight">Primário / Fallback</Label>
+                              <Input className="bg-slate-950 border-slate-800 h-12 font-mono text-blue-400" placeholder="gemini-2.5-flash → gemini-2.0-flash" disabled />
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    </>
+                  )}
                 </div>
               </SheetContent>
             </Sheet>

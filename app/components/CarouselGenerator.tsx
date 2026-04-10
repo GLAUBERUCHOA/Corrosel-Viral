@@ -651,6 +651,8 @@ export default function CarouselGenerator({ onLogout }: { onLogout: () => void }
 
   const handleDrop = (index: number, event?: React.DragEvent<HTMLDivElement>) => {
     setDragOverIndex(null);
+    
+    // Suporte para arquivos externos
     if (event?.dataTransfer?.files && event.dataTransfer.files.length > 0) {
       const file = event.dataTransfer.files[0];
       if (file.type.startsWith('image/')) {
@@ -659,7 +661,8 @@ export default function CarouselGenerator({ onLogout }: { onLogout: () => void }
           if (e.target?.result && typeof e.target.result === 'string') {
             setUploadedImages(prev => {
               const updated = [...prev];
-              updated[index] = e.target!.result as string;
+              // Insere a nova imagem na posição e empurra as outras
+              updated.splice(index, 1, e.target!.result as string);
               return updated;
             });
           }
@@ -674,11 +677,11 @@ export default function CarouselGenerator({ onLogout }: { onLogout: () => void }
       setDraggedIndex(null);
       return;
     }
+
     setUploadedImages(prev => {
       const updated = [...prev];
-      const temp = updated[draggedIndex];
-      updated[draggedIndex] = updated[index];
-      updated[index] = temp;
+      const [movedItem] = updated.splice(draggedIndex, 1); // Remove o item da origem
+      updated.splice(index, 0, movedItem); // Insere no destino, empurrando os outros
       return updated;
     });
     setDraggedIndex(null);

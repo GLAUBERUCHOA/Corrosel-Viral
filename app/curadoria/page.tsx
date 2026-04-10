@@ -150,7 +150,7 @@ export default function CuradoriaPage() {
       const email = localStorage.getItem('user_email');
       
       if (!isAuth || !email) {
-        window.location.href = '/login';
+        window.location.href = '/curadoria/login';
         return;
       }
       setUserEmail(email);
@@ -260,7 +260,7 @@ export default function CuradoriaPage() {
     localStorage.removeItem('is_authenticated');
     localStorage.removeItem('user_email');
     localStorage.removeItem('user_id');
-    window.location.href = '/login';
+    window.location.href = '/curadoria/login';
   }
 
   async function handleAprovar(id: Id<"pautas">) {

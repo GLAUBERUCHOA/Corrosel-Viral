@@ -21,6 +21,7 @@ model User {
   objetivo          String?
   cta               String?
   geminiApiKey      String?   // Chave da API Gemini do cliente
+  hasCuradoriaAccess Boolean @default(false) // Controle de acesso vendido via Order Bump
   createdAt         DateTime @default(now())
 }
 

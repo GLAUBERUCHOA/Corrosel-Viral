@@ -11,6 +11,7 @@ import { Label } from "@/components/ui/label";
 export default function CuradoriaLoginPage() {
   const router = useRouter();
   const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState("");
 
@@ -20,19 +21,18 @@ export default function CuradoriaLoginPage() {
     setError("");
 
     try {
-      // Verifica se o e-mail existe no MySQL (Prisma) e se está ativo
-      const res = await fetch(`/api/user/setup?email=${encodeURIComponent(email)}`);
+      const res = await fetch('/api/curadoria/login', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email, password })
+      });
       const data = await res.json();
 
       if (data.success) {
-        // Sucesso: Salva no localStorage para manter a sessão
-        localStorage.setItem('is_authenticated', 'true');
-        localStorage.setItem('user_email', email.toLowerCase().trim());
-        localStorage.setItem('user_role', data.data.role || 'USER');
-        
-        router.push('/curadoria');
+        // Redireciona via window.location.href para forçar recarregamento do middleware
+        window.location.href = '/curadoria';
       } else {
-        setError("E-mail não encontrado ou sem acesso ao LAB. Verifique sua compra.");
+        setError(data.error || "Acesso negado. Verifique sua compra ou credenciais.");
       }
     } catch (err) {
       console.error("Erro no login:", err);
@@ -63,15 +63,15 @@ export default function CuradoriaLoginPage() {
 
         <Card className="bg-slate-900/50 border-slate-800 backdrop-blur-xl shadow-2xl">
           <CardHeader className="space-y-1 text-center border-b border-slate-800/50 pb-8">
-            <CardTitle className="text-xl font-bold text-slate-100">Bem-vindo de volta</CardTitle>
+            <CardTitle className="text-xl font-bold text-slate-100">Acesso Restrito</CardTitle>
             <CardDescription className="text-slate-400">
-              Digite seu e-mail de compra para acessar a mesa de curadoria.
+              Faça login com seu e-mail e senha da plataforma principal.
             </CardDescription>
           </CardHeader>
           <form onSubmit={handleLogin}>
             <CardContent className="pt-8 space-y-4">
               {error && (
-                <div className="p-3 rounded-lg bg-rose-500/10 border border-rose-500/20 text-rose-400 text-xs font-bold animate-shake">
+                <div className="p-3 rounded-lg bg-rose-500/10 border border-rose-500/20 text-rose-400 text-xs font-bold animate-shake text-center">
                   {error}
                 </div>
               )}
@@ -84,6 +84,18 @@ export default function CuradoriaLoginPage() {
                   required
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
+                  className="bg-slate-950 border-slate-800 h-12 text-slate-100 focus:border-blue-500/50 transition-all text-base placeholder:text-slate-700"
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="password" className="text-slate-400 text-[10px] font-bold uppercase tracking-wider">Senha do LAB</Label>
+                <Input 
+                  id="password"
+                  type="password" 
+                  placeholder="********" 
+                  required
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
                   className="bg-slate-950 border-slate-800 h-12 text-slate-100 focus:border-blue-500/50 transition-all text-base placeholder:text-slate-700"
                 />
               </div>

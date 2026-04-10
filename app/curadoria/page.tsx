@@ -256,7 +256,12 @@ export default function CuradoriaPage() {
     }
   }
 
-  function handleLogout() {
+  async function handleLogout() {
+    try {
+      await fetch('/api/curadoria/logout', { method: 'POST' });
+    } catch (e) {
+      console.error('Logout err:', e);
+    }
     localStorage.removeItem('is_authenticated');
     localStorage.removeItem('user_email');
     localStorage.removeItem('user_id');

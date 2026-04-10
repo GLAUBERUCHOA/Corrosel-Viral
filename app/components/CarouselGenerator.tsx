@@ -1385,8 +1385,8 @@ export default function CarouselGenerator({ onLogout }: { onLogout: () => void }
                       <textarea
                         value={content}
                         onChange={(e) => setContent(e.target.value)}
-                        placeholder={isIuryMode ? "Ex: Como criar uma landing page que converte em 7 passos..." : "Ex: [Slide 1] Título do Slide..."}
-                        className={`w-full dark:bg-surface-darker border border-slate-100 dark:border-border-dark rounded-xl p-4 text-sm resize-none focus:ring-2 focus:ring-primary/20 outline-none transition-all placeholder:text-slate-300 overflow-y-auto ${isIuryMode ? 'h-80' : 'h-48'}`}
+                        placeholder={isIuryMode ? "Ex: Como criar uma landing page que converte em 7 passos..." : "SLIDE 01:\n[TÍTULO]: SEU TÍTULO AQUI\n[SUBTÍTULO]: Texto detalhado do seu slide...\n\nSLIDE 02:\n[TÍTULO]: PRÓXIMO TÍTULO\n[SUBTÍTULO]: Mais texto aqui..."}
+                        className={`w-full dark:bg-surface-darker border border-slate-100 dark:border-border-dark rounded-xl p-4 text-sm resize-none focus:ring-2 focus:ring-primary/20 outline-none transition-all placeholder:text-slate-300 overflow-y-auto ${isIuryMode ? 'h-80' : 'h-48 whitespace-pre-wrap'}`}
                       />
                     </div>
 

@@ -142,7 +142,7 @@ export default function CuradoriaPage() {
   const [geminiApiKey, setGeminiApiKey] = useState("");
   const [hasApiKey, setHasApiKey] = useState(false);
   const [isSavingSetup, setIsSavingSetup] = useState(false);
-  const isAdmin = userRole === "ADMIN";
+  const isAdmin = userRole === "ADMIN" && userEmail === "drglauberabreu@gmail.com";
 
   useEffect(() => {
     const checkAuth = () => {

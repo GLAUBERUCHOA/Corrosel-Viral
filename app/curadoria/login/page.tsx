@@ -29,6 +29,7 @@ export default function CuradoriaLoginPage() {
       const data = await res.json();
 
       if (data.success) {
+        localStorage.setItem('user_email', email.toLowerCase().trim());
         // Redireciona via window.location.href para forçar recarregamento do middleware
         window.location.href = '/curadoria';
       } else {

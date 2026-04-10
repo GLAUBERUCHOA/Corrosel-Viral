@@ -146,10 +146,10 @@ export default function CuradoriaPage() {
 
   useEffect(() => {
     const checkAuth = () => {
-      const isAuth = localStorage.getItem('is_authenticated');
       const email = localStorage.getItem('user_email');
       
-      if (!isAuth || !email) {
+      if (!email) {
+        // Se por algum motivo o middleware falhar ou perder o cache client
         window.location.href = '/curadoria/login';
         return;
       }

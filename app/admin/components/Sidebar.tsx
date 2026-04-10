@@ -12,8 +12,7 @@ export default function Sidebar() {
     const links = [
         { href: '/admin', icon: 'dashboard', label: 'Painel Geral' },
         { href: '/admin/users', icon: 'people', label: 'Usuários' },
-        { href: '/admin/settings', icon: 'tune', label: 'Textos (Modos Iury)' },
-        { href: '/admin/image-settings', icon: 'imagesmode', label: 'Imagens (Nichos)' },
+        { href: '/admin/configuracoes', icon: 'psychology', label: 'Configurar Agentes' },
     ];
 
     return (

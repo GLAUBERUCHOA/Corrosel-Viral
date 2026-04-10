@@ -7,7 +7,7 @@ import { Id } from "../../convex/_generated/dataModel";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Loader2, Eye, Send, Rocket, Settings, Info, Newspaper, Trash2, CheckCircle2, Copy, Check } from "lucide-react";
+import { Loader2, Eye, Send, Rocket, Settings, Info, Newspaper, Trash2, CheckCircle2, Copy, Check, LogOut } from "lucide-react";
 import {
   Sheet,
   SheetContent,
@@ -256,6 +256,13 @@ export default function CuradoriaPage() {
     }
   }
 
+  function handleLogout() {
+    localStorage.removeItem('is_authenticated');
+    localStorage.removeItem('user_email');
+    localStorage.removeItem('user_id');
+    window.location.href = '/login';
+  }
+
   async function handleAprovar(id: Id<"pautas">) {
     try {
       await approvePauta({ id });
@@ -309,14 +316,29 @@ export default function CuradoriaPage() {
           </div>
 
           <div className="flex items-center gap-3">
+            <div className="hidden flex-col items-end mr-4 md:flex">
+              <span className="text-[10px] uppercase font-bold text-slate-500 tracking-widest">Usuário Logado</span>
+              <span className="text-xs font-medium text-slate-300">{userEmail}</span>
+            </div>
+
             <Button
               onClick={handleLimparFila}
-              disabled={isClearing || pautas.length === 0}
+              disabled={isClearing || pautas?.length === 0}
               variant="destructive"
               className="bg-rose-600/10 text-rose-500 border border-rose-500/20 hover:bg-rose-600 hover:text-white font-bold transition-all"
             >
               {isClearing ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Trash2 className="mr-2 h-4 w-4" />}
               Limpar Fila
+            </Button>
+
+            <Button
+              onClick={handleLogout}
+              variant="outline"
+              size="icon"
+              className="border-slate-800 bg-slate-900 hover:bg-rose-600 hover:text-white transition-all group"
+              title="Sair do Sistema"
+            >
+              <LogOut className="h-5 w-5 text-slate-400 group-hover:text-white" />
             </Button>
 
             <Button

@@ -455,7 +455,15 @@ export default function CuradoriaPage() {
                           className="bg-slate-950 border-slate-800 h-10 text-sm focus:border-blue-500 font-mono"
                         />
                         <p className="text-[9px] text-slate-600">
-                          {hasApiKey ? '✅ Chave configurada' : '⚠️ Obrigatório para gerar conteúdo'} — Obtenha em aistudio.google.com
+                          {hasApiKey ? '✅ Chave configurada' : '⚠️ Obrigatório para gerar conteúdo'} — Obtenha em{' '}
+                          <a 
+                            href="https://aistudio.google.com/app/apikey" 
+                            target="_blank" 
+                            rel="noopener noreferrer"
+                            className="text-blue-500 hover:text-blue-400 underline decoration-blue-500/30 underline-offset-2"
+                          >
+                            aistudio.google.com
+                          </a>
                         </p>
                       </div>
                     </div>

@@ -179,7 +179,7 @@ export default function CuradoriaPage() {
     checkAuth();
   }, []);
 
-  const saveSquadConfig = useMutation(api.agents.saveSquadConfig);
+  const savePromptConfig = useMutation(api.agents.savePromptConfig);
 
   async function handleSaveSetup() {
     if (!userEmail) return;
@@ -194,8 +194,8 @@ export default function CuradoriaPage() {
 
       // 2. Sincroniza no Convex (para o CRON noturno do admin ler)
       if (isAdmin) {
-        await saveSquadConfig({
-          nicho, publicoAlvo, objetivo, cta
+        await savePromptConfig({
+          keyName: 'ADMIN_PROMPTS', nicho, publicoAlvo, objetivo, cta
         } as any);
       }
 

@@ -12,7 +12,8 @@ export default function Sidebar() {
     const links = [
         { href: '/admin', icon: 'dashboard', label: 'Painel Geral' },
         { href: '/admin/users', icon: 'people', label: 'Usuários' },
-        { href: '/admin/configuracoes', icon: 'psychology', label: 'Configurar Agentes' },
+        { href: '/admin/configuracoes', icon: 'crown', label: 'Configurar Mestre' },
+        { href: '/admin/saas-prompts', icon: 'groups', label: 'Regras do SaaS' },
     ];
 
     return (

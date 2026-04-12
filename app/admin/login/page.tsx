@@ -6,6 +6,7 @@ import { useRouter } from 'next/navigation';
 export default function AdminLogin() {
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
+    const [showPassword, setShowPassword] = useState(false);
     const [error, setError] = useState('');
     const [isLoading, setIsLoading] = useState(false);
 
@@ -78,15 +79,22 @@ export default function AdminLogin() {
                         <div className="space-y-2">
                             <label className="text-xs font-black uppercase tracking-widest text-slate-500 dark:text-slate-400 ml-1">Senha de Acesso</label>
                             <div className="relative group">
-                                <span className="absolute left-4 top-1/2 -translate-y-1/2 material-symbols-outlined text-slate-400 group-focus-within:text-primary transition-colors">lock</span>
+                                <span className="absolute left-4 top-1/2 -translate-y-1/2 material-symbols-outlined text-slate-400 group-focus-within:text-blue-600 transition-colors">lock</span>
                                 <input
-                                    type="password"
+                                    type={showPassword ? 'text' : 'password'}
                                     value={password}
-                                    onChange={(e) => setPassword(e.target.value)}
-                                    className="w-full bg-slate-50 dark:bg-slate-950/50 border border-slate-200 dark:border-border-dark rounded-2xl pl-12 pr-4 py-4 text-slate-900 dark:text-white focus:ring-4 focus:ring-primary/10 focus:border-primary transition-all outline-none font-medium placeholder:text-slate-300 dark:placeholder:text-slate-700"
+                                    onChange={(e) => setPassword(e.target.value.trim())}
+                                    className="w-full bg-slate-50 dark:bg-slate-950/50 border border-slate-200 dark:border-border-dark rounded-2xl pl-12 pr-12 py-4 text-slate-900 dark:text-white focus:ring-4 focus:ring-blue-600/10 focus:border-blue-600 transition-all outline-none font-medium placeholder:text-slate-300 dark:placeholder:text-slate-700"
                                     placeholder="••••••••"
                                     required
                                 />
+                                <button
+                                    type="button"
+                                    onClick={() => setShowPassword(!showPassword)}
+                                    className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 transition-colors focus:outline-none focus:ring-2 focus:ring-blue-600 rounded-lg"
+                                >
+                                    <span className="material-symbols-outlined">{showPassword ? 'visibility_off' : 'visibility'}</span>
+                                </button>
                             </div>
                         </div>
 

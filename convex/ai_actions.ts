@@ -122,8 +122,12 @@ export const runAgent1Fetcher = action({
       }
     }
 
-    // 2. Busca de Configurações Dinâmicas (Admin) — SQUAD_CONFIG do Convex
-    const settings: any = await ctx.runQuery(internalAgents.getSquadConfigInternal);
+    // 2. Busca de Configurações Dinâmicas (Mestre vs. Cliente)
+    const isAdmin = args.userEmail === 'drglauberabreu@gmail.com';
+    const settings: any = isAdmin 
+      ? await ctx.runQuery(internalAgents.getAdminPromptsInternal)
+      : await ctx.runQuery(internalAgents.getClientPromptsInternal);
+    
     const config = settings || {};
 
     const promptDiretor = settings?.promptAgente1 || config.value?.agente_1?.prompt_diretor || PROMPT_AGENTE_01;
@@ -243,9 +247,16 @@ export const runAgent2Processor = action({
       return { success: true, message: "Pauta de erro pulada." };
     }
 
-    // Configurações Dinâmicas (Admin)
-    const settings: any = await ctx.runQuery(internalAgents.getSquadConfigInternal);
+    // 3. Configurações Dinâmicas (Admin vs. Clientes)
+    // Precisamos do dono da pauta (para saber se foi o admin). Como estamos no Agent 2, 'userEmail' existe em 'pendingPauta.userEmail'
+    const isAdmin = pendingPauta.userEmail === 'drglauberabreu@gmail.com';
+    
+    const settings: any = isAdmin 
+      ? await ctx.runQuery(internalAgents.getAdminPromptsInternal)
+      : await ctx.runQuery(internalAgents.getClientPromptsInternal);
+      
     const config = settings || {};
+
     const regrasEscrita = settings?.promptAgente2 || config.value?.agente_2?.regras_escrita || PROMPT_AGENTE_02;
     const tomGlobal = settings?.tomGlobal || config.value?.tom_de_voz_global || "";
 

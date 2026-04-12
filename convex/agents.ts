@@ -188,14 +188,54 @@ export const getSquadConfigInternal = internalQuery({
   },
 });
 
-export const saveSquadConfig = mutation({
+export const getAdminPrompts = query({
+  args: {},
+  handler: async (ctx) => {
+    return await ctx.db
+      .query("settings")
+      .withIndex("by_key", (q) => q.eq("key", "ADMIN_PROMPTS"))
+      .unique();
+  },
+});
+
+export const getAdminPromptsInternal = internalQuery({
+  args: {},
+  handler: async (ctx) => {
+    return await ctx.db
+      .query("settings")
+      .withIndex("by_key", (q) => q.eq("key", "ADMIN_PROMPTS"))
+      .unique();
+  },
+});
+
+export const getClientPrompts = query({
+  args: {},
+  handler: async (ctx) => {
+    return await ctx.db
+      .query("settings")
+      .withIndex("by_key", (q) => q.eq("key", "CLIENT_PROMPTS"))
+      .unique();
+  },
+});
+
+export const getClientPromptsInternal = internalQuery({
+  args: {},
+  handler: async (ctx) => {
+    return await ctx.db
+      .query("settings")
+      .withIndex("by_key", (q) => q.eq("key", "CLIENT_PROMPTS"))
+      .unique();
+  },
+});
+
+export const savePromptConfig = mutation({
   args: {
+    keyName: v.string(), // "ADMIN_PROMPTS" | "CLIENT_PROMPTS" | "SQUAD_CONFIG"
     promptAgente1: v.optional(v.any()),
     promptAgente2: v.optional(v.any()),
     contextoSquad: v.optional(v.any()),
     tomGlobal: v.optional(v.any()),
     value: v.optional(v.any()),
-    // Setup do Especialista (SaaS)
     nicho: v.optional(v.string()),
     publicoAlvo: v.optional(v.string()),
     objetivo: v.optional(v.string()),
@@ -204,11 +244,11 @@ export const saveSquadConfig = mutation({
   handler: async (ctx, args) => {
     const existing = await ctx.db
       .query("settings")
-      .withIndex("by_key", (q) => q.eq("key", "SQUAD_CONFIG"))
+      .withIndex("by_key", (q) => q.eq("key", args.keyName))
       .unique();
 
     // Só salva campos que vieram nos args (evita apagar os existentes com undefined)
-    const dataToSave: Record<string, any> = { key: "SQUAD_CONFIG" };
+    const dataToSave: Record<string, any> = { key: args.keyName };
     if (args.promptAgente1 !== undefined) dataToSave.promptAgente1 = args.promptAgente1;
     if (args.promptAgente2 !== undefined) dataToSave.promptAgente2 = args.promptAgente2;
     if (args.contextoSquad !== undefined) dataToSave.contextoSquad = args.contextoSquad;

@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation';
 
 export default function AdminLogin() {
     const [email, setEmail] = useState('');
+    const [password, setPassword] = useState('');
     const [error, setError] = useState('');
     const [isLoading, setIsLoading] = useState(false);
 
@@ -17,7 +18,7 @@ export default function AdminLogin() {
             const res = await fetch('/api/admin/login', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ email }),
+                body: JSON.stringify({ email, password }),
             });
 
             const data = await res.json();
@@ -42,34 +43,48 @@ export default function AdminLogin() {
     };
 
     return (
-        <div className="min-h-screen flex items-center justify-center bg-slate-100 dark:bg-background-dark p-4">
-            <div className="max-w-md w-full bg-white dark:bg-surface-dark rounded-2xl shadow-xl overflow-hidden">
-                <div className="p-8">
-                    <div className="flex flex-col items-center mb-8">
-                        <div className="size-12 bg-primary/10 text-primary rounded-xl flex items-center justify-center mb-4">
-                            <span className="material-symbols-outlined text-3xl">admin_panel_settings</span>
+        <div className="min-h-screen flex items-center justify-center bg-slate-50 dark:bg-background-dark p-4">
+            <div className="max-w-md w-full bg-white dark:bg-surface-dark rounded-3xl shadow-2xl overflow-hidden border border-slate-100 dark:border-border-dark">
+                <div className="p-10">
+                    <div className="flex flex-col items-center mb-10">
+                        <div className="size-16 bg-primary/10 text-primary rounded-2xl flex items-center justify-center mb-6 shadow-inner">
+                            <span className="material-symbols-outlined text-4xl leading-none">admin_panel_settings</span>
                         </div>
-                        <h2 className="text-2xl font-bold text-slate-900 dark:text-white">Acesso Restrito</h2>
-                        <p className="text-slate-500 dark:text-slate-400 text-sm mt-1">Carrossel Viral Lab Admin</p>
+                        <h2 className="text-3xl font-black text-slate-900 dark:text-white tracking-tight">Acesso Restrito</h2>
+                        <p className="text-slate-500 dark:text-slate-400 font-medium mt-2">Carrossel Viral Lab Admin</p>
                     </div>
 
-                    <form onSubmit={handleLogin} className="space-y-5">
+                    <form onSubmit={handleLogin} className="space-y-6">
                         {error && (
-                            <div className="bg-red-50 dark:bg-red-900/20 text-red-600 dark:text-red-400 p-3 rounded-lg text-sm text-center font-medium border border-red-200 dark:border-red-800">
+                            <div className="bg-red-50 dark:bg-red-900/20 text-red-600 dark:text-red-400 p-4 rounded-xl text-sm text-center font-bold border border-red-200 dark:border-red-800 animate-in fade-in slide-in-from-top-1">
                                 {error}
                             </div>
                         )}
 
-                        <div className="space-y-1.5">
-                            <label className="text-sm font-semibold text-slate-700 dark:text-slate-300">E-mail Administrativo</label>
-                            <div className="relative">
-                                <span className="absolute left-3 top-1/2 -translate-y-1/2 material-symbols-outlined text-slate-400 text-lg">mail</span>
+                        <div className="space-y-2">
+                            <label className="text-xs font-black uppercase tracking-widest text-slate-500 dark:text-slate-400 ml-1">E-mail Administrativo</label>
+                            <div className="relative group">
+                                <span className="absolute left-4 top-1/2 -translate-y-1/2 material-symbols-outlined text-slate-400 group-focus-within:text-primary transition-colors">mail</span>
                                 <input
                                     type="email"
                                     value={email}
                                     onChange={(e) => setEmail(e.target.value)}
-                                    className="w-full bg-slate-50 dark:bg-surface-darker border border-slate-200 dark:border-border-dark rounded-xl pl-10 pr-4 py-2.5 text-slate-900 dark:text-white focus:ring-2 focus:ring-primary focus:border-transparent transition-all outline-none"
-                                    placeholder="Seu e-mail de acesso exclusivo"
+                                    className="w-full bg-slate-50 dark:bg-slate-950/50 border border-slate-200 dark:border-border-dark rounded-2xl pl-12 pr-4 py-4 text-slate-900 dark:text-white focus:ring-4 focus:ring-primary/10 focus:border-primary transition-all outline-none font-medium placeholder:text-slate-300 dark:placeholder:text-slate-700"
+                                    placeholder="exemplo@dominio.com"
+                                    required
+                                />
+                            </div>
+                        </div>
+                        <div className="space-y-2">
+                            <label className="text-xs font-black uppercase tracking-widest text-slate-500 dark:text-slate-400 ml-1">Senha de Acesso</label>
+                            <div className="relative group">
+                                <span className="absolute left-4 top-1/2 -translate-y-1/2 material-symbols-outlined text-slate-400 group-focus-within:text-primary transition-colors">lock</span>
+                                <input
+                                    type="password"
+                                    value={password}
+                                    onChange={(e) => setPassword(e.target.value)}
+                                    className="w-full bg-slate-50 dark:bg-slate-950/50 border border-slate-200 dark:border-border-dark rounded-2xl pl-12 pr-4 py-4 text-slate-900 dark:text-white focus:ring-4 focus:ring-primary/10 focus:border-primary transition-all outline-none font-medium placeholder:text-slate-300 dark:placeholder:text-slate-700"
+                                    placeholder="••••••••"
                                     required
                                 />
                             </div>
@@ -78,19 +93,19 @@ export default function AdminLogin() {
                         <button
                             type="submit"
                             disabled={isLoading}
-                            className="w-full bg-primary hover:bg-primary/90 text-white font-bold py-3 rounded-xl transition-all shadow-lg shadow-primary/20 flex items-center justify-center gap-2 disabled:opacity-70 mt-4"
+                            className="w-full bg-primary hover:bg-[#ff9d26] text-white font-black text-lg py-4 rounded-2xl transition-all shadow-xl shadow-primary/30 flex items-center justify-center gap-3 disabled:opacity-70 active:scale-[0.98]"
                         >
                             {isLoading ? (
                                 <span className="material-symbols-outlined animate-spin">progress_activity</span>
                             ) : (
-                                <span className="material-symbols-outlined">login</span>
+                                <span className="material-symbols-outlined font-bold">login</span>
                             )}
-                            {isLoading ? 'Autenticando...' : 'Entrar no Sistema'}
+                            {isLoading ? 'AUTENTICANDO...' : 'ENTRAR NO SISTEMA'}
                         </button>
                     </form>
                 </div>
-                <div className="bg-slate-50 dark:bg-surface-darker p-4 text-center border-t border-slate-100 dark:border-border-dark">
-                    <p className="text-xs text-slate-400 font-medium">&copy; 2026 Carrossel Viral Lab</p>
+                <div className="bg-slate-50/50 dark:bg-surface-darker/50 py-5 text-center border-t border-slate-100 dark:border-border-dark">
+                    <p className="text-[10px] text-slate-400 font-bold uppercase tracking-widest">&copy; 2026 Carrossel Viral Lab &bull; Segurança Criptografada</p>
                 </div>
             </div>
         </div>

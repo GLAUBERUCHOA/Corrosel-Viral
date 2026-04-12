@@ -4,6 +4,8 @@ import ClientForm from './ClientForm';
 import Link from 'next/link';
 import { LayoutDashboard } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import fs from 'fs';
+import path from 'path';
 
 export const dynamic = 'force-dynamic';
 export default async function ConfiguracoesPage() {
@@ -20,6 +22,18 @@ export default async function ConfiguracoesPage() {
     }
   } catch (error) {
     console.error('Erro ao ler configurações (Convex):', error);
+  }
+
+  // Falback para as regras antigas que constam no arquivo JSON local caso o Convex Admin esteja vazio
+  if (!adminConfig) {
+      try {
+          const jsonPath = path.join(process.cwd(), 'config', 'squad-rules.json');
+          if (fs.existsSync(jsonPath)) {
+              adminConfig = JSON.parse(fs.readFileSync(jsonPath, 'utf8'));
+          }
+      } catch (e) {
+          console.error("Erro ao ler squad-rules.json", e);
+      }
   }
 
   if (!adminConfig) adminConfig = { agente_1: {}, agente_2: {} };

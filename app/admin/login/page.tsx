@@ -93,7 +93,7 @@ export default function AdminLogin() {
                         <button
                             type="submit"
                             disabled={isLoading}
-                            className="w-full bg-primary hover:bg-[#ff9d26] text-white font-black text-lg py-4 rounded-2xl transition-all shadow-xl shadow-primary/30 flex items-center justify-center gap-3 disabled:opacity-70 active:scale-[0.98]"
+                            className="w-full bg-blue-600 hover:bg-blue-500 text-white font-black text-lg py-4 rounded-2xl transition-all shadow-xl shadow-blue-600/30 flex items-center justify-center gap-3 disabled:opacity-70 active:scale-[0.98]"
                         >
                             {isLoading ? (
                                 <span className="material-symbols-outlined animate-spin">progress_activity</span>

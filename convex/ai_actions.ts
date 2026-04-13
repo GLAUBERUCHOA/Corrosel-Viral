@@ -6,9 +6,9 @@ import { internal, api } from "./_generated/api";
 import { GoogleGenerativeAI } from "@google/generative-ai";
 import { PROMPT_AGENTE_01, PROMPT_AGENTE_02 } from "./instructions";
 
-// Modelos com fallback — gemini-2.0-flash tem cota separada e mais generosa
+// Modelos — gemini-2.5-flash é o principal, e gemini-1.5-flash é o salva-vidas infinito
 const MODEL_PRIMARY = 'gemini-2.5-flash';
-const MODEL_FALLBACK = 'gemini-2.0-flash';
+const MODEL_FALLBACK = 'gemini-1.5-flash';
 
 const internalAgents = internal.agents;
 

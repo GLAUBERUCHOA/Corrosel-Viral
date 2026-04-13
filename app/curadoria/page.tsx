@@ -119,6 +119,7 @@ const renderRoteiro = (carrosselRaw: string) => {
 
 export default function CuradoriaPage() {
   const router = useRouter();
+  const [showApiKey, setShowApiKey] = useState(false);
   const [userEmail, setUserEmail] = useState("");
   const [userRole, setUserRole] = useState("USER");
   const pautas = useQuery(api.agents.getAllPautas, userEmail ? { userEmail } : "skip");
@@ -483,13 +484,22 @@ export default function CuradoriaPage() {
                       {/* Campo de API Key do Gemini */}
                       <div className="space-y-2 pt-3 border-t border-slate-800/50">
                         <Label className="text-[10px] font-bold uppercase text-slate-500 tracking-wider">🔑 Chave da API Gemini</Label>
-                        <Input 
-                          type="password"
-                          value={geminiApiKey} 
-                          onChange={(e) => setGeminiApiKey(e.target.value)}
-                          placeholder="Cole aqui sua API Key do Google AI Studio..."
-                          className="bg-slate-950 border-slate-800 h-10 text-sm focus:border-blue-500 font-mono"
-                        />
+                        <div className="relative group">
+                          <Input
+                            type={showApiKey ? "text" : "password"}
+                            value={geminiApiKey}
+                            onChange={(e) => setGeminiApiKey(e.target.value)}
+                            placeholder="Cole aqui sua API Key do Google AI Studio..."
+                            className="bg-slate-950 border-slate-800 h-10 text-sm focus:border-blue-500 font-mono pr-12"
+                          />
+                          <button
+                            type="button"
+                            onClick={() => setShowApiKey(!showApiKey)}
+                            className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-500 hover:text-slate-300 transition-colors focus:outline-none"
+                          >
+                            {showApiKey ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                          </button>
+                        </div>
                         <p className="text-[9px] text-slate-600">
                           {hasApiKey ? '✅ Chave configurada' : '⚠️ Obrigatório para gerar conteúdo'} — Obtenha em{' '}
                           <a 

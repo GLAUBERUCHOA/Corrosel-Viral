@@ -36,6 +36,26 @@ const FadeInSection = ({ children, delay = '' }: { children: React.ReactNode, de
   );
 };
 
+const MainCTA = ({ text = "SIM, EU QUERO VIRALIZAR HOJE!", subtext = "Acesso Vitalício + Bônus Exclusivos" }: { text?: string; subtext?: string }) => (
+  <div className="flex flex-col items-center justify-center relative my-4">
+    <div className="absolute top-0 left-0 w-full h-full border border-orange-500/50 rounded-full animate-[ping_2s_cubic-bezier(0,0,0.2,1)_infinite] z-0"></div>
+    <div className="absolute top-0 left-0 w-full h-full border border-amber-500/30 rounded-full animate-[ping_2.5s_cubic-bezier(0,0,0.2,1)_infinite] delay-150 z-0"></div>
+
+    <a
+      href="https://pay.kiwify.com.br/RhfJ7jL"
+      className="relative z-10 inline-flex flex-col sm:flex-row items-center justify-center gap-1 sm:gap-3 bg-gradient-to-r from-orange-500 to-amber-500 text-white font-black uppercase tracking-wide text-base sm:text-lg px-8 py-4 sm:px-10 sm:py-5 rounded-full hover:scale-105 transition-all duration-300 shadow-[0_0_20px_rgba(245,158,11,0.5)] border border-orange-400/80 w-[95%] sm:w-auto text-center leading-snug"
+    >
+      <span>{text}</span>
+    </a>
+
+    {subtext && (
+      <span className="text-sm sm:text-base font-medium text-amber-200/80 mt-4 relative z-10 flex items-center gap-2">
+        <ShieldCheck size={16} className="text-green-400" /> {subtext}
+      </span>
+    )}
+  </div>
+);
+
 export default function HomePage() {
   const primaryGlowingShadow = "shadow-[0_0_30px_rgba(139,92,246,0.3)]";
   const cardGlowingShadow = "hover:shadow-[0_0_20px_rgba(139,92,246,0.2)]";
@@ -57,25 +77,7 @@ export default function HomePage() {
     }
   }, []);
 
-  const MainCTA = ({ text = "SIM, EU QUERO VIRALIZAR HOJE!", subtext = "Acesso Vitalício + Bônus Exclusivos" }: { text?: string; subtext?: string }) => (
-    <div className="flex flex-col items-center justify-center relative my-4">
-      <div className="absolute top-0 left-0 w-full h-full border border-orange-500/50 rounded-full animate-[ping_2s_cubic-bezier(0,0,0.2,1)_infinite] z-0"></div>
-      <div className="absolute top-0 left-0 w-full h-full border border-amber-500/30 rounded-full animate-[ping_2.5s_cubic-bezier(0,0,0.2,1)_infinite] delay-150 z-0"></div>
 
-      <a
-        href="https://pay.kiwify.com.br/RhfJ7jL"
-        className="relative z-10 inline-flex flex-col sm:flex-row items-center justify-center gap-1 sm:gap-3 bg-gradient-to-r from-orange-500 to-amber-500 text-white font-black uppercase tracking-wide text-base sm:text-lg px-8 py-4 sm:px-10 sm:py-5 rounded-full hover:scale-105 transition-all duration-300 shadow-[0_0_20px_rgba(245,158,11,0.5)] border border-orange-400/80 w-[95%] sm:w-auto text-center leading-snug"
-      >
-        <span>{text}</span>
-      </a>
-
-      {subtext && (
-        <span className="text-sm sm:text-base font-medium text-amber-200/80 mt-4 relative z-10 flex items-center gap-2">
-          <ShieldCheck size={16} className="text-green-400" /> {subtext}
-        </span>
-      )}
-    </div>
-  );
 
   return (
     <div className="min-h-screen bg-slate-950 text-slate-200 font-sans selection:bg-purple-500/30 selection:text-purple-200 overflow-x-hidden">
@@ -147,7 +149,7 @@ export default function HomePage() {
                   E o pior: depois de perder a tarde inteira ajustando caixas de texto, postar o carrossel e receber 15 curtidas, 2 comentários e <strong className="text-white">ZERO vendas.</strong>
                 </p>
                 <div className="bg-slate-900/60 border-l-4 border-purple-500 p-8 rounded-r-3xl italic text-slate-200 font-medium my-10 shadow-xl backdrop-blur-sm">
-                  "É frustrante demais. Mas deixa eu te falar, a culpa não é sua necessariamente. A verdade é que existem padrões que fazem a pessoa parar para ler o seu post, e só com muito teste eu descobri esses padrões."
+                  &quot;É frustrante demais. Mas deixa eu te falar, a culpa não é sua necessariamente. A verdade é que existem padrões que fazem a pessoa parar para ler o seu post, e só com muito teste eu descobri esses padrões.&quot;
                 </div>
                 <p>
                   Hoje, com mais de <span className="text-orange-400 font-bold">1,5 milhões de seguidores</span> eu posso te afirmar: se você usar essas técnicas e o nosso sistema inteligente de produção com IA que cria tudo para você, <strong className="text-white">não tem como não ter resultados!</strong>
@@ -166,7 +168,7 @@ export default function HomePage() {
                 </h3>
 
                 <p className="text-slate-400 mb-10 text-lg">
-                  Com o Carrossel Viral Lab + Nossos Agente de IA <strong className="text-white">Homero</strong> e <strong className="text-white">Da Vinci</strong>, você substitui a "inspiração" por um processo de montagem industrial.
+                  Com o Carrossel Viral Lab + Nossos Agente de IA <strong className="text-white">Homero</strong> e <strong className="text-white">Da Vinci</strong>, você substitui a &quot;inspiração&quot; por um processo de montagem industrial.
                 </p>
 
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
@@ -345,7 +347,7 @@ export default function HomePage() {
                         Carrosséis são o <strong className="text-white">filtro perfeito</strong> para separar curiosos de seguidores com potencial de se tornarem seus compradores. Quem arrasta cada slide não quer apenas algo raso, busca soluções reais.
                       </p>
                       <div className="bg-slate-900/60 border-l-4 border-amber-500 p-5 rounded-r-xl italic text-slate-400 font-medium">
-                        Isso eleva sua autoridade e aciona o gatilho: "Se entrega tudo isso aqui no Instagram, <span className="text-amber-400">imagina o produto ou o serviço dele(a)</span>".
+                        Isso eleva sua autoridade e aciona o gatilho: &quot;Se entrega tudo isso aqui no Instagram, <span className="text-amber-400">imagina o produto ou o serviço dele(a)</span>&quot;.
                       </div>
                       <p>
                         E mais do que isso, são excelentes para <strong className="text-white">viralizar seu perfil</strong>. O Instagram <strong className="text-purple-400">ama prender a atenção</strong> das pessoas e posts que geram muitos salvamentos.
@@ -399,7 +401,7 @@ export default function HomePage() {
           <div className="max-w-6xl mx-auto px-6">
             <FadeInSection>
               <div className="text-center mb-16">
-                <h2 className="text-4xl sm:text-4xl md:text-5xl font-extrabold text-white tracking-tight mb-6">Conheça o seu novo <span className="text-purple-400">"Time de Elite" de IA</span> 🤖</h2>
+                <h2 className="text-4xl sm:text-4xl md:text-5xl font-extrabold text-white tracking-tight mb-6">Conheça o seu novo <span className="text-purple-400">&quot;Time de Elite&quot; de IA</span> 🤖</h2>
                 <p className="text-lg sm:text-xl text-slate-400 max-w-2xl mx-auto leading-relaxed mb-8 px-4">Dentro do Carrossel Viral Lab, você não ganha apenas um curso, você ganha agentes treinados para trabalhar por você:</p>
               </div>
 
@@ -607,7 +609,13 @@ export default function HomePage() {
           <div className="max-w-5xl mx-auto flex flex-col md:flex-row items-center gap-16">
             <div className="w-64 h-64 md:w-80 md:h-80 rounded-[2rem] bg-gradient-to-tr from-slate-900 to-slate-800 shrink-0 shadow-[0_0_50px_rgba(0,0,0,0.5)] overflow-hidden relative border border-slate-700 flex items-center justify-center group flex-col text-slate-500">
               <div className="absolute inset-0 bg-cyan-500/10 mix-blend-overlay z-0"></div>
-              <img src="/images/author.webp" alt="Glauber Uchoa" className="w-[120%] h-[120%] object-cover object-center relative z-10 transition-transform duration-700 group-hover:scale-105 opacity-90 hover:opacity-100" />
+              <Image 
+                src="/images/author.webp" 
+                alt="Glauber Uchoa" 
+                width={400} 
+                height={400} 
+                className="w-[120%] h-[120%] object-cover object-center relative z-10 transition-transform duration-700 group-hover:scale-105 opacity-90 hover:opacity-100" 
+              />
             </div>
             <div className="text-center md:text-left">
               <FadeInSection>

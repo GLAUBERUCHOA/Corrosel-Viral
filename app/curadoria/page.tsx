@@ -7,7 +7,7 @@ import { Id } from "../../convex/_generated/dataModel";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Loader2, Eye, Send, Rocket, Settings, Info, Newspaper, Trash2, CheckCircle2, Copy, Check, LogOut, Wand2 } from "lucide-react";
+import { Loader2, Eye, EyeOff, Send, Rocket, Settings, Info, Newspaper, Trash2, CheckCircle2, Copy, Check, LogOut, Wand2 } from "lucide-react";
 import {
   Sheet,
   SheetContent,
@@ -386,14 +386,14 @@ export default function CuradoriaPage() {
             <Button
               onClick={handleDispararAgente1}
               disabled={isRunningAgent1}
-              className="bg-blue-600 font-bold hover:bg-blue-500 shadow-lg shadow-blue-900/20"
+              className="bg-gradient-to-r from-orange-500 to-amber-500 hover:from-orange-600 hover:to-amber-600 text-white font-black uppercase tracking-widest px-6 py-6 rounded-2xl shadow-lg shadow-orange-500/20 hover:shadow-orange-500/40 hover:-translate-y-0.5 transition-all"
             >
               {isRunningAgent1 ? (
-                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                <Loader2 className="mr-2 h-5 w-5 animate-spin" />
               ) : (
-                <Rocket className="mr-2 h-4 w-4" />
+                <Rocket className="mr-2 h-5 w-5" />
               )}
-              Disparar Agente 1
+              Disparar Homero
             </Button>
 
             <Sheet>
@@ -606,16 +606,16 @@ export default function CuradoriaPage() {
                 <CardFooter className="grid grid-cols-2 gap-3 border-t border-slate-800/50 p-6 pt-5 bg-slate-900/30">
                   {pauta.status === "pending" || pauta.status === "failed" ? (
                     <Button
-                      className="col-span-2 bg-blue-600 font-bold text-white hover:bg-blue-500 shadow-lg shadow-blue-900/20"
+                      className="col-span-2 bg-gradient-to-r from-orange-500 to-amber-500 hover:from-orange-600 hover:to-amber-600 text-white font-black uppercase tracking-widest rounded-xl shadow-lg shadow-orange-500/20 hover:shadow-orange-500/40 transition-all py-6"
                       onClick={() => handleDispararAgente2(pauta._id)}
                       disabled={isProcessingAgent2[pauta._id]}
                     >
                       {isProcessingAgent2[pauta._id] ? (
-                        <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                        <Loader2 className="mr-2 h-5 w-5 animate-spin" />
                       ) : (
-                        <Wand2 className="mr-2 h-4 w-4" />
+                        <Wand2 className="mr-2 h-5 w-5" />
                       )}
-                      Gerar Roteiro Desta Pauta
+                      Gerar Roteiro Agora
                     </Button>
                   ) : (
                     <>
@@ -628,7 +628,7 @@ export default function CuradoriaPage() {
                         Preview
                       </Button>
                       <Button
-                        className="bg-blue-600 font-bold text-white hover:bg-blue-500 shadow-lg shadow-blue-900/20 disabled:bg-slate-800 disabled:text-slate-500"
+                        className="bg-orange-500 font-black uppercase tracking-widest text-white hover:bg-orange-600 shadow-lg shadow-orange-500/20 disabled:bg-slate-800 disabled:text-slate-500 rounded-xl"
                         disabled={pauta.status === "approved"}
                         onClick={() => handleAprovar(pauta._id)}
                       >
@@ -690,7 +690,7 @@ function StatusBadge({ status }: { status: string }) {
     case "processed":
       return <Badge className="bg-emerald-500/10 text-emerald-400 border-emerald-500/20 px-3 py-1 font-bold">Pronto</Badge>;
     case "approved":
-      return <Badge className="bg-blue-600/20 text-blue-400 border-blue-400/20 px-3 py-1 font-bold">✓ No Instagram</Badge>;
+      return <Badge className="bg-orange-500/20 text-orange-400 border-orange-400/20 px-3 py-1 font-bold">✓ No Instagram</Badge>;
     case "failed":
       return <Badge className="bg-rose-500/10 text-rose-500 border-rose-500/20 px-3 py-1 font-bold">Falhou</Badge>;
     default:

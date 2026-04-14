@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useRef, useEffect, useState } from 'react';
+import Image from 'next/image';
 
 const viralImages = [
     { id: 1, src: '/images/viral-1.jpg', alt: 'Carrossel Viral 1' },
@@ -17,6 +18,20 @@ export default function ViralCoverflow() {
     const scrollRef = useRef<HTMLDivElement>(null);
     // Começa no meio do carrossel para balancear visualmente
     const [activeIndex, setActiveIndex] = useState(Math.floor(viralImages.length / 2));
+
+    const scrollToIndex = (index: number) => {
+        if (!scrollRef.current) return;
+        const container = scrollRef.current;
+        const items = Array.from(container.children);
+        if (items[index]) {
+            const item = items[index] as HTMLElement;
+            const scrollPosition = item.offsetLeft - (container.clientWidth / 2) + (item.offsetWidth / 2);
+            container.scrollTo({
+                left: scrollPosition,
+                behavior: 'smooth'
+            });
+        }
+    };
 
     useEffect(() => {
         const handleScroll = () => {
@@ -57,20 +72,6 @@ export default function ViralCoverflow() {
         return () => scrollEl?.removeEventListener('scroll', handleScroll);
     }, []);
 
-    const scrollToIndex = (index: number) => {
-        if (!scrollRef.current) return;
-        const container = scrollRef.current;
-        const items = Array.from(container.children);
-        if (items[index]) {
-            const item = items[index] as HTMLElement;
-            const scrollPosition = item.offsetLeft - (container.clientWidth / 2) + (item.offsetWidth / 2);
-            container.scrollTo({
-                left: scrollPosition,
-                behavior: 'smooth'
-            });
-        }
-    };
-
     return (
         <div className="w-full relative py-16 sm:py-24">
             <div
@@ -107,13 +108,16 @@ export default function ViralCoverflow() {
                             }}
                         >
                             <div className="w-full h-full bg-slate-900 rounded-[1.5rem] overflow-hidden border-2 border-slate-700/30 relative group shadow-2xl">
-                                <img
+                                <Image
                                     src={img.src}
                                     alt={img.alt}
+                                    width={300}
+                                    height={533}
                                     className="w-full h-full object-contain bg-black transition-transform duration-700 group-hover:scale-105"
                                     onError={(e) => {
-                                        (e.target as HTMLImageElement).style.display = 'none';
-                                        (e.target as HTMLImageElement).nextElementSibling?.classList.remove('hidden');
+                                        const target = e.target as HTMLImageElement;
+                                        target.style.display = 'none';
+                                        target.nextElementSibling?.classList.remove('hidden');
                                     }}
                                 />
                                 <div className="hidden absolute inset-0 flex flex-col items-center justify-center p-6 text-center bg-slate-900 border-2 border-dashed border-slate-700/50 rounded-[1.5rem]">

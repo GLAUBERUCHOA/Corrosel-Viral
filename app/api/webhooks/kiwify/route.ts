@@ -35,7 +35,7 @@ export async function POST(req: NextRequest) {
     // Validação de ID do Produto (Garantir que é o produto certo)
     const receivedProductId = payload.product_id || payload.product?.id || payload.id_produto;
     
-    // Se for um teste da Kiwify (test_webhook: true), ignoramos temporariamente o ID para garantir que funciona
+    // Se for um teste da Kiwify (test_webhook: true), permitimos passar
     const isTest = payload.test_webhook === true || payload.is_test === true;
 
     if (receivedProductId !== PRODUCT_ID && !isTest) {
@@ -44,32 +44,22 @@ export async function POST(req: NextRequest) {
     }
 
     // Kiwify payload structure
-    const email = payload.Customer?.email || payload.customer?.email || payload.email || (isTest ? 'teste_kiwify@exemplo.com' : null);
+    const email = payload.Customer?.email || payload.customer?.email || payload.email;
     const status = payload.order_status || payload.subscription_status || payload.status;
 
-    if (!email) {
+    if (!email && !isTest) {
       console.error('Kiwify Webhook: No email found in payload', payload);
       return NextResponse.json({ error: 'No email found in payload' }, { status: 400 });
     }
 
-    console.log(`Received Kiwify webhook for ${email} with status ${status}`);
+    // Email fallback para teste se necessário
+    const finalEmail = email || (isTest ? 'webhook_teste_sucesso@kiwify.com' : null);
 
-    // LOGICA DE TESTE: Sempre cria este usuário se o token estiver correto
-    try {
-      await prisma.user.upsert({
-        where: { email: 'contato_webhook@teste.com' },
-        update: { status: 'ativo' },
-        create: { 
-          email: 'contato_webhook@teste.com', 
-          status: 'ativo', 
-          role: 'USER', 
-          name: 'Teste Conexao Webhook' 
-        }
-      });
-      console.log('Fixed test user created/updated successfully');
-    } catch (e) {
-      console.error('Error creating fixed test user:', e);
+    if (!finalEmail) {
+      return NextResponse.json({ error: 'No email found' }, { status: 400 });
     }
+
+    console.log(`Received Kiwify webhook for ${finalEmail} with status ${status}`);
 
     // Statuses that grant access
     const activeStatuses = ['approved', 'paid', 'active'];
@@ -78,20 +68,20 @@ export async function POST(req: NextRequest) {
 
     if (activeStatuses.includes(status)) {
       await prisma.user.upsert({
-        where: { email },
+        where: { email: finalEmail },
         update: { status: 'ativo' },
-        create: { email, status: 'ativo', role: 'USER' }
+        create: { email: finalEmail, status: 'ativo', role: 'USER' }
       });
-      console.log(`Granted access to ${email}`);
+      console.log(`Granted access to ${finalEmail}`);
     } else if (inactiveStatuses.includes(status)) {
       await prisma.user.upsert({
-        where: { email },
+        where: { email: finalEmail },
         update: { status: 'inativo' },
-        create: { email, status: 'inativo', role: 'USER' }
+        create: { email: finalEmail, status: 'inativo', role: 'USER' }
       });
-      console.log(`Revoked access from ${email}`);
+      console.log(`Revoked access from ${finalEmail}`);
     } else {
-      console.log(`Ignored status ${status} for ${email}`);
+      console.log(`Ignored status ${status} for ${finalEmail}`);
     }
 
     return NextResponse.json({ success: true });

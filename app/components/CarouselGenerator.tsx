@@ -7,6 +7,7 @@ import JSZip from 'jszip';
 import { saveAs } from 'file-saver';
 import { useQuery } from 'convex/react';
 import { api } from '../../convex/_generated/api';
+import Image from 'next/image';
 
 const getIuryPrompt = (toneMode: string, dynamicInstructions: Record<string, string>) => {
   const selectedToneInstruction = dynamicInstructions[toneMode] ||
@@ -82,7 +83,7 @@ const SimpleRichTextEditor = ({ value, onChange, placeholder }: { value: string,
       editorRef.current.innerHTML = value;
       lastHtmlRef.current = value;
     }
-  }, []);
+  }, [value]);
 
   const emitChange = () => {
     if (editorRef.current) {
@@ -269,6 +270,69 @@ export default function CarouselGenerator({ onLogout }: { onLogout: () => void }
   const slideRefs = useRef<(HTMLDivElement | null)[]>([]);
   const isInitialized = useRef(false);
 
+  const processTextIntoSlides = React.useCallback((textToParse: string, useCta = addCtaSlide, ctaText = ctaContent) => {
+    // Quebra o texto garantidamente pela separação de slide (ex: SLIDE 01:, Slide 1 -)
+    // Usamos um lookahead para manter o bloco do slide inteiro ou dar um fallback seguro.
+    let blocks = textToParse.split(/(?=SLIDE\s*\d+[:\-]?)/i).filter(b => b.trim());
+
+    // Fallback: se a IA não gerou a palavra SLIDE, tentamos quebrar por linha dupla.
+    if (blocks.length === 0 || (blocks.length === 1 && !/SLIDE\s*\d+/i.test(blocks[0]))) {
+      blocks = textToParse.split(/\n\s*\n/).filter(b => b.trim());
+      // Se não houver linha dupla, quebramos pelas tags de título atiradas juntas
+      if (blocks.length === 1) {
+        blocks = textToParse.split(/(?=\[T[ÍI]TULO\]:)/i).filter(b => b.trim());
+      }
+    }
+
+    const newSlides: { title: string, subtitle: string, isCta?: boolean }[] = blocks.map((block) => {
+      let title = '';
+      let subtitle = '';
+
+      // Tenta capturar as tags independentemente da quebra de linha.
+      // O [TÍTULO]: pega tudo até encontrar a quebra de [SUBTÍTULO]: ou final da string
+      const titleMatch = block.match(/\[?T[ÍI]TULO\]?:\s*([\s\S]*?)(?=\[SUBT[ÍI]TULO\]:|$)/i);
+      // O [SUBTÍTULO]: pega tudo após ele (dentro desse bloco em específico)
+      const subtitleMatch = block.match(/\[?SUBT[ÍI]TULO\]?:\s*([\s\S]*?)$/i);
+
+      if (titleMatch || subtitleMatch) {
+        title = titleMatch ? titleMatch[1].replace(/^(?:SLIDE\s*\d+\s*[:\-]?\s*)/i, '').trim() : '';
+        subtitle = subtitleMatch ? subtitleMatch[1].trim() : '';
+
+        // Anti-Repetição: Se o subtítulo for misteriosamente igual ao título, limpamos ele.
+        if (title.toLowerCase() === subtitle.toLowerCase()) {
+          subtitle = '';
+        }
+      } else {
+        // Fallback genérico para texto cru (sem as tags exigidas)
+        // Pega a primeira linha como título e o resto como subtítulo
+        const lines = block.split('\n').filter(l => l.trim());
+        if (lines.length > 0) {
+          title = lines[0].replace(/^(?:SLIDE\s*\d+\s*[:\-]?\s*|^\d+\.\s*|^-\s*|^:\s*)/i, '').trim();
+          subtitle = lines.slice(1).join(' ').trim();
+        }
+      }
+      return { title, subtitle };
+    });
+
+    if (newSlides.length === 0) {
+      newSlides.push({ title: '', subtitle: '' });
+    }
+
+    if (useCta && ctaText.trim()) {
+      newSlides.push({ title: '', subtitle: ctaText, isCta: true });
+    }
+
+    setParsedSlides(newSlides);
+
+    setUploadedImages(prev => {
+      const newImages = [...prev];
+      while (newImages.length < newSlides.length) newImages.push(null);
+      return newImages;
+    });
+
+    return newSlides;
+  }, [addCtaSlide, ctaContent]);
+
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
     const id = params.get('pautaId');
@@ -287,7 +351,7 @@ export default function CarouselGenerator({ onLogout }: { onLogout: () => void }
       setHasNewPreview(true);
       if (window.innerWidth < 768) setActiveMobileTab('preview');
     }
-  }, [pautaData, addCtaSlide, ctaContent, pautaId]);
+  }, [pautaData, addCtaSlide, ctaContent, pautaId, processTextIntoSlides]);
 
   // Dark Mode Logic
   useEffect(() => {
@@ -569,7 +633,7 @@ export default function CarouselGenerator({ onLogout }: { onLogout: () => void }
         localStorage.setItem('carousel_preferences', JSON.stringify(prefs));
       }
     }
-  }, [brandHandle, brandLogo, styleModel, customColor, aspectRatio, content, parsedSlides, saveDefaults, toneMode, fontFamily, textAlign, addCtaSlide, ctaContent, ctaImage]);
+  }, [brandHandle, brandLogo, styleModel, customColor, customTextColor, aspectRatio, content, parsedSlides, saveDefaults, toneMode, fontFamily, textAlign, addCtaSlide, ctaContent, ctaImage, ctaBgColor, ctaTextColor, ctaTextSize, subSize, titleSize]);
 
   const handleApiKeyChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const val = e.target.value;
@@ -845,75 +909,14 @@ export default function CarouselGenerator({ onLogout }: { onLogout: () => void }
     }
   };
 
-  const processTextIntoSlides = (textToParse: string, useCta = addCtaSlide, ctaText = ctaContent) => {
-    // Quebra o texto garantidamente pela separação de slide (ex: SLIDE 01:, Slide 1 -)
-    // Usamos um lookahead para manter o bloco do slide inteiro ou dar um fallback seguro.
-    let blocks = textToParse.split(/(?=SLIDE\s*\d+[:\-]?)/i).filter(b => b.trim());
 
-    // Fallback: se a IA não gerou a palavra SLIDE, tentamos quebrar por linha dupla.
-    if (blocks.length === 0 || (blocks.length === 1 && !/SLIDE\s*\d+/i.test(blocks[0]))) {
-      blocks = textToParse.split(/\n\s*\n/).filter(b => b.trim());
-      // Se não houver linha dupla, quebramos pelas tags de título atiradas juntas
-      if (blocks.length === 1) {
-        blocks = textToParse.split(/(?=\[T[ÍI]TULO\]:)/i).filter(b => b.trim());
-      }
-    }
-
-    const newSlides: { title: string, subtitle: string, isCta?: boolean }[] = blocks.map((block) => {
-      let title = '';
-      let subtitle = '';
-
-      // Tenta capturar as tags independentemente da quebra de linha.
-      // O [TÍTULO]: pega tudo até encontrar a quebra de [SUBTÍTULO]: ou final da string
-      const titleMatch = block.match(/\[?T[ÍI]TULO\]?:\s*([\s\S]*?)(?=\[SUBT[ÍI]TULO\]:|$)/i);
-      // O [SUBTÍTULO]: pega tudo após ele (dentro desse bloco em específico)
-      const subtitleMatch = block.match(/\[?SUBT[ÍI]TULO\]?:\s*([\s\S]*?)$/i);
-
-      if (titleMatch || subtitleMatch) {
-        title = titleMatch ? titleMatch[1].replace(/^(?:SLIDE\s*\d+\s*[:\-]?\s*)/i, '').trim() : '';
-        subtitle = subtitleMatch ? subtitleMatch[1].trim() : '';
-
-        // Anti-Repetição: Se o subtítulo for misteriosamente igual ao título, limpamos ele.
-        if (title.toLowerCase() === subtitle.toLowerCase()) {
-          subtitle = '';
-        }
-      } else {
-        // Fallback genérico para texto cru (sem as tags exigidas)
-        // Pega a primeira linha como título e o resto como subtítulo
-        const lines = block.split('\n').filter(l => l.trim());
-        if (lines.length > 0) {
-          title = lines[0].replace(/^(?:SLIDE\s*\d+\s*[:\-]?\s*|^\d+\.\s*|^-\s*|^:\s*)/i, '').trim();
-          subtitle = lines.slice(1).join(' ').trim();
-        }
-      }
-      return { title, subtitle };
-    });
-
-    if (newSlides.length === 0) {
-      newSlides.push({ title: '', subtitle: '' });
-    }
-
-    if (useCta && ctaText.trim()) {
-      newSlides.push({ title: '', subtitle: ctaText, isCta: true });
-    }
-
-    setParsedSlides(newSlides);
-
-    setUploadedImages(prev => {
-      const newImages = [...prev];
-      while (newImages.length < newSlides.length) newImages.push(null);
-      return newImages;
-    });
-
-    return newSlides;
-  };
 
   // Efeito para atualização em tempo real do carrossel ao digitar no editor principal
   useEffect(() => {
     if (!isIuryMode && isInitialized.current) {
       processTextIntoSlides(content, addCtaSlide, ctaContent);
     }
-  }, [content, addCtaSlide, ctaContent, isIuryMode]);
+  }, [content, addCtaSlide, ctaContent, isIuryMode, processTextIntoSlides]);
 
 
 
@@ -1686,7 +1689,7 @@ export default function CarouselGenerator({ onLogout }: { onLogout: () => void }
                         >
                           {uploadedImages[i] ? (
                             <>
-                              <img src={uploadedImages[i] as string} className="w-full h-full object-cover pointer-events-none" />
+                              <Image src={uploadedImages[i] as string} alt={`Slide upload ${i + 1}`} fill className="object-cover pointer-events-none" unoptimized />
                               <button onClick={(e) => handleRemoveImage(i, e)} className="absolute top-1 right-1 size-5 bg-black/50 hover:bg-red-500 rounded-full flex items-center justify-center text-white opacity-0 group-hover:opacity-100 transition-all z-10">
                                 <span className="material-symbols-outlined text-[12px] font-bold">close</span>
                               </button>
@@ -1843,8 +1846,8 @@ export default function CarouselGenerator({ onLogout }: { onLogout: () => void }
                               <div className="absolute top-4 left-4 z-[60]" style={{ opacity: 0.85 }}>
                                 <div className="flex items-center gap-[5px] px-2 py-1">
                                   {brandLogo && (
-                                    <div className="size-[20px] sm:size-[22px] rounded-full overflow-hidden shrink-0 bg-white/20 border border-white/30">
-                                      <img src={brandLogo} alt="Logo" className="w-full h-full object-cover" crossOrigin="anonymous" />
+                                    <div className="size-[20px] sm:size-[22px] rounded-full overflow-hidden shrink-0 bg-white/20 border border-white/30 relative">
+                                      <Image src={brandLogo} alt="Logo" fill className="object-cover" crossOrigin="anonymous" unoptimized />
                                     </div>
                                   )}
                                   {brandHandle && (
@@ -1863,7 +1866,7 @@ export default function CarouselGenerator({ onLogout }: { onLogout: () => void }
 
                             {ctaImage && (
                               <div className="w-[85%] aspect-[16/9] sm:aspect-video rounded-[20px] overflow-hidden shadow-xl shrink-0 border border-white/10 mt-2 mb-4 relative z-10 mx-auto">
-                                <img src={ctaImage} alt="CTA Landscape" className="w-full h-full object-cover" crossOrigin="anonymous" />
+                                <Image src={ctaImage} alt="CTA Landscape" fill className="object-cover" crossOrigin="anonymous" unoptimized />
                               </div>
                             )}
 
@@ -1931,16 +1934,18 @@ export default function CarouselGenerator({ onLogout }: { onLogout: () => void }
                             <>
                               {imageSrc && (
                                 <div className="flex-1 w-full relative z-0 overflow-hidden">
-                                  <img
+                                   <Image
                                     src={imageSrc}
                                     alt={`Slide ${index}`}
-                                    className="w-full h-full object-cover transition-transform duration-500"
+                                    fill
+                                    className="object-cover transition-transform duration-500"
                                     style={{
                                       objectPosition: `center ${imagePosMap[index] ?? 50}%`,
                                       maskImage: 'linear-gradient(to bottom, black 85%, transparent 100%)',
                                       WebkitMaskImage: 'linear-gradient(to bottom, black 85%, transparent 100%)'
                                     }}
                                     crossOrigin="anonymous"
+                                    unoptimized
                                   />
                                 </div>
                               )}
@@ -1950,9 +1955,9 @@ export default function CarouselGenerator({ onLogout }: { onLogout: () => void }
                                 {(brandHandle || brandLogo) && (
                                   <div className="flex items-center gap-[5px] px-2 py-1 bg-black/30 rounded-full border border-white/10 shadow-lg overflow-hidden">
                                     {brandLogo && (
-                                      <div className="size-[18px] sm:size-[20px] rounded-full overflow-hidden shrink-0 bg-white/40 border border-white/40 shadow-sm">
-                                        <img src={brandLogo} alt="Logo" className="w-full h-full object-cover" crossOrigin="anonymous" />
-                                      </div>
+                                     <div className="size-[18px] sm:size-[20px] rounded-full overflow-hidden shrink-0 bg-white/40 border border-white/40 shadow-sm relative">
+                                       <Image src={brandLogo} alt="Logo" fill className="object-cover" crossOrigin="anonymous" unoptimized />
+                                     </div>
                                     )}
                                     {brandHandle && (
                                       <div className="flex items-center gap-1 text-[9px] sm:text-[10px] font-black tracking-wider text-white uppercase drop-shadow-md pr-1">
@@ -2012,12 +2017,14 @@ export default function CarouselGenerator({ onLogout }: { onLogout: () => void }
                                 className="flex-1 relative overflow-hidden z-10"
                               >
                                 {imageSrc && (
-                                  <img
+                                  <Image
                                     src={imageSrc}
                                     alt={`Slide ${index}`}
-                                    className="absolute inset-0 w-full h-full object-cover transition-transform duration-500"
+                                    fill
+                                    className="absolute inset-0 object-cover transition-transform duration-500"
                                     style={{ objectPosition: `center ${imagePosMap[index] ?? 50}%` }}
                                     crossOrigin="anonymous"
+                                    unoptimized
                                   />
                                 )}
 
@@ -2026,8 +2033,8 @@ export default function CarouselGenerator({ onLogout }: { onLogout: () => void }
                                   {(brandHandle || brandLogo) && (
                                     <div className="flex items-center gap-1.5 px-2 py-1">
                                       {brandLogo && (
-                                        <div className="size-[18px] rounded-full overflow-hidden bg-white/20 border border-white/30">
-                                          <img src={brandLogo} alt="Logo" className="w-full h-full object-cover" crossOrigin="anonymous" />
+                                        <div className="size-[18px] rounded-full overflow-hidden bg-white/20 border border-white/30 relative">
+                                          <Image src={brandLogo} alt="Logo" fill className="object-cover" crossOrigin="anonymous" unoptimized />
                                         </div>
                                       )}
                                       {brandHandle && <span className="text-[9px] font-bold text-white uppercase tracking-wider">{brandHandle}</span>}

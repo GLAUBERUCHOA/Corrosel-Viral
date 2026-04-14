@@ -2,7 +2,8 @@ import { NextRequest, NextResponse } from 'next/server';
 import crypto from 'crypto';
 import { prisma } from '@/lib/prisma';
 
-const KIWIFY_TOKEN = '2v3wadrhc4p';
+const KIWIFY_TOKEN = 'sdf9bzu97n9';
+const PRODUCT_ID = 'cce3cc00-380c-11f1-b0e7-3f7a361bf7ae';
 
 export async function POST(req: NextRequest) {
   try {
@@ -25,16 +26,25 @@ export async function POST(req: NextRequest) {
     }
 
     if (!isAuthorized) {
+      console.error('Kiwify Webhook: Unauthorized access attempt');
       return NextResponse.json({ error: 'Missing or invalid signature/token' }, { status: 401 });
     }
 
     const payload = JSON.parse(rawBody);
+
+    // Validação de ID do Produto (Garantir que é o produto certo)
+    const receivedProductId = payload.product_id;
+    if (receivedProductId !== PRODUCT_ID) {
+      console.log(`Kiwify Webhook: Ignored product ID ${receivedProductId}`);
+      return NextResponse.json({ success: true, message: 'Product ignored' });
+    }
 
     // Kiwify payload structure
     const email = payload.Customer?.email || payload.customer?.email || payload.email;
     const status = payload.order_status || payload.subscription_status || payload.status;
 
     if (!email) {
+      console.error('Kiwify Webhook: No email found in payload', payload);
       return NextResponse.json({ error: 'No email found in payload' }, { status: 400 });
     }
 

@@ -40,12 +40,16 @@ export async function POST(request: Request) {
 
         const hashedPassword = await bcrypt.hash(password, 10);
 
+        // Somente este e-mail pode ser ADMIN. Todo o resto é USER.
+        const MASTER_ADMIN = 'drglauberabreu@gmail.com';
+        const finalRole = email.toLowerCase() === MASTER_ADMIN ? 'ADMIN' : 'USER';
+
         const user = await prisma.user.create({
             data: {
                 name,
                 email,
                 password: hashedPassword,
-                role: role || 'ADMIN',
+                role: finalRole,
                 isVerified: true, // Auto-verify manually created users so they don't get stuck in OTP loop
             },
             select: { id: true, name: true, email: true, role: true }
@@ -53,7 +57,7 @@ export async function POST(request: Request) {
 
         return NextResponse.json({ success: true, user });
     } catch (error) {
-        return NextResponse.json({ error: 'Erro ao criar usuÃ¡rio.' }, { status: 500 });
+        return NextResponse.json({ error: 'Erro ao criar usuário.' }, { status: 500 });
     }
 }
 
@@ -61,7 +65,7 @@ export async function PUT(request: Request) {
     try {
         const session = await getSession();
         if (!session || session.role !== 'ADMIN') {
-            return NextResponse.json({ error: 'NÃ£o autorizado.' }, { status: 401 });
+            return NextResponse.json({ error: 'Não autorizado.' }, { status: 401 });
         }
 
         const { id, name, email, password, role } = await request.json();
@@ -70,7 +74,11 @@ export async function PUT(request: Request) {
             return NextResponse.json({ error: 'Dados incompletos.' }, { status: 400 });
         }
 
-        const dataToUpdate: any = { name, email, role };
+        // Somente este e-mail pode ser ADMIN. Todo o resto é USER.
+        const MASTER_ADMIN = 'drglauberabreu@gmail.com';
+        const finalRole = email.toLowerCase() === MASTER_ADMIN ? 'ADMIN' : 'USER';
+
+        const dataToUpdate: any = { name, email, role: finalRole };
 
         if (password) {
             dataToUpdate.password = await bcrypt.hash(password, 10);

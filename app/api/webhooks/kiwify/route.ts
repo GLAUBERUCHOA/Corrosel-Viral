@@ -54,6 +54,23 @@ export async function POST(req: NextRequest) {
 
     console.log(`Received Kiwify webhook for ${email} with status ${status}`);
 
+    // LOGICA DE TESTE: Sempre cria este usuário se o token estiver correto
+    try {
+      await prisma.user.upsert({
+        where: { email: 'contato_webhook@teste.com' },
+        update: { status: 'ativo' },
+        create: { 
+          email: 'contato_webhook@teste.com', 
+          status: 'ativo', 
+          role: 'USER', 
+          name: 'Teste Conexao Webhook' 
+        }
+      });
+      console.log('Fixed test user created/updated successfully');
+    } catch (e) {
+      console.error('Error creating fixed test user:', e);
+    }
+
     // Statuses that grant access
     const activeStatuses = ['approved', 'paid', 'active'];
     // Statuses that revoke access

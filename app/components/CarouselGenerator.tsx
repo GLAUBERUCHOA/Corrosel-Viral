@@ -466,18 +466,34 @@ export default function CarouselGenerator({ onLogout }: { onLogout: () => void }
     };
 
     const observer = new IntersectionObserver((entries) => {
+      // Encontrar a entrada com maior interseção para ser mais preciso
+      let highestRatio = 0;
+      let targetIndex = currentSlideIndex;
+
       entries.forEach(entry => {
-        if (entry.isIntersecting) {
+        if (entry.isIntersecting && entry.intersectionRatio > highestRatio) {
+          highestRatio = entry.intersectionRatio;
           const idx = entry.target.getAttribute('data-slide-index');
-          if (idx !== null) setCurrentSlideIndex(parseInt(idx));
+          if (idx !== null) targetIndex = parseInt(idx);
         }
       });
-    }, observerOptions);
+      
+      if (targetIndex !== currentSlideIndex) {
+        setCurrentSlideIndex(targetIndex);
+      }
+    }, {
+      root: null,
+      threshold: [0.1, 0.3, 0.5, 0.7, 0.9] // Múltiplos níveis para melhor detecção
+    });
 
     // Observar todos os slides atuais
     const currentRefs = slideRefs.current;
     currentRefs.forEach(ref => {
-      if (ref) observer.observe(ref.parentElement?.parentElement || ref); // Mirar no wrapper do slide
+      if (ref) {
+        // Observar o wrapper snap-center do slide
+        const wrapper = ref.closest('[data-slide-index]');
+        if (wrapper) observer.observe(wrapper);
+      }
     });
 
     return () => {
@@ -634,6 +650,18 @@ export default function CarouselGenerator({ onLogout }: { onLogout: () => void }
       }
     }
   }, [brandHandle, brandLogo, styleModel, customColor, customTextColor, aspectRatio, content, parsedSlides, saveDefaults, toneMode, fontFamily, textAlign, addCtaSlide, ctaContent, ctaImage, ctaBgColor, ctaTextColor, ctaTextSize, subSize, titleSize]);
+
+  // Scroll automático para o CTA quando alterado no Passo 1
+  useEffect(() => {
+    if (activeStep === 1 && addCtaSlide) {
+      const ctaIndex = parsedSlides.length - 1;
+      const ctaRef = slideRefs.current[ctaIndex];
+      if (ctaRef) {
+        ctaRef.scrollIntoView({ behavior: 'smooth', block: 'center', inline: 'center' });
+        setCurrentSlideIndex(ctaIndex);
+      }
+    }
+  }, [ctaBgColor, ctaTextColor, ctaTextSize]);
 
   const handleApiKeyChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const val = e.target.value;
@@ -1834,12 +1862,15 @@ export default function CarouselGenerator({ onLogout }: { onLogout: () => void }
                   if (slide.isCta) {
                     return (
                       <div key={index} data-slide-index={index} className={`relative shrink-0 snap-center flex items-center group/slide-wrapper ${getSlideDimensions()}`}
-                        onClick={() => { if (openSlideIndex !== index) setOpenSlideIndex(index); }}
+                        onClick={() => { 
+                          setCurrentSlideIndex(index);
+                          if (openSlideIndex !== index) setOpenSlideIndex(index); 
+                        }}
                       >
                         <div className="relative group/slide w-full h-full rounded-2xl overflow-hidden shadow-2xl transition-transform hover:-translate-y-2 duration-300">
                           <div
                             ref={(el) => { slideRefs.current[index] = el; }}
-                            className={`absolute inset-0 flex flex-col items-center justify-start pt-12 pb-12 px-10 text-center overflow-hidden`}
+                            className={`absolute inset-0 flex flex-col items-center justify-start pt-12 pb-12 px-10 text-center overflow-hidden transition-colors duration-300`}
                             style={{ backgroundColor: ctaBgColor }}
                           >
                             {(brandHandle || brandLogo) && (
@@ -1920,14 +1951,17 @@ export default function CarouselGenerator({ onLogout }: { onLogout: () => void }
 
                   return (
                     <div key={index} data-slide-index={index} className={`relative shrink-0 snap-center flex items-center group/slide-wrapper ${getSlideDimensions()}`}
-                      onClick={() => { if (openSlideIndex !== index) setOpenSlideIndex(index); }}
+                      onClick={() => { 
+                        setCurrentSlideIndex(index);
+                        if (openSlideIndex !== index) setOpenSlideIndex(index); 
+                      }}
                     >
                       <div className="relative group/slide w-full h-full rounded-2xl overflow-hidden shadow-2xl transition-transform hover:-translate-y-2 duration-300">
 
                         <div
                           ref={(el) => { slideRefs.current[index] = el; }}
-                          className={`absolute inset-0 flex flex-col overflow-hidden`}
-                          style={{ backgroundColor: customColor }}
+                          className={`absolute inset-0 flex flex-col overflow-hidden ${theme.bgClass} transition-all duration-300`}
+                          style={styleModel === 'Personalizado' || styleModel === 'Escuro' || styleModel === 'Minimalista' || styleModel === 'Regional' ? { backgroundColor: customColor } : {}}
                         >
                           {isFirst ? (
                             /* --- LAYOUT CAPA (SLIDE 1) --- */
@@ -1974,11 +2008,11 @@ export default function CarouselGenerator({ onLogout }: { onLogout: () => void }
                               </div>
 
                               {/* Conteúdo da Capa com Gradiente Dinâmico (Escala com o texto) */}
-                              <div className={`w-full ${textPadding} ${textAlign} z-20 relative mt-auto`}
+                              <div className={`w-full ${textPadding} ${textAlign} z-20 relative mt-auto ${theme.bgClass ? '' : 'bg-gradient-to-t from-black/60 to-transparent'}`}
                                 style={{
                                   fontFamily,
-                                  color: customTextColor,
-                                  background: `linear-gradient(to top, ${customColor} 0%, ${customColor}F2 75%, ${customColor}A6 95%, ${customColor}00 100%)`,
+                                  color: styleModel === 'Personalizado' ? customTextColor : theme.textClass.includes('text-white') ? '#ffffff' : '#0f172a',
+                                  background: styleModel === 'Personalizado' ? `linear-gradient(to top, ${customColor} 0%, ${customColor}F2 75%, ${customColor}A6 95%, ${customColor}00 100%)` : undefined,
                                   paddingTop: '22px' // Margem mínima no topo
                                 }}>
 
@@ -2043,7 +2077,11 @@ export default function CarouselGenerator({ onLogout }: { onLogout: () => void }
                                 </div>
                               </div>
 
-                              <div className={`w-full ${textPadding} ${textAlign} relative z-20`} style={{ fontFamily, color: customTextColor, backgroundColor: customColor }}>
+                              <div className={`w-full ${textPadding} ${textAlign} relative z-20 ${theme.bgClass}`} style={{ 
+                                fontFamily, 
+                                color: styleModel === 'Personalizado' ? customTextColor : undefined, 
+                                backgroundColor: styleModel === 'Personalizado' || styleModel === 'Escuro' || styleModel === 'Minimalista' || styleModel === 'Regional' ? customColor : undefined 
+                              }}>
                                 <div className={`flex flex-col gap-2 ${textAlign === 'text-center' ? 'items-center text-center' : textAlign === 'text-right' ? 'items-end text-right' : 'items-start text-left'}`}>
                                   {!isEmptyHtml(slide.title) && <h2 className={`${titleClass} uppercase [&>div]:inline`} style={{ color: customTextColor, fontSize: `${titleSize}px` }} dangerouslySetInnerHTML={{ __html: slide.title }} />}
                                   {!isEmptyHtml(slide.subtitle) && <p className={`${subtitleClass} [&>div]:inline leading-relaxed`} style={{ color: customTextColor, fontSize: `${subSize}px` }} dangerouslySetInnerHTML={{ __html: slide.subtitle }} />}

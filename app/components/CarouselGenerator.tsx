@@ -661,7 +661,7 @@ export default function CarouselGenerator({ onLogout }: { onLogout: () => void }
         setCurrentSlideIndex(ctaIndex);
       }
     }
-  }, [ctaBgColor, ctaTextColor, ctaTextSize]);
+  }, [ctaBgColor, ctaTextColor, ctaTextSize, activeStep, addCtaSlide, parsedSlides.length]);
 
   const handleApiKeyChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const val = e.target.value;

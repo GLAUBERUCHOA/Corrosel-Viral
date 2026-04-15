@@ -42,7 +42,7 @@ const MainCTA = ({ text = "SIM, EU QUERO VIRALIZAR HOJE!", subtext = "Acesso Vit
     <div className="absolute top-0 left-0 w-full h-full border border-amber-500/30 rounded-full animate-[ping_2.5s_cubic-bezier(0,0,0.2,1)_infinite] delay-150 z-0"></div>
 
     <a
-      href="https://pay.kiwify.com.br/RhfJ7jL"
+      href="https://pay.kiwify.com.br/cZygtmn"
       className="relative z-10 inline-flex flex-col sm:flex-row items-center justify-center gap-1 sm:gap-3 bg-gradient-to-r from-orange-500 to-amber-500 text-white font-black uppercase tracking-wide text-base sm:text-lg px-8 py-4 sm:px-10 sm:py-5 rounded-full hover:scale-105 transition-all duration-300 shadow-[0_0_20px_rgba(245,158,11,0.5)] border border-orange-400/80 w-[95%] sm:w-auto text-center leading-snug"
     >
       <span>{text}</span>

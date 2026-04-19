@@ -102,10 +102,25 @@ const SimpleRichTextEditor = ({ value, onChange, placeholder }: { value: string,
       sel?.removeAllRanges();
       sel?.addRange(savedSelectionRef.current);
     }
-    // Habilita estilo por CSS para usar <span> com style em vez de tags antigas
-    document.execCommand('styleWithCSS', false, 'true');
+    
+    // Se estivermos tentando mudar a fonte, primeiro limpamos a formatação da fonte atual
+    // para garantir que novos spans não fiquem aninhados em spans com font-family antigo
+    if (command === 'fontName') {
+      document.execCommand('styleWithCSS', false, 'true');
+    } else {
+      document.execCommand('styleWithCSS', false, 'true');
+    }
+    
     document.execCommand(command, false, val);
     emitChange();
+  };
+
+  const handlePaste = (e: React.ClipboardEvent) => {
+    e.preventDefault();
+    // Pega apenas o texto plano para evitar o lixo de HTML (ex: Google Docs)
+    // Se o usuário quiser formatar, ele usa os botões do editor. Isso mantém tudo "limpo".
+    const text = e.clipboardData.getData('text/plain');
+    document.execCommand('insertText', false, text);
   };
 
   const saveSelection = () => {
@@ -199,6 +214,7 @@ const SimpleRichTextEditor = ({ value, onChange, placeholder }: { value: string,
         onMouseUp={saveSelection}
         onKeyUp={saveSelection}
         onMouseLeave={saveSelection}
+        onPaste={handlePaste}
         onInput={(e) => { saveSelection(); emitChange(); }}
         onBlur={() => { emitChange(); }}
         suppressContentEditableWarning={true}
@@ -1103,6 +1119,15 @@ export default function CarouselGenerator({ onLogout }: { onLogout: () => void }
     if (editingSlideIndex !== null) {
       const isCta = parsedSlides[editingSlideIndex].isCta;
       
+      // Função auxiliar para limpar HTML de tags complexas e manter apenas texto limpo
+      const stripHtml = (html: string) => {
+        if (typeof document === 'undefined') return html;
+        const tmp = document.createElement("DIV");
+        tmp.innerHTML = html;
+        // Substituir divs e brs por espaços ou novas linhas se necessário
+        return tmp.textContent || tmp.innerText || "";
+      };
+
       // 1. Criar nova lista de slides para atualização visual imediata
       const newSlides = [...parsedSlides];
       newSlides[editingSlideIndex] = { 
@@ -1115,21 +1140,22 @@ export default function CarouselGenerator({ onLogout }: { onLogout: () => void }
 
       // 2. Sincronizar com o estado específico do CTA se for o caso
       if (isCta) {
-        setCtaContent(editSubtitle);
+        setCtaContent(stripHtml(editSubtitle));
       }
 
-      // 3. Sincronizar com o textarea da sidebar (content)
-      // Geramos o texto bruto novamente a partir dos slides para manter a integridade
+      // 3. Sincronizar com o textarea da sidebar (content) com texto LIMPO
       const manualSlides = newSlides.filter(s => !s.isCta);
       const newContent = manualSlides.map((s, i) => {
         const slideNum = i + 1;
         const numStr = slideNum < 10 ? `0${slideNum}` : slideNum;
-        return `SLIDE ${numStr}:\n[TÍTULO]: ${s.title}\n[SUBTÍTULO]: ${s.subtitle}`;
+        // Limpamos o HTML para a sidebar ficar legível
+        const cleanTitle = stripHtml(s.title);
+        const cleanSubtitle = stripHtml(s.subtitle);
+        return `SLIDE ${numStr}:\n[TÍTULO]: ${cleanTitle}\n[SUBTÍTULO]: ${cleanSubtitle}`;
       }).join('\n\n');
       
       setContent(newContent);
       
-      // Se estava no modo Iury, desativamos para permitir edição manual persistente
       if (isIuryMode && !isCta) {
         setIsIuryMode(false);
       }

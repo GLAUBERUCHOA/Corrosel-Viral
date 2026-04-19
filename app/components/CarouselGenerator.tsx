@@ -1101,12 +1101,41 @@ export default function CarouselGenerator({ onLogout }: { onLogout: () => void }
 
   const handleSaveEdit = () => {
     if (editingSlideIndex !== null) {
-      setParsedSlides(prev => {
-        const updated = [...prev];
-        updated[editingSlideIndex] = { title: editTitle, subtitle: editSubtitle };
-        return updated;
-      });
+      const isCta = parsedSlides[editingSlideIndex].isCta;
+      
+      // 1. Criar nova lista de slides para atualização visual imediata
+      const newSlides = [...parsedSlides];
+      newSlides[editingSlideIndex] = { 
+        ...newSlides[editingSlideIndex], 
+        title: editTitle, 
+        subtitle: editSubtitle 
+      };
+      
+      setParsedSlides(newSlides);
+
+      // 2. Sincronizar com o estado específico do CTA se for o caso
+      if (isCta) {
+        setCtaContent(editSubtitle);
+      }
+
+      // 3. Sincronizar com o textarea da sidebar (content)
+      // Geramos o texto bruto novamente a partir dos slides para manter a integridade
+      const manualSlides = newSlides.filter(s => !s.isCta);
+      const newContent = manualSlides.map((s, i) => {
+        const slideNum = i + 1;
+        const numStr = slideNum < 10 ? `0${slideNum}` : slideNum;
+        return `SLIDE ${numStr}:\n[TÍTULO]: ${s.title}\n[SUBTÍTULO]: ${s.subtitle}`;
+      }).join('\n\n');
+      
+      setContent(newContent);
+      
+      // Se estava no modo Iury, desativamos para permitir edição manual persistente
+      if (isIuryMode && !isCta) {
+        setIsIuryMode(false);
+      }
+
       setEditingSlideIndex(null);
+      setHasNewPreview(true);
     }
   };
 
@@ -2018,20 +2047,22 @@ export default function CarouselGenerator({ onLogout }: { onLogout: () => void }
 
                                 <div className={`flex flex-col gap-2 ${textAlign === 'text-center' ? 'items-center text-center' : textAlign === 'text-right' ? 'items-end text-right' : 'items-start text-left'}`}>
                                   {!isEmptyHtml(slide.title) && (
-                                    <h2 className={`${titleClass} uppercase [&>div]:inline`}
+                                    <h2 className={`${titleClass} uppercase [&>div]:inline cursor-text select-text`}
                                       style={{
                                         color: customTextColor,
                                         fontSize: `${isFirst ? Math.min(titleSize, titleLength > 100 ? 20 : titleLength > 60 ? 24 : 32) : titleSize}px`
                                       }}
+                                      onDoubleClick={(e) => { e.stopPropagation(); handleEditClick(index); }}
                                       dangerouslySetInnerHTML={{ __html: slide.title }}
                                     />
                                   )}
                                   {!isEmptyHtml(slide.subtitle) && (
-                                    <p className={`${subtitleClass} [&>div]:inline leading-tight font-medium opacity-100`}
+                                    <p className={`${subtitleClass} [&>div]:inline leading-tight font-medium opacity-100 cursor-text select-text`}
                                       style={{
                                         color: customTextColor,
                                         fontSize: `${subSize}px`
                                       }}
+                                      onDoubleClick={(e) => { e.stopPropagation(); handleEditClick(index); }}
                                       dangerouslySetInnerHTML={{ __html: slide.subtitle }}
                                     />
                                   )}
@@ -2083,8 +2114,8 @@ export default function CarouselGenerator({ onLogout }: { onLogout: () => void }
                                 backgroundColor: styleModel === 'Personalizado' || styleModel === 'Escuro' || styleModel === 'Minimalista' || styleModel === 'Regional' ? customColor : undefined 
                               }}>
                                 <div className={`flex flex-col gap-2 ${textAlign === 'text-center' ? 'items-center text-center' : textAlign === 'text-right' ? 'items-end text-right' : 'items-start text-left'}`}>
-                                  {!isEmptyHtml(slide.title) && <h2 className={`${titleClass} uppercase [&>div]:inline`} style={{ color: customTextColor, fontSize: `${titleSize}px` }} dangerouslySetInnerHTML={{ __html: slide.title }} />}
-                                  {!isEmptyHtml(slide.subtitle) && <p className={`${subtitleClass} [&>div]:inline leading-relaxed`} style={{ color: customTextColor, fontSize: `${subSize}px` }} dangerouslySetInnerHTML={{ __html: slide.subtitle }} />}
+                                  {!isEmptyHtml(slide.title) && <h2 className={`${titleClass} uppercase [&>div]:inline cursor-text select-text`} style={{ color: customTextColor, fontSize: `${titleSize}px` }} onDoubleClick={(e) => { e.stopPropagation(); handleEditClick(index); }} dangerouslySetInnerHTML={{ __html: slide.title }} />}
+                                  {!isEmptyHtml(slide.subtitle) && <p className={`${subtitleClass} [&>div]:inline leading-relaxed cursor-text select-text`} style={{ color: customTextColor, fontSize: `${subSize}px` }} onDoubleClick={(e) => { e.stopPropagation(); handleEditClick(index); }} dangerouslySetInnerHTML={{ __html: slide.subtitle }} />}
                                 </div>
                               </div>
                             </div>
@@ -2167,35 +2198,43 @@ export default function CarouselGenerator({ onLogout }: { onLogout: () => void }
 
                 <button
                   onClick={() => {
-                    const normalSlidesCount = parsedSlides.filter(s => !s.isCta).length;
-                    const nextSlideNum = normalSlidesCount + 1;
+                    const normalSlides = parsedSlides.filter(s => !s.isCta);
+                    const nextSlideNum = normalSlides.length + 1;
                     const newSlideData = { title: 'Novo Título', subtitle: 'Novo texto do slide aqui...', isCta: false };
 
-                    if (isIuryMode) {
-                      setParsedSlides(prev => {
-                        const newArr = [...prev];
-                        if (addCtaSlide && newArr.length > 0 && newArr[newArr.length - 1].isCta) {
-                          newArr.splice(newArr.length - 1, 0, newSlideData);
-                        } else {
-                          newArr.push(newSlideData);
-                        }
-                        return newArr;
-                      });
-                      setUploadedImages(prev => {
-                        const newArr = [...prev];
-                        if (addCtaSlide && parsedSlides.length > 0 && parsedSlides[parsedSlides.length - 1].isCta) {
-                          newArr.splice(newArr.length - 1, 0, null);
-                        } else {
-                          newArr.push(null);
-                        }
-                        return newArr;
-                      });
-                    } else {
-                      const newText = `\n\nSLIDE 0${nextSlideNum}:\n[TÍTULO]: Novo Título\n[SUBTÍTULO]: Novo texto do slide aqui...`;
-                      const newContent = content + newText;
-                      setContent(newContent);
-                      processTextIntoSlides(newContent, addCtaSlide, ctaContent);
-                    }
+                    // 1. Atualizar parsedSlides (mantém o CTA no final)
+                    setParsedSlides(prev => {
+                      const newArr = [...prev];
+                      if (addCtaSlide && newArr.length > 0 && newArr[newArr.length - 1].isCta) {
+                        newArr.splice(newArr.length - 1, 0, newSlideData);
+                      } else {
+                        newArr.push(newSlideData);
+                      }
+                      return newArr;
+                    });
+
+                    // 2. Atualizar uploadedImages (mantém o CTA no final)
+                    setUploadedImages(prev => {
+                      const newArr = [...prev];
+                      if (addCtaSlide && parsedSlides.length > 0 && parsedSlides[parsedSlides.length - 1].isCta) {
+                        newArr.splice(newArr.length - 1, 0, null);
+                      } else {
+                        newArr.push(null);
+                      }
+                      return newArr;
+                    });
+
+                    // 3. Sincronizar com a sidebar (content)
+                    const updatedManualSlides = [...normalSlides, newSlideData];
+                    const newContent = updatedManualSlides.map((s, i) => {
+                      const sNum = i + 1;
+                      const sNumStr = sNum < 10 ? `0${sNum}` : sNum;
+                      return `SLIDE ${sNumStr}:\n[TÍTULO]: ${s.title}\n[SUBTÍTULO]: ${s.subtitle}`;
+                    }).join('\n\n');
+
+                    setContent(newContent);
+                    if (isIuryMode) setIsIuryMode(false);
+                    setHasNewPreview(true);
                   }}
                   className={`w-[100px] ${aspectRatio === '9:16' ? 'h-[560px]' : 'h-[500px]'} shrink-0 rounded-2xl border-2 border-dashed border-slate-300 dark:border-border-dark flex flex-col items-center justify-center gap-3 text-slate-400 dark:text-slate-500 hover:border-primary hover:text-primary hover:bg-primary/5 transition-all group`}
                 >

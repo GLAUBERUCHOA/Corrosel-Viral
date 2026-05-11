@@ -1,6 +1,7 @@
 'use client';
 import React, { useState, useEffect } from 'react';
 import dynamic from 'next/dynamic';
+import { useRouter } from 'next/navigation';
 import LoginScreen from './components/LoginScreen';
 
 const CarouselGenerator = dynamic(() => import('./components/CarouselGenerator'), {
@@ -8,32 +9,64 @@ const CarouselGenerator = dynamic(() => import('./components/CarouselGenerator')
 });
 
 export default function App() {
+  const router = useRouter();
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
+  const [userEmail, setUserEmail] = useState<string | null>(null);
 
   useEffect(() => {
-    // Check if user is already authenticated in localStorage
     const savedAuth = localStorage.getItem('is_authenticated');
-    if (savedAuth === 'true') {
-      // eslint-disable-next-line react-hooks/set-state-in-effect
+    const savedEmail = localStorage.getItem('user_email');
+    
+    if (savedAuth === 'true' && savedEmail) {
+      setUserEmail(savedEmail);
       setIsAuthenticated(true);
-    }
-    // Small delay to prevent flashing the login screen if already authenticated
-    setTimeout(() => {
+      checkUserStatus(savedEmail);
+    } else {
       setIsLoading(false);
-    }, 100);
+    }
   }, []);
+
+  const checkUserStatus = async (email: string) => {
+    try {
+      const response = await fetch(`/api/auth/check?email=${encodeURIComponent(email)}`);
+      // Nota: Usei GET aqui para simplificar a verificação de status recorrente
+      // Mas o /api/auth/check atual é POST. Vou ajustar o fetch para POST ou criar um helper.
+      
+      const checkResponse = await fetch('/api/auth/check', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email }),
+      });
+      
+      const data = await checkResponse.json();
+
+      if (checkResponse.status === 404 && data.error === 'NOT_FOUND') {
+         // Usuário não encontrado no Prisma (pode acontecer se o localStorage estiver sujo)
+         handleLogout();
+      } else if (data.status === 'pendente') {
+         router.push('/pendente');
+      }
+    } catch (err) {
+      console.error('Status check error:', err);
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
   const handleLogin = (email: string) => {
     localStorage.setItem('is_authenticated', 'true');
     localStorage.setItem('user_email', email);
+    setUserEmail(email);
     setIsAuthenticated(true);
+    checkUserStatus(email);
   };
 
   const handleLogout = () => {
     localStorage.removeItem('is_authenticated');
     localStorage.removeItem('user_email');
     setIsAuthenticated(false);
+    setUserEmail(null);
   };
 
   if (isLoading) {
@@ -53,3 +86,4 @@ export default function App() {
     <LoginScreen onLogin={handleLogin} />
   );
 }
+

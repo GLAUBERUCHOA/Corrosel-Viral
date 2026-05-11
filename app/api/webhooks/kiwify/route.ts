@@ -2,16 +2,20 @@ import { NextRequest, NextResponse } from 'next/server';
 import crypto from 'crypto';
 import { prisma } from '@/lib/prisma';
 
-const KIWIFY_TOKEN = 'sdf9bzu97n9';
-const PRODUCT_ID = 'cce3cc00-380c-11f1-b0e7-3f7a361bf7ae';
-
 export async function POST(req: NextRequest) {
   try {
     const rawBody = await req.text();
     const urlToken = req.nextUrl.searchParams.get('token');
     const signature = req.headers.get('x-kiwify-signature');
+    
+    const KIWIFY_TOKEN = process.env.KIWIFY_TOKEN;
+    const CVL_PRODUCT_ID = process.env.CVL_PRODUCT_ID;
 
-    // Se tiver o token correto na URL, ignora a assinatura (Passe Livre)
+    if (!KIWIFY_TOKEN || !CVL_PRODUCT_ID) {
+      console.error('Kiwify Webhook: Environment variables missing');
+      return NextResponse.json({ error: 'Server configuration error' }, { status: 500 });
+    }
+
     let isAuthorized = false;
     
     if (urlToken === KIWIFY_TOKEN) {
@@ -32,28 +36,34 @@ export async function POST(req: NextRequest) {
 
     const payload = JSON.parse(rawBody);
 
-    // Validação de ID do Produto (Garantir que é o produto certo)
-    const receivedProductId = payload.product_id || payload.product?.id || payload.id_produto;
-    
-    // Se for um teste da Kiwify (test_webhook: true), permitimos passar
+    // 1. Parsing Resiliente: Busca o produto principal
+    const receivedProductId = payload.product_id || payload.Product?.product_id || payload.order?.Product?.product_id || payload.id_produto;
+
+    // 2. O Segredo: Vasculha os Order Bumps da transação
+    const orderBumps = payload.order_bumps || payload.order?.order_bumps || [];
+    const isOrderBump = orderBumps.some((bump: any) => 
+      bump.product_id === CVL_PRODUCT_ID || 
+      bump.product?.product_id === CVL_PRODUCT_ID ||
+      bump.id === CVL_PRODUCT_ID
+    );
+
     const isTest = payload.test_webhook === true || payload.is_test === true;
 
-    if (receivedProductId !== PRODUCT_ID && !isTest) {
-      console.log(`Kiwify Webhook: Ignored product ID ${receivedProductId}. Expected: ${PRODUCT_ID}`);
+    // 3. Se não for o produto principal E não estiver nos order bumps, ignora.
+    if (receivedProductId !== CVL_PRODUCT_ID && !isOrderBump && !isTest) {
+      console.log(`Kiwify Webhook: Ignorado. ID Principal: ${receivedProductId}. CVL não encontrado nos Order Bumps.`);
       return NextResponse.json({ success: true, message: 'Product ignored' });
     }
 
-    // Kiwify payload structure
-    const email = payload.Customer?.email || payload.customer?.email || payload.email;
-    const status = payload.order_status || payload.subscription_status || payload.status;
+    const email = payload.Customer?.email || payload.customer?.email || payload.order?.Customer?.email || payload.email;
+    const status = payload.order_status || payload.order?.order_status || payload.status;
 
     if (!email && !isTest) {
       console.error('Kiwify Webhook: No email found in payload', payload);
       return NextResponse.json({ error: 'No email found in payload' }, { status: 400 });
     }
 
-    // Email fallback para teste se necessário
-    const finalEmail = email || (isTest ? 'webhook_teste_sucesso@kiwify.com' : null);
+    const finalEmail = (email || (isTest ? 'webhook_teste_sucesso@kiwify.com' : null))?.toLowerCase().trim();
 
     if (!finalEmail) {
       return NextResponse.json({ error: 'No email found' }, { status: 400 });
@@ -61,27 +71,37 @@ export async function POST(req: NextRequest) {
 
     console.log(`Received Kiwify webhook for ${finalEmail} with status ${status}`);
 
-    // Statuses that grant access
     const activeStatuses = ['approved', 'paid', 'active'];
-    // Statuses that revoke access
     const inactiveStatuses = ['refunded', 'chargeback', 'canceled', 'expired', 'waiting_payment', 'refused'];
 
     if (activeStatuses.includes(status)) {
       await prisma.user.upsert({
         where: { email: finalEmail },
-        update: { status: 'ativo' },
-        create: { email: finalEmail, status: 'ativo', role: 'USER' }
+        update: { 
+          status: 'ativo',
+          hasCuradoriaAccess: true 
+        },
+        create: { 
+          email: finalEmail, 
+          status: 'ativo', 
+          role: 'USER',
+          hasCuradoriaAccess: true
+        }
       });
-      console.log(`Granted access to ${finalEmail}`);
+      console.log(`Granted access (including Curadoria) to ${finalEmail}`);
     } else if (inactiveStatuses.includes(status)) {
       await prisma.user.upsert({
         where: { email: finalEmail },
-        update: { status: 'inativo' },
-        create: { email: finalEmail, status: 'inativo', role: 'USER' }
+        update: { 
+          status: 'inativo'
+        },
+        create: { 
+          email: finalEmail, 
+          status: 'inativo', 
+          role: 'USER'
+        }
       });
       console.log(`Revoked access from ${finalEmail}`);
-    } else {
-      console.log(`Ignored status ${status} for ${finalEmail}`);
     }
 
     return NextResponse.json({ success: true });
@@ -90,3 +110,5 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
   }
 }
+
+

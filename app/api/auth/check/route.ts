@@ -13,27 +13,40 @@ export async function POST(req: NextRequest) {
 
     // Bypass for admin
     if (cleanEmail === 'drglauberabreu@gmail.com') {
-      return NextResponse.json({ success: true, isFirstAccess: false });
+      return NextResponse.json({ success: true, isFirstAccess: false, status: 'ativo' });
     }
 
     const user = await prisma.user.findUnique({
       where: { email: cleanEmail }
     });
 
-    if (!user || user.status !== 'ativo') {
+    if (!user) {
       return NextResponse.json({ 
         error: 'NOT_FOUND', 
         message: 'E-mail não encontrado. Por favor, certifique-se de usar exatamente o mesmo e-mail que usou na compra da Kiwify.' 
       }, { status: 404 });
     }
 
+    // Se o usuário existe, mas não está ativo nem pendente (ex: inativo)
+    if (user.status !== 'ativo' && user.status !== 'pendente') {
+      return NextResponse.json({ 
+        error: 'FORBIDDEN', 
+        message: 'Sua conta está inativa. Entre em contato com o suporte.' 
+      }, { status: 403 });
+    }
+
     // Se o usuário já tiver senha, não é primeiro acesso
     const isFirstAccess = !user.password;
 
-    return NextResponse.json({ success: true, isFirstAccess });
+    return NextResponse.json({ 
+      success: true, 
+      isFirstAccess,
+      status: user.status 
+    });
 
   } catch (error) {
     console.error('Error in check auth:', error);
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
   }
 }
+

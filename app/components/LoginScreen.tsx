@@ -1,9 +1,13 @@
 'use client';
 import React, { useState } from 'react';
+import { useRouter } from 'next/navigation';
 
+type LoginMode = 'login' | 'register';
 type LoginStep = 'email_check' | 'password_enter' | 'password_create';
 
 export default function LoginScreen({ onLogin }: { onLogin: (email: string) => void }) {
+  const router = useRouter();
+  const [mode, setMode] = useState<LoginMode>('login');
   const [step, setStep] = useState<LoginStep>('email_check');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -49,6 +53,48 @@ export default function LoginScreen({ onLogin }: { onLogin: (email: string) => v
         }
       } else {
         setError(data.message || data.error || 'Erro ao verificar o e-mail. Tente novamente.');
+      }
+    } catch (err) {
+      setError('Erro ao conectar com o servidor. Tente novamente mais tarde.');
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handleRegisterSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    const cleanEmail = email.toLowerCase().trim();
+
+    if (!password || !confirmPassword) {
+      setError('Todos os campos são obrigatórios.');
+      return;
+    }
+
+    if (password !== confirmPassword) {
+      setError('As senhas não coincidem. Verifique e digite novamente.');
+      return;
+    }
+
+    setIsLoading(true);
+    setError('');
+
+    try {
+      const response = await fetch('/api/auth/register', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email: cleanEmail, password }),
+      });
+
+      const data = await response.json();
+
+      if (response.ok) {
+        if (data.status === 'pendente') {
+          router.push('/pendente');
+        } else {
+          onLogin(cleanEmail);
+        }
+      } else {
+        setError(data.error || 'Erro ao criar conta. Tente novamente.');
       }
     } catch (err) {
       setError('Erro ao conectar com o servidor. Tente novamente mais tarde.');
@@ -104,50 +150,47 @@ export default function LoginScreen({ onLogin }: { onLogin: (email: string) => v
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-slate-950 p-4 font-sans relative overflow-hidden">
-      {/* Background Glows (Same as Sales Page) */}
+      {/* Background Glows */}
       <div className="absolute top-[-10%] left-1/2 -translate-x-1/2 w-[600px] h-[400px] bg-primary/10 blur-[120px] rounded-full pointer-events-none"></div>
       
       <div className="max-w-md w-full bg-slate-900/40 backdrop-blur-xl rounded-[2.5rem] shadow-2xl border border-white/10 p-6 md:p-8 relative overflow-hidden animate-in fade-in zoom-in duration-500">
         
         <div className="relative z-10">
-          {step === 'email_check' ? (
-            <div className="flex justify-center mb-6">
-              <div className="size-14 flex items-center justify-center bg-gradient-to-br from-primary to-accent rounded-2xl text-white shadow-lg shadow-primary/20">
-                <span className="material-symbols-outlined text-3xl">view_carousel</span>
-              </div>
-            </div>
-          ) : (
-            <div className="flex mb-6">
-              <button 
-                onClick={() => {
-                  setStep('email_check');
-                  setPassword('');
-                  setConfirmPassword('');
-                  setError('');
-                  setSuccessMsg('');
-                }}
-                className="flex items-center text-xs font-bold uppercase tracking-wider text-slate-400 hover:text-white transition-colors"
-                type="button"
-              >
-                <span className="material-symbols-outlined mr-1 text-lg">arrow_back</span>
-                Trocar e-mail
-              </button>
-            </div>
-          )}
+          
+          {/* Tabs Selector */}
+          <div className="flex bg-slate-950/50 p-1.5 rounded-2xl mb-8 border border-white/5">
+            <button 
+              onClick={() => { setMode('login'); setStep('email_check'); setError(''); setSuccessMsg(''); }}
+              className={`flex-1 py-2.5 px-4 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all ${mode === 'login' ? 'bg-primary text-white shadow-lg shadow-primary/20' : 'text-slate-500 hover:text-slate-300'}`}
+            >
+              Login
+            </button>
+            <button 
+              onClick={() => { setMode('register'); setError(''); setSuccessMsg(''); }}
+              className={`flex-1 py-2.5 px-4 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all ${mode === 'register' ? 'bg-primary text-white shadow-lg shadow-primary/20' : 'text-slate-500 hover:text-slate-300'}`}
+            >
+              Criar Conta
+            </button>
+          </div>
 
-          <h2 className="text-2xl md:text-3xl font-black text-center text-white mb-1 tracking-tight">
-            {step === 'email_check' ? 'Bem-vindo ao LAB' : step === 'password_create' ? 'Primeiro Acesso' : 'Bem-vindo de volta'}
-          </h2>
-          <p className="text-center text-slate-400 mb-8 text-xs font-medium uppercase tracking-wide">
-            {step === 'email_check' 
-              ? 'Acesse o seu laboratório viral' 
-              : step === 'password_create'
-                ? 'Crie sua senha exclusiva'
-                : 'Faça login para continuar'
-            }
-          </p>
+          <div className="text-center mb-8">
+            <h2 className="text-2xl md:text-3xl font-black text-white mb-1 tracking-tight">
+              {mode === 'register' ? 'Primeiro Acesso' : step === 'email_check' ? 'Bem-vindo ao LAB' : step === 'password_create' ? 'Ativar Conta' : 'Bem-vindo de volta'}
+            </h2>
+            <p className="text-slate-400 text-xs font-medium uppercase tracking-wide">
+              {mode === 'register' 
+                ? 'Cadastre-se para liberar o laboratório' 
+                : step === 'email_check' 
+                  ? 'Acesse o seu laboratório viral' 
+                  : 'Digite sua senha para continuar'
+              }
+            </p>
+          </div>
 
-          <form onSubmit={step === 'email_check' ? handleEmailCheck : handleLoginSubmit} className="space-y-4">
+          <form 
+            onSubmit={mode === 'register' ? handleRegisterSubmit : (step === 'email_check' ? handleEmailCheck : handleLoginSubmit)} 
+            className="space-y-4"
+          >
             
             <div className="space-y-1.5">
               <label htmlFor="email" className="block text-[10px] font-bold uppercase tracking-widest text-slate-500 px-1">
@@ -161,20 +204,19 @@ export default function LoginScreen({ onLogin }: { onLogin: (email: string) => v
                   id="email"
                   type="email"
                   value={email}
-                  disabled={step !== 'email_check'}
+                  disabled={mode === 'login' && step !== 'email_check'}
                   onChange={(e) => { setEmail(e.target.value); setError(''); }}
                   placeholder="Seu e-mail da Kiwify"
-                  className={`w-full pl-11 pr-4 py-3 rounded-2xl border ${error && step === 'email_check' ? 'border-red-500/50 bg-red-500/5' : 'border-white/5 bg-slate-950/50 focus:border-primary/50'} text-white placeholder:text-slate-600 transition-all outline-none font-medium disabled:opacity-40`}
+                  className={`w-full pl-11 pr-4 py-3 rounded-2xl border ${error && (step === 'email_check' || mode === 'register') ? 'border-red-500/50 bg-red-500/5' : 'border-white/5 bg-slate-950/50 focus:border-primary/50'} text-white placeholder:text-slate-600 transition-all outline-none font-medium disabled:opacity-40`}
                   required
-                  autoFocus={step === 'email_check'}
                 />
               </div>
             </div>
 
-            {step !== 'email_check' && (
+            {(mode === 'register' || (mode === 'login' && step !== 'email_check')) && (
               <div className="space-y-1.5 relative animate-in fade-in slide-in-from-top-2">
                 <label htmlFor="password" className="block text-[10px] font-bold uppercase tracking-widest text-slate-500 px-1">
-                  {step === 'password_create' ? 'Crie sua Senha' : 'Senha'}
+                  {mode === 'register' || step === 'password_create' ? 'Criar Senha' : 'Senha'}
                 </label>
                 <div className="relative">
                   <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
@@ -188,13 +230,12 @@ export default function LoginScreen({ onLogin }: { onLogin: (email: string) => v
                     placeholder="Sua senha"
                     className={`w-full pl-11 pr-4 py-3 rounded-2xl border ${error && password ? 'border-red-500/50 bg-red-500/5' : 'border-white/5 bg-slate-950/50 focus:border-primary/50'} text-white placeholder:text-slate-600 transition-all outline-none font-medium`}
                     required
-                    autoFocus
                   />
                 </div>
               </div>
             )}
 
-            {step === 'password_create' && (
+            {(mode === 'register' || (mode === 'login' && step === 'password_create')) && (
               <div className="space-y-1.5 relative animate-in fade-in slide-in-from-top-2">
                 <label htmlFor="confirmPassword" className="block text-[10px] font-bold uppercase tracking-widest text-slate-500 px-1">
                   Confirmar Senha
@@ -210,7 +251,7 @@ export default function LoginScreen({ onLogin }: { onLogin: (email: string) => v
                     onChange={(e) => { setConfirmPassword(e.target.value); setError(''); }}
                     placeholder="Repita sua senha"
                     className={`w-full pl-11 pr-4 py-3 rounded-2xl border ${error && confirmPassword ? 'border-red-500/50 bg-red-500/5' : 'border-white/5 bg-slate-950/50 focus:border-primary/50'} text-white placeholder:text-slate-600 transition-all outline-none font-medium`}
-                    required={step === 'password_create'}
+                    required
                   />
                 </div>
               </div>
@@ -235,16 +276,16 @@ export default function LoginScreen({ onLogin }: { onLogin: (email: string) => v
             <button
               type="submit"
               disabled={isLoading}
-              className="w-full py-4 px-4 bg-gradient-to-r from-orange-500 to-amber-500 hover:from-orange-600 hover:to-amber-600 text-white font-black uppercase tracking-widest rounded-2xl transition-all shadow-[0_0_20px_rgba(255,138,0,0.3)] hover:shadow-[0_0_30px_rgba(255,138,0,0.5)] hover:scale-[1.02] active:scale-[0.98] flex items-center justify-center gap-3 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100 mt-2"
+              className="w-full py-4 px-4 bg-gradient-to-r from-orange-500 to-amber-500 hover:from-orange-600 hover:to-amber-600 text-white font-black uppercase tracking-widest rounded-2xl transition-all shadow-[0_0_20px_rgba(255,138,0,0.3)] hover:shadow-[0_0_30px_rgba(255,138,0,0.5)] hover:scale-[1.02] active:scale-[0.98] flex items-center justify-center gap-3 disabled:opacity-50 disabled:cursor-not-allowed mt-2"
             >
               {isLoading ? (
                 <>
                   <span className="material-symbols-outlined text-[20px] animate-spin">progress_activity</span>
-                  <span>Aguarde...</span>
+                  <span>Processando...</span>
                 </>
               ) : (
                 <>
-                  <span>{step === 'email_check' ? 'Continuar' : step === 'password_create' ? 'Ativar e Entrar' : 'Acessar o Lab'}</span>
+                  <span>{mode === 'register' ? 'Ativar meu Acesso' : step === 'email_check' ? 'Continuar' : 'Acessar o Lab'}</span>
                   <span className="material-symbols-outlined text-[20px]">arrow_forward</span>
                 </>
               )}
@@ -253,12 +294,10 @@ export default function LoginScreen({ onLogin }: { onLogin: (email: string) => v
 
           <div className="mt-6 text-center">
             <p className="text-[10px] text-slate-500 flex flex-col gap-1.5 items-center uppercase tracking-widest font-bold">
-              <span>● Acesso Restrito ●</span>
-              {step === 'email_check' && (
-                <span className="text-slate-600">
-                  Use o e-mail cadastrado na Kiwify
-                </span>
-              )}
+              <span>● Sistema de Segurança Lab ●</span>
+              <span className="text-slate-600">
+                {mode === 'register' ? 'Validação manual para Order Bumps' : 'Acesso exclusivo para clientes'}
+              </span>
             </p>
           </div>
         </div>
@@ -266,3 +305,4 @@ export default function LoginScreen({ onLogin }: { onLogin: (email: string) => v
     </div>
   );
 }
+

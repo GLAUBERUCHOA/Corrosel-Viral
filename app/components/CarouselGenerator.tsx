@@ -232,7 +232,7 @@ export default function CarouselGenerator({ onLogout }: { onLogout: () => void }
   const [addCtaSlide, setAddCtaSlide] = useState(true);
   const [ctaContent, setCtaContent] = useState('O que você achou? Deixe nos comentários e salve este post para não esquecer!');
   const [ctaImage, setCtaImage] = useState<string | null>(null);
-  const [parsedSlides, setParsedSlides] = useState<{ title: string; subtitle: string; isCta?: boolean }[]>([{ title: '', subtitle: '', isCta: false }]);
+  const [parsedSlides, setParsedSlides] = useState<{ title: string; subtitle: string; isCta?: boolean; layout?: 'capa' | 'texto' | 'revista' | 'split-top' | 'split-bottom' }[]>([{ title: '', subtitle: '', isCta: false, layout: 'capa' }]);
   const [uploadedImages, setUploadedImages] = useState<(string | null)[]>(Array(10).fill(null));
   const [activeMobileTab, setActiveMobileTab] = useState<'config' | 'preview'>('config');
   const [hasNewPreview, setHasNewPreview] = useState(false);
@@ -249,6 +249,7 @@ export default function CarouselGenerator({ onLogout }: { onLogout: () => void }
   const [editingSlideIndex, setEditingSlideIndex] = useState<number | null>(null);
   const [editTitle, setEditTitle] = useState('');
   const [editSubtitle, setEditSubtitle] = useState('');
+  const [editLayout, setEditLayout] = useState<'capa' | 'texto' | 'revista' | 'split-top' | 'split-bottom'>('revista');
   const [currentSlideIndex, setCurrentSlideIndex] = useState(0);
   const [zoom, setZoom] = useState(100);
 
@@ -299,7 +300,7 @@ export default function CarouselGenerator({ onLogout }: { onLogout: () => void }
       }
     }
 
-    const newSlides: { title: string, subtitle: string, isCta?: boolean }[] = blocks.map((block) => {
+    const newSlides: { title: string, subtitle: string, isCta?: boolean, layout?: 'capa' | 'texto' | 'revista' | 'split-top' | 'split-bottom' }[] = blocks.map((block, idx) => {
       let title = '';
       let subtitle = '';
 
@@ -326,15 +327,30 @@ export default function CarouselGenerator({ onLogout }: { onLogout: () => void }
           subtitle = lines.slice(1).join(' ').trim();
         }
       }
-      return { title, subtitle };
+
+      // Atribuição automática e lógica de layouts conforme a narrativa
+      let layout: 'capa' | 'texto' | 'revista' | 'split-top' | 'split-bottom' = 'revista';
+      if (idx === 0) {
+        layout = 'capa';
+      } else if (idx === 1) {
+        layout = 'texto';
+      } else if (idx === 2) {
+        layout = 'revista';
+      } else if (idx === 3) {
+        layout = 'split-top';
+      } else {
+        layout = idx % 2 === 0 ? 'split-bottom' : 'revista';
+      }
+
+      return { title, subtitle, layout };
     });
 
     if (newSlides.length === 0) {
-      newSlides.push({ title: '', subtitle: '' });
+      newSlides.push({ title: '', subtitle: '', layout: 'capa' });
     }
 
     if (useCta && ctaText.trim()) {
-      newSlides.push({ title: '', subtitle: ctaText, isCta: true });
+      newSlides.push({ title: '', subtitle: ctaText, isCta: true, layout: 'split-bottom' });
     }
 
     setParsedSlides(newSlides);
@@ -1104,6 +1120,7 @@ export default function CarouselGenerator({ onLogout }: { onLogout: () => void }
     setEditingSlideIndex(index);
     setEditTitle(parsedSlides[index].title);
     setEditSubtitle(parsedSlides[index].subtitle);
+    setEditLayout(parsedSlides[index].layout || (index === 0 ? 'capa' : 'revista'));
   };
 
   const handleSaveEdit = () => {
@@ -1124,7 +1141,8 @@ export default function CarouselGenerator({ onLogout }: { onLogout: () => void }
       newSlides[editingSlideIndex] = { 
         ...newSlides[editingSlideIndex], 
         title: editTitle, 
-        subtitle: editSubtitle 
+        subtitle: editSubtitle,
+        layout: editLayout
       };
       
       setParsedSlides(newSlides);
@@ -1197,6 +1215,13 @@ export default function CarouselGenerator({ onLogout }: { onLogout: () => void }
           bgStyle: {},
           textClass: 'text-slate-900',
           subtextClass: 'text-slate-700'
+        };
+      case 'Narrativo':
+        return {
+          bgClass: '',
+          bgStyle: { backgroundColor: customColor },
+          textClass: 'text-white',
+          subtextClass: 'text-indigo-100' // slightly lighter contrast for body
         };
       case 'Personalizado': {
         return {
@@ -1585,9 +1610,9 @@ export default function CarouselGenerator({ onLogout }: { onLogout: () => void }
                     <div className="space-y-3">
                       <label className="text-xs font-bold text-slate-400 uppercase tracking-widest">Estilo Visual</label>
                       <div className="grid grid-cols-3 gap-2">
-                        {['Moderno', 'Escuro', 'Vibrante', 'Minimalista', 'Regional', 'Personalizado'].map((mode) => (
+                        {['Moderno', 'Escuro', 'Vibrante', 'Minimalista', 'Regional', 'Narrativo', 'Personalizado'].map((mode) => (
                           <div key={mode} className={`h-12 rounded-lg flex items-center justify-center cursor-pointer ring-2 transition-all ${styleModel === mode ? 'ring-primary' : 'ring-transparent'}`}
-                            style={{ background: mode === 'Moderno' ? 'linear-gradient(135deg, #6366f1, #a855f7)' : mode === 'Escuro' ? '#1e293b' : mode === 'Vibrante' ? 'linear-gradient(135deg, #f87171, #fb923c)' : mode === 'Minimalista' ? '#fff' : mode === 'Regional' ? '#efe9dc' : mode === 'Personalizado' ? customColor : '#f8fafc', border: (mode === 'Minimalista' || mode === 'Regional') ? '1px solid #e2e8f0' : 'none' }}
+                            style={{ background: mode === 'Moderno' ? 'linear-gradient(135deg, #6366f1, #a855f7)' : mode === 'Escuro' ? '#1e293b' : mode === 'Vibrante' ? 'linear-gradient(135deg, #f87171, #fb923c)' : mode === 'Minimalista' ? '#fff' : mode === 'Regional' ? '#efe9dc' : mode === 'Narrativo' ? '#F93E12' : mode === 'Personalizado' ? customColor : '#f8fafc', border: (mode === 'Minimalista' || mode === 'Regional') ? '1px solid #e2e8f0' : 'none' }}
                             onClick={() => {
                               setStyleModel(mode);
                               // Ajuste automático de contraste
@@ -1600,6 +1625,10 @@ export default function CarouselGenerator({ onLogout }: { onLogout: () => void }
                               if (mode === 'Escuro') setCustomColor('#151525');
                               if (mode === 'Minimalista') setCustomColor('#ffffff');
                               if (mode === 'Regional') setCustomColor('#efe9dc');
+                              if (mode === 'Narrativo') {
+                                setCustomColor('#F93E12');
+                                setFontFamily("'Playfair Display', serif");
+                              }
                             }}>
                             <span className={`text-[9px] font-black uppercase ${mode === 'Minimalista' || mode === 'Regional' ? 'text-slate-800' : 'text-white'}`}>{mode}</span>
                           </div>
@@ -1995,6 +2024,10 @@ export default function CarouselGenerator({ onLogout }: { onLogout: () => void }
                     ? 'pt-20 pb-10 px-10' // Capa: Layout mais compacto
                     : (isImageBottom ? 'pt-10 pb-10 px-8' : 'pt-8 pb-10 px-8'); // Internos: Tighter margins
 
+                  const activeLayout = styleModel === 'Narrativo'
+                    ? (parsedSlide.layout || (isFirst ? 'capa' : 'revista'))
+                    : (isFirst ? 'capa_legacy' : 'split_legacy');
+
                   return (
                     <div key={index} data-slide-index={index} className={`relative shrink-0 snap-center flex items-center group/slide-wrapper ${getSlideDimensions()}`}
                       onClick={() => { 
@@ -2009,134 +2042,359 @@ export default function CarouselGenerator({ onLogout }: { onLogout: () => void }
                           className={`absolute inset-0 flex flex-col overflow-hidden ${theme.bgClass} transition-all duration-300`}
                           style={styleModel === 'Personalizado' || styleModel === 'Escuro' || styleModel === 'Minimalista' || styleModel === 'Regional' ? { backgroundColor: customColor } : {}}
                         >
-                          {isFirst ? (
-                            /* --- LAYOUT CAPA (SLIDE 1) --- */
-                            <>
-                              {imageSrc && (
-                                <div className="flex-1 w-full relative z-0 overflow-hidden">
-                                   <Image
-                                    src={imageSrc}
-                                    alt={`Slide ${index}`}
-                                    fill
-                                    className="object-cover transition-transform duration-500"
-                                    style={{
-                                      objectPosition: `center ${imagePosMap[index] ?? 50}%`,
-                                      maskImage: 'linear-gradient(to bottom, black 85%, transparent 100%)',
-                                      WebkitMaskImage: 'linear-gradient(to bottom, black 85%, transparent 100%)'
-                                    }}
-                                    crossOrigin="anonymous"
-                                    unoptimized
-                                  />
-                                </div>
-                              )}
-
-                              {/* Branding Flutuante no Topo (Reduzido em 20%) - FIXO NO TOPO */}
-                              <div className="absolute top-6 left-6 z-[60]" style={{ opacity: 1 }}>
-                                {(brandHandle || brandLogo) && (
-                                  <div className="flex items-center gap-[5px] px-2 py-1 bg-black/30 rounded-full border border-white/10 shadow-lg overflow-hidden">
-                                    {brandLogo && (
-                                     <div className="size-[18px] sm:size-[20px] rounded-full overflow-hidden shrink-0 bg-white/40 border border-white/40 shadow-sm relative">
-                                       <Image src={brandLogo} alt="Logo" fill className="object-cover" crossOrigin="anonymous" unoptimized />
-                                     </div>
-                                    )}
-                                    {brandHandle && (
-                                      <div className="flex items-center gap-1 text-[9px] sm:text-[10px] font-black tracking-wider text-white uppercase drop-shadow-md pr-1">
-                                        <span>{brandHandle}</span>
-                                        <svg className="w-[11px] h-[11px] shrink-0 fill-[#3897f0]" viewBox="0 0 40 40">
-                                          <circle cx="20" cy="20" r="12" fill="white" />
-                                          <path d="M20 0L24.5 3.5L30 2.5L31 8L36 11L34.5 16.5L37.5 21.5L33.5 25.5L33.5 31.5L28 32L24 36.5L19.5 33L14 35.5L11 30.5L5.5 29L6 23.5L2 19.5L5.5 15L5 9.5L10.5 8L14 3.5L20 0Z" />
-                                          <path d="M17 21L14.5 18.5L13 20L17 24L27 14L25.5 12.5L17 21Z" fill="white" />
-                                        </svg>
+                          {(() => {
+                            switch (activeLayout) {
+                              case 'capa':
+                                return (
+                                  <>
+                                    {imageSrc && (
+                                      <div className="absolute inset-0 z-0">
+                                         <Image
+                                          src={imageSrc}
+                                          alt={`Slide ${index}`}
+                                          fill
+                                          className="object-cover transition-transform duration-500"
+                                          style={{ objectPosition: `center ${imagePosMap[index] ?? 20}%` }}
+                                          crossOrigin="anonymous"
+                                          unoptimized
+                                        />
                                       </div>
                                     )}
-                                  </div>
-                                )}
-                              </div>
-
-                              {/* Conteúdo da Capa com Gradiente Dinâmico (Escala com o texto) */}
-                              <div className={`w-full ${textPadding} ${textAlign} z-20 relative mt-auto ${theme.bgClass ? '' : 'bg-gradient-to-t from-black/60 to-transparent'}`}
-                                style={{
-                                  fontFamily,
-                                  color: styleModel === 'Personalizado' ? customTextColor : theme.textClass.includes('text-white') ? '#ffffff' : '#0f172a',
-                                  background: styleModel === 'Personalizado' ? `linear-gradient(to top, ${customColor} 0%, ${customColor}F2 75%, ${customColor}A6 95%, ${customColor}00 100%)` : undefined,
-                                  paddingTop: '22px' // Margem mínima no topo
-                                }}>
-
-                                <div className={`flex flex-col gap-2 ${textAlign === 'text-center' ? 'items-center text-center' : textAlign === 'text-right' ? 'items-end text-right' : 'items-start text-left'}`}>
-                                  {!isEmptyHtml(slide.title) && (
-                                    <h2 className={`${titleClass} uppercase [&>div]:inline cursor-text select-text`}
-                                      style={{
-                                        color: customTextColor,
-                                        fontSize: `${isFirst ? Math.min(titleSize, titleLength > 100 ? 20 : titleLength > 60 ? 24 : 32) : titleSize}px`
-                                      }}
-                                      onDoubleClick={(e) => { e.stopPropagation(); handleEditClick(index); }}
-                                      dangerouslySetInnerHTML={{ __html: slide.title }}
-                                    />
-                                  )}
-                                  {!isEmptyHtml(slide.subtitle) && (
-                                    <p className={`${subtitleClass} [&>div]:inline leading-tight font-medium opacity-100 cursor-text select-text`}
-                                      style={{
-                                        color: customTextColor,
-                                        fontSize: `${subSize}px`
-                                      }}
-                                      onDoubleClick={(e) => { e.stopPropagation(); handleEditClick(index); }}
-                                      dangerouslySetInnerHTML={{ __html: slide.subtitle }}
-                                    />
-                                  )}
-                                </div>
-                                <div className="absolute bottom-3 right-6 z-30">
-                                  <div className={`flex items-center gap-1.5 opacity-40 hover:opacity-100 transition-opacity`} style={{ color: customTextColor }}>
-                                    <span className={`text-[9px] font-black tracking-[0.3em] uppercase`} style={{ fontFamily: 'Inter, system-ui, sans-serif' }}>Deslize</span>
-                                    <span className="text-[12px] font-bold">&gt;</span>
-                                  </div>
-                                </div>
-                              </div>
-                            </>
-                          ) : (
-                            /* --- LAYOUT INTERNO (DEMAIS SLIDES) --- */
-                            <div className={`flex flex-col flex-1 ${contentOrder}`}>
-                              <div
-                                className="flex-1 relative overflow-hidden z-10"
-                              >
-                                {imageSrc && (
-                                  <Image
-                                    src={imageSrc}
-                                    alt={`Slide ${index}`}
-                                    fill
-                                    className="absolute inset-0 object-cover transition-transform duration-500"
-                                    style={{ objectPosition: `center ${imagePosMap[index] ?? 50}%` }}
-                                    crossOrigin="anonymous"
-                                    unoptimized
-                                  />
-                                )}
-
-                                {/* Branding para slides internos (segue o layout) */}
-                                <div className={`absolute ${isImageBottom ? 'bottom-4' : 'top-4'} left-4 z-50`} style={{ opacity: 0.7 }}>
-                                  {(brandHandle || brandLogo) && (
-                                    <div className="flex items-center gap-1.5 px-2 py-1">
-                                      {brandLogo && (
-                                        <div className="size-[18px] rounded-full overflow-hidden bg-white/20 border border-white/30 relative">
-                                          <Image src={brandLogo} alt="Logo" fill className="object-cover" crossOrigin="anonymous" unoptimized />
+                                    <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/40 to-transparent z-10" />
+                                    
+                                    {/* Branding no Topo */}
+                                    <div className="absolute top-6 left-6 z-[60]" style={{ opacity: 0.9 }}>
+                                      {(brandHandle || brandLogo) && (
+                                        <div className="flex items-center gap-[5px] px-2 py-1 bg-black/40 rounded-full border border-white/10 shadow-lg overflow-hidden">
+                                          {brandLogo && (
+                                           <div className="size-[18px] sm:size-[20px] rounded-full overflow-hidden shrink-0 bg-white/40 border border-white/40 shadow-sm relative">
+                                             <Image src={brandLogo} alt="Logo" fill className="object-cover" crossOrigin="anonymous" unoptimized />
+                                           </div>
+                                          )}
+                                          {brandHandle && (
+                                            <div className="flex items-center gap-1 text-[9px] sm:text-[10px] font-black tracking-wider text-white uppercase pr-1">
+                                              <span>{brandHandle}</span>
+                                              <svg className="w-[11px] h-[11px] shrink-0 fill-[#3897f0]" viewBox="0 0 40 40">
+                                                <circle cx="20" cy="20" r="12" fill="white" />
+                                                <path d="M20 0L24.5 3.5L30 2.5L31 8L36 11L34.5 16.5L37.5 21.5L33.5 25.5L33.5 31.5L28 32L24 36.5L19.5 33L14 35.5L11 30.5L5.5 29L6 23.5L2 19.5L5.5 15L5 9.5L10.5 8L14 3.5L20 0Z" />
+                                                <path d="M17 21L14.5 18.5L13 20L17 24L27 14L25.5 12.5L17 21Z" fill="white" />
+                                              </svg>
+                                            </div>
+                                          )}
                                         </div>
                                       )}
-                                      {brandHandle && <span className="text-[9px] font-bold text-white uppercase tracking-wider">{brandHandle}</span>}
                                     </div>
-                                  )}
-                                </div>
-                              </div>
 
-                              <div className={`w-full ${textPadding} ${textAlign} relative z-20 ${theme.bgClass}`} style={{ 
-                                fontFamily, 
-                                color: styleModel === 'Personalizado' ? customTextColor : undefined, 
-                                backgroundColor: styleModel === 'Personalizado' || styleModel === 'Escuro' || styleModel === 'Minimalista' || styleModel === 'Regional' ? customColor : undefined 
-                              }}>
-                                <div className={`flex flex-col gap-2 ${textAlign === 'text-center' ? 'items-center text-center' : textAlign === 'text-right' ? 'items-end text-right' : 'items-start text-left'}`}>
-                                  {!isEmptyHtml(slide.title) && <h2 className={`${titleClass} uppercase [&>div]:inline cursor-text select-text`} style={{ color: customTextColor, fontSize: `${titleSize}px` }} onDoubleClick={(e) => { e.stopPropagation(); handleEditClick(index); }} dangerouslySetInnerHTML={{ __html: slide.title }} />}
-                                  {!isEmptyHtml(slide.subtitle) && <p className={`${subtitleClass} [&>div]:inline leading-relaxed cursor-text select-text`} style={{ color: customTextColor, fontSize: `${subSize}px` }} onDoubleClick={(e) => { e.stopPropagation(); handleEditClick(index); }} dangerouslySetInnerHTML={{ __html: slide.subtitle }} />}
-                                </div>
-                              </div>
-                            </div>
-                          )}
+                                    {/* Conteúdo */}
+                                    <div className="w-full pt-22 pb-10 px-8 text-left z-20 relative mt-auto"
+                                      style={{
+                                        fontFamily: "'Playfair Display', serif",
+                                        color: '#ffffff'
+                                      }}>
+                                      <div className="flex flex-col gap-2.5 items-start text-left">
+                                        {!isEmptyHtml(slide.title) && (
+                                          <h2 className={`${titleClass} uppercase [&>div]:inline cursor-text select-text`}
+                                            style={{
+                                              color: '#ffffff',
+                                              fontSize: `${isFirst ? Math.min(titleSize, titleLength > 100 ? 20 : titleLength > 60 ? 24 : 32) : titleSize}px`,
+                                              fontFamily: "'Playfair Display', serif"
+                                            }}
+                                            onDoubleClick={(e) => { e.stopPropagation(); handleEditClick(index); }}
+                                            dangerouslySetInnerHTML={{ __html: slide.title }}
+                                          />
+                                        )}
+                                        {!isEmptyHtml(slide.subtitle) && (
+                                          <p className={`${subtitleClass} [&>div]:inline leading-relaxed font-semibold opacity-90 cursor-text select-text`}
+                                            style={{
+                                              color: '#e2e8f0',
+                                              fontSize: `${subSize}px`
+                                            }}
+                                            onDoubleClick={(e) => { e.stopPropagation(); handleEditClick(index); }}
+                                            dangerouslySetInnerHTML={{ __html: slide.subtitle }}
+                                          />
+                                        )}
+                                      </div>
+                                      <div className="absolute bottom-3 right-6 z-30">
+                                        <div className="flex items-center gap-1.5 opacity-60 hover:opacity-100 transition-opacity text-white">
+                                          <span className="text-[9px] font-black tracking-[0.3em] uppercase" style={{ fontFamily: 'Inter, system-ui, sans-serif' }}>Deslize</span>
+                                          <span className="text-[12px] font-bold">&gt;</span>
+                                        </div>
+                                      </div>
+                                    </div>
+                                  </>
+                                );
+
+                              case 'texto':
+                                return (
+                                  <div className="flex-1 flex flex-col justify-center items-center p-10 text-center relative z-20"
+                                    style={{ fontFamily: "'Playfair Display', serif" }}>
+                                    <div className="flex flex-col gap-5 max-w-[90%] items-center justify-center">
+                                      {!isEmptyHtml(slide.title) && (
+                                        <h2 className={`${titleClass} uppercase [&>div]:inline text-white leading-tight cursor-text select-text`}
+                                          style={{
+                                            fontSize: `${titleSize * 1.25}px`,
+                                            fontFamily: "'Playfair Display', serif",
+                                            color: customTextColor
+                                          }}
+                                          onDoubleClick={(e) => { e.stopPropagation(); handleEditClick(index); }}
+                                          dangerouslySetInnerHTML={{ __html: slide.title }}
+                                        />
+                                      )}
+                                      {!isEmptyHtml(slide.subtitle) && (
+                                        <p className="text-[18px] sm:text-[20px] font-bold leading-relaxed opacity-95 text-indigo-55 [&>div]:inline cursor-text select-text"
+                                          style={{ color: customTextColor }}
+                                          onDoubleClick={(e) => { e.stopPropagation(); handleEditClick(index); }}
+                                          dangerouslySetInnerHTML={{ __html: slide.subtitle }}
+                                        />
+                                      )}
+                                    </div>
+                                  </div>
+                                );
+
+                              case 'revista':
+                                return (
+                                  <div className="flex flex-col flex-1 h-full">
+                                    {/* Header */}
+                                    <div className="w-full pt-6 px-6 flex items-center justify-between z-20">
+                                      {(brandHandle || brandLogo) && (
+                                        <div className="flex items-center gap-1.5">
+                                          {brandLogo && (
+                                            <div className="size-[18px] rounded-full overflow-hidden bg-white/20 border border-white/30 relative">
+                                              <Image src={brandLogo} alt="Logo" fill className="object-cover" crossOrigin="anonymous" unoptimized />
+                                            </div>
+                                          )}
+                                          {brandHandle && <span className="text-[9px] font-black text-white/70 uppercase tracking-wider">{brandHandle}</span>}
+                                        </div>
+                                      )}
+                                      <span className="text-[9px] font-bold text-white/50 tracking-wider">2026 //</span>
+                                    </div>
+
+                                    {/* Título */}
+                                    <div className="w-full px-6 pt-3 pb-1 text-left z-20">
+                                      {!isEmptyHtml(slide.title) && (
+                                        <h2 className={`${titleClass} uppercase [&>div]:inline text-white cursor-text select-text`}
+                                          style={{
+                                            fontSize: `${titleSize}px`,
+                                            fontFamily: "'Playfair Display', serif"
+                                          }}
+                                          onDoubleClick={(e) => { e.stopPropagation(); handleEditClick(index); }}
+                                          dangerouslySetInnerHTML={{ __html: slide.title }}
+                                        />
+                                      )}
+                                    </div>
+
+                                    {/* Imagem Central */}
+                                    <div className="flex-1 px-6 py-3 relative z-10 flex items-center justify-center min-h-0">
+                                      <div className="w-full h-full min-h-[140px] relative rounded-xl overflow-hidden border border-white/10 shadow-lg bg-black/20">
+                                        {imageSrc && (
+                                          <Image
+                                            src={imageSrc}
+                                            alt={`Slide ${index}`}
+                                            fill
+                                            className="object-cover"
+                                            style={{ objectPosition: `center ${imagePosMap[index] ?? 50}%` }}
+                                            crossOrigin="anonymous"
+                                            unoptimized
+                                          />
+                                        )}
+                                      </div>
+                                    </div>
+
+                                    {/* Subtítulo */}
+                                    <div className={`w-full px-6 pb-6 pt-2 text-left z-20 relative`}
+                                      style={{ fontFamily: "'Plus Jakarta Sans', sans-serif" }}>
+                                      {!isEmptyHtml(slide.subtitle) && (
+                                        <p className="text-sm font-semibold leading-relaxed text-indigo-50/80 [&>div]:inline cursor-text select-text"
+                                          style={{ fontSize: `${subSize}px` }}
+                                          onDoubleClick={(e) => { e.stopPropagation(); handleEditClick(index); }}
+                                          dangerouslySetInnerHTML={{ __html: slide.subtitle }}
+                                        />
+                                      )}
+                                    </div>
+                                  </div>
+                                );
+
+                              case 'split-top':
+                                return (
+                                  <div className="flex flex-col flex-1 h-full">
+                                    <div className="w-full pt-8 pb-4 px-6 text-left relative z-20" style={{ fontFamily: "'Plus Jakarta Sans', sans-serif" }}>
+                                      <div className="flex flex-col gap-2 items-start text-left">
+                                        {!isEmptyHtml(slide.title) && <h2 className={`${titleClass} uppercase [&>div]:inline text-white`} style={{ fontSize: `${titleSize}px`, fontFamily: "'Playfair Display', serif" }} onDoubleClick={(e) => { e.stopPropagation(); handleEditClick(index); }} dangerouslySetInnerHTML={{ __html: slide.title }} />}
+                                        {!isEmptyHtml(slide.subtitle) && <p className="leading-relaxed text-indigo-50/80 [&>div]:inline font-semibold" style={{ fontSize: `${subSize}px` }} onDoubleClick={(e) => { e.stopPropagation(); handleEditClick(index); }} dangerouslySetInnerHTML={{ __html: slide.subtitle }} />}
+                                      </div>
+                                    </div>
+                                    <div className="flex-1 w-full relative overflow-hidden z-10 min-h-0">
+                                      {imageSrc && (
+                                        <Image
+                                          src={imageSrc}
+                                          alt={`Slide ${index}`}
+                                          fill
+                                          className="object-cover"
+                                          style={{ objectPosition: `center ${imagePosMap[index] ?? 50}%` }}
+                                          crossOrigin="anonymous"
+                                          unoptimized
+                                        />
+                                      )}
+                                    </div>
+                                  </div>
+                                );
+
+                              case 'split-bottom':
+                                return (
+                                  <div className="flex flex-col flex-1 h-full">
+                                    <div className="flex-1 w-full relative overflow-hidden z-10 min-h-0">
+                                      {imageSrc && (
+                                        <Image
+                                          src={imageSrc}
+                                          alt={`Slide ${index}`}
+                                          fill
+                                          className="object-cover"
+                                          style={{ objectPosition: `center ${imagePosMap[index] ?? 50}%` }}
+                                          crossOrigin="anonymous"
+                                          unoptimized
+                                        />
+                                      )}
+                                    </div>
+                                    <div className="w-full pt-4 pb-8 px-6 text-left relative z-20" style={{ fontFamily: "'Plus Jakarta Sans', sans-serif" }}>
+                                      <div className="flex flex-col gap-2 items-start text-left">
+                                        {!isEmptyHtml(slide.title) && <h2 className={`${titleClass} uppercase [&>div]:inline text-white`} style={{ fontSize: `${titleSize}px`, fontFamily: "'Playfair Display', serif" }} onDoubleClick={(e) => { e.stopPropagation(); handleEditClick(index); }} dangerouslySetInnerHTML={{ __html: slide.title }} />}
+                                        {!isEmptyHtml(slide.subtitle) && <p className="leading-relaxed text-indigo-50/80 [&>div]:inline font-semibold" style={{ fontSize: `${subSize}px` }} onDoubleClick={(e) => { e.stopPropagation(); handleEditClick(index); }} dangerouslySetInnerHTML={{ __html: slide.subtitle }} />}
+                                      </div>
+                                    </div>
+                                  </div>
+                                );
+
+                              case 'capa_legacy':
+                                return (
+                                  <>
+                                    {imageSrc && (
+                                      <div className="flex-1 w-full relative z-0 overflow-hidden">
+                                         <Image
+                                          src={imageSrc}
+                                          alt={`Slide ${index}`}
+                                          fill
+                                          className="object-cover transition-transform duration-500"
+                                          style={{
+                                            objectPosition: `center ${imagePosMap[index] ?? 50}%`,
+                                            maskImage: 'linear-gradient(to bottom, black 85%, transparent 100%)',
+                                            WebkitMaskImage: 'linear-gradient(to bottom, black 85%, transparent 100%)'
+                                          }}
+                                          crossOrigin="anonymous"
+                                          unoptimized
+                                        />
+                                      </div>
+                                    )}
+
+                                    {/* Branding Flutuante no Topo (Reduzido em 20%) - FIXO NO TOPO */}
+                                    <div className="absolute top-6 left-6 z-[60]" style={{ opacity: 1 }}>
+                                      {(brandHandle || brandLogo) && (
+                                        <div className="flex items-center gap-[5px] px-2 py-1 bg-black/30 rounded-full border border-white/10 shadow-lg overflow-hidden">
+                                          {brandLogo && (
+                                           <div className="size-[18px] sm:size-[20px] rounded-full overflow-hidden shrink-0 bg-white/40 border border-white/40 shadow-sm relative">
+                                             <Image src={brandLogo} alt="Logo" fill className="object-cover" crossOrigin="anonymous" unoptimized />
+                                           </div>
+                                          )}
+                                          {brandHandle && (
+                                            <div className="flex items-center gap-1 text-[9px] sm:text-[10px] font-black tracking-wider text-white uppercase drop-shadow-md pr-1">
+                                              <span>{brandHandle}</span>
+                                              <svg className="w-[11px] h-[11px] shrink-0 fill-[#3897f0]" viewBox="0 0 40 40">
+                                                <circle cx="20" cy="20" r="12" fill="white" />
+                                                <path d="M20 0L24.5 3.5L30 2.5L31 8L36 11L34.5 16.5L37.5 21.5L33.5 25.5L33.5 31.5L28 32L24 36.5L19.5 33L14 35.5L11 30.5L5.5 29L6 23.5L2 19.5L5.5 15L5 9.5L10.5 8L14 3.5L20 0Z" />
+                                                <path d="M17 21L14.5 18.5L13 20L17 24L27 14L25.5 12.5L17 21Z" fill="white" />
+                                              </svg>
+                                            </div>
+                                          )}
+                                        </div>
+                                      )}
+                                    </div>
+
+                                    {/* Conteúdo da Capa com Gradiente Dinâmico */}
+                                    <div className={`w-full ${textPadding} ${textAlign} z-20 relative mt-auto ${theme.bgClass ? '' : 'bg-gradient-to-t from-black/60 to-transparent'}`}
+                                      style={{
+                                        fontFamily,
+                                        color: styleModel === 'Personalizado' ? customTextColor : theme.textClass.includes('text-white') ? '#ffffff' : '#0f172a',
+                                        background: styleModel === 'Personalizado' ? `linear-gradient(to top, ${customColor} 0%, ${customColor}F2 75%, ${customColor}A6 95%, ${customColor}00 100%)` : undefined,
+                                        paddingTop: '22px'
+                                      }}>
+
+                                      <div className={`flex flex-col gap-2 ${textAlign === 'text-center' ? 'items-center text-center' : textAlign === 'text-right' ? 'items-end text-right' : 'items-start text-left'}`}>
+                                        {!isEmptyHtml(slide.title) && (
+                                          <h2 className={`${titleClass} uppercase [&>div]:inline cursor-text select-text`}
+                                            style={{
+                                              color: customTextColor,
+                                              fontSize: `${isFirst ? Math.min(titleSize, titleLength > 100 ? 20 : titleLength > 60 ? 24 : 32) : titleSize}px`
+                                            }}
+                                            onDoubleClick={(e) => { e.stopPropagation(); handleEditClick(index); }}
+                                            dangerouslySetInnerHTML={{ __html: slide.title }}
+                                          />
+                                        )}
+                                        {!isEmptyHtml(slide.subtitle) && (
+                                          <p className={`${subtitleClass} [&>div]:inline leading-tight font-medium opacity-100 cursor-text select-text`}
+                                            style={{
+                                              color: customTextColor,
+                                              fontSize: `${subSize}px`
+                                            }}
+                                            onDoubleClick={(e) => { e.stopPropagation(); handleEditClick(index); }}
+                                            dangerouslySetInnerHTML={{ __html: slide.subtitle }}
+                                          />
+                                        )}
+                                      </div>
+                                      <div className="absolute bottom-3 right-6 z-30">
+                                        <div className={`flex items-center gap-1.5 opacity-40 hover:opacity-100 transition-opacity`} style={{ color: customTextColor }}>
+                                          <span className={`text-[9px] font-black tracking-[0.3em] uppercase`} style={{ fontFamily: 'Inter, system-ui, sans-serif' }}>Deslize</span>
+                                          <span className="text-[12px] font-bold">&gt;</span>
+                                        </div>
+                                      </div>
+                                    </div>
+                                  </>
+                                );
+
+                              case 'split_legacy':
+                              default:
+                                return (
+                                  <div className={`flex flex-col flex-1 ${contentOrder}`}>
+                                    <div className="flex-1 relative overflow-hidden z-10">
+                                      {imageSrc && (
+                                        <Image
+                                          src={imageSrc}
+                                          alt={`Slide ${index}`}
+                                          fill
+                                          className="absolute inset-0 object-cover transition-transform duration-500"
+                                          style={{ objectPosition: `center ${imagePosMap[index] ?? 50}%` }}
+                                          crossOrigin="anonymous"
+                                          unoptimized
+                                        />
+                                      )}
+
+                                      {/* Branding para slides internos */}
+                                      <div className={`absolute ${isImageBottom ? 'bottom-4' : 'top-4'} left-4 z-50`} style={{ opacity: 0.7 }}>
+                                        {(brandHandle || brandLogo) && (
+                                          <div className="flex items-center gap-1.5 px-2 py-1">
+                                            {brandLogo && (
+                                              <div className="size-[18px] rounded-full overflow-hidden bg-white/20 border border-white/30 relative">
+                                                <Image src={brandLogo} alt="Logo" fill className="object-cover" crossOrigin="anonymous" unoptimized />
+                                              </div>
+                                            )}
+                                            {brandHandle && <span className="text-[9px] font-bold text-white uppercase tracking-wider">{brandHandle}</span>}
+                                          </div>
+                                        )}
+                                      </div>
+                                    </div>
+
+                                    <div className={`w-full ${textPadding} ${textAlign} relative z-20 ${theme.bgClass}`} style={{ 
+                                      fontFamily, 
+                                      color: styleModel === 'Personalizado' ? customTextColor : undefined, 
+                                      backgroundColor: styleModel === 'Personalizado' || styleModel === 'Escuro' || styleModel === 'Minimalista' || styleModel === 'Regional' ? customColor : undefined 
+                                    }}>
+                                      <div className={`flex flex-col gap-2 ${textAlign === 'text-center' ? 'items-center text-center' : textAlign === 'text-right' ? 'items-end text-right' : 'items-start text-left'}`}>
+                                        {!isEmptyHtml(slide.title) && <h2 className={`${titleClass} uppercase [&>div]:inline cursor-text select-text`} style={{ color: customTextColor, fontSize: `${titleSize}px` }} onDoubleClick={(e) => { e.stopPropagation(); handleEditClick(index); }} dangerouslySetInnerHTML={{ __html: slide.title }} />}
+                                        {!isEmptyHtml(slide.subtitle) && <p className={`${subtitleClass} [&>div]:inline leading-relaxed cursor-text select-text`} style={{ color: customTextColor, fontSize: `${subSize}px` }} onDoubleClick={(e) => { e.stopPropagation(); handleEditClick(index); }} dangerouslySetInnerHTML={{ __html: slide.subtitle }} />}
+                                      </div>
+                                    </div>
+                                  </div>
+                                );
+                            }
+                          })()}
                         </div>
                         <div
                           className={`absolute inset-0 bg-black/80 transition-opacity duration-200 flex flex-col items-center justify-center p-6 backdrop-blur-[4px] z-[60] cursor-pointer outline-none overflow-hidden capture-exclude ${openSlideIndex === index ? 'opacity-100' : 'opacity-0 pointer-events-none group-hover/slide:opacity-100 group-hover/slide:pointer-events-auto'}`}
@@ -2301,6 +2559,20 @@ export default function CarouselGenerator({ onLogout }: { onLogout: () => void }
                     onChange={setEditSubtitle}
                     placeholder="Digite o texto de apoio (opcional)..."
                   />
+                </div>
+                <div className="space-y-2">
+                  <label className="text-sm font-semibold text-slate-700 dark:text-slate-300">Layout do Slide</label>
+                  <select 
+                    value={editLayout} 
+                    onChange={(e) => setEditLayout(e.target.value as any)} 
+                    className="w-full bg-slate-50 dark:bg-surface-darker border border-slate-200 dark:border-border-dark text-slate-900 dark:text-white rounded-lg px-3 py-2 text-sm focus:ring-1 focus:ring-primary outline-none"
+                  >
+                    <option value="capa">Capa (Fundo Inteiro + Gradiente)</option>
+                    <option value="texto">Apenas Texto (Cor Sólida)</option>
+                    <option value="revista">Revista (Imagem Centralizada)</option>
+                    <option value="split-top">Divisão Superior (Texto topo, Imagem base)</option>
+                    <option value="split-bottom">Divisão Inferior (Imagem topo, Texto base)</option>
+                  </select>
                 </div>
               </div>
               <div className="p-4 border-t border-slate-200 dark:border-border-dark bg-slate-50 dark:bg-surface-darker flex justify-end gap-3">

@@ -10,3 +10,17 @@ coverage/
 
 .vercel
 .env*.local
+
+# Dumps e Logs temporarios
+tmp/
+tsconfig.tsbuildinfo
+build_logs*.txt
+lint_logs*.txt
+ts_errors*.txt
+vercel_*.txt
+deploy_help.txt
+prisma_generate.txt
+*.json
+!package.json
+!tsconfig.json
+!components.json

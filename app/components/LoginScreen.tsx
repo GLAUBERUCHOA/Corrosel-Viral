@@ -26,11 +26,6 @@ export default function LoginScreen({ onLogin }: { onLogin: (email: string) => v
       return;
     }
 
-    if (cleanEmail === 'drglauberabreu@gmail.com') {
-      onLogin(cleanEmail);
-      return;
-    }
-
     setIsLoading(true);
     setError('');
     

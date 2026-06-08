@@ -122,8 +122,9 @@ export default function CuradoriaPage() {
   const [showApiKey, setShowApiKey] = useState(false);
   const [userEmail, setUserEmail] = useState("");
   const [userRole, setUserRole] = useState("USER");
-  const pautas = useQuery(api.agents.getAllPautas, userEmail ? { userEmail } : "skip");
-  const runAgent1 = useAction(api.ai_actions.runAgent1Fetcher);
+  const [token, setToken] = useState<string | null>(null);
+  const pautas = useQuery(api.agents.getAllPautas, token ? { token } : "skip");
+  const runAgent1 = useAction(api.agents.runAgent1Fetcher);
   // @ts-ignore
   const runAgent2 = useAction(api.agents.runAgent2Processor);
   const clearPautas = useMutation(api.agents.clearAllPautas);
@@ -146,10 +147,10 @@ export default function CuradoriaPage() {
   const [geminiApiKey, setGeminiApiKey] = useState("");
   const [hasApiKey, setHasApiKey] = useState(false);
   const [isSavingSetup, setIsSavingSetup] = useState(false);
-  const isAdmin = userRole === "ADMIN" && userEmail === "drglauberabreu@gmail.com";
+  const isAdmin = userRole === "ADMIN";
 
   useEffect(() => {
-    const checkAuth = () => {
+    const checkAuth = async () => {
       const email = localStorage.getItem('user_email');
       
       if (!email) {
@@ -158,6 +159,20 @@ export default function CuradoriaPage() {
         return;
       }
       setUserEmail(email);
+      
+      try {
+        const tokenRes = await fetch('/api/auth/token');
+        const tokenData = await tokenRes.json();
+        if (tokenData.token) {
+          setToken(tokenData.token);
+        } else {
+          window.location.href = '/curadoria/login';
+          return;
+        }
+      } catch (err) {
+        console.error("Erro token:", err);
+      }
+      
       setIsCheckingAuth(false);
 
       // Carregar setup do usuário
@@ -196,7 +211,7 @@ export default function CuradoriaPage() {
       // 2. Sincroniza no Convex (para o CRON noturno do admin ler)
       if (isAdmin) {
         await savePromptConfig({
-          keyName: 'ADMIN_PROMPTS', nicho, publicoAlvo, objetivo, cta
+          keyName: 'ADMIN_PROMPTS', nicho, publicoAlvo, objetivo, cta, token: token || undefined
         } as any);
       }
 
@@ -232,7 +247,7 @@ export default function CuradoriaPage() {
       // @ts-ignore
       const result = await runAgent1({ 
         automatic: false,
-        userEmail,
+        token: token || undefined,
         userApiKey: resolvedApiKey,
         setup: { nicho, publicoAlvo, objetivo, cta }
       });
@@ -268,7 +283,7 @@ export default function CuradoriaPage() {
       }
 
       // @ts-ignore
-      const result = await runAgent2({ pautaId, userApiKey: resolvedApiKey });
+      const result = await runAgent2({ pautaId, userApiKey: resolvedApiKey, token: token || undefined });
       if (result && !result.success) {
         alert("Erro no Agente 2: " + (result.error || result.message || "Erro desconhecido"));
       }
@@ -284,7 +299,7 @@ export default function CuradoriaPage() {
     if (!confirm("Tem certeza que deseja limpar toda a fila de pautas?")) return;
     setIsClearing(true);
     try {
-      await clearPautas({ userEmail });
+      await clearPautas({ token: token || undefined });
     } catch (err) {
       console.error("❌ Erro ao limpar fila:", err);
       alert("Erro ao limpar fila.");
@@ -307,7 +322,7 @@ export default function CuradoriaPage() {
 
   async function handleAprovar(id: Id<"pautas">) {
     try {
-      await approvePauta({ id });
+      await approvePauta({ id, token: token || undefined });
       // Abre o LAB em uma nova aba com o ID da pauta
       window.open(`/login?pautaId=${id}`, '_blank');
     } catch (err) {
@@ -317,7 +332,7 @@ export default function CuradoriaPage() {
 
   async function handleExcluir(id: Id<"pautas">) {
     try {
-      await deletePauta({ id });
+      await deletePauta({ id, token: token || undefined });
     } catch (err) {
       console.error("Erro ao excluir pauta", err);
     }

@@ -32,7 +32,9 @@ export default function AdminLogin() {
                 // Get callbackUrl from query params
                 const params = new URLSearchParams(window.location.search);
                 const callbackUrl = params.get('callbackUrl') || '/admin';
-                window.location.href = callbackUrl; // Force full reload to trigger middleware
+                // Validate callbackUrl to prevent Open Redirect
+                const safeCallbackUrl = callbackUrl.startsWith('/') && !callbackUrl.startsWith('//') ? callbackUrl : '/admin';
+                window.location.href = safeCallbackUrl; // Force full reload to trigger middleware
             } else {
                 setError(data.error || 'Erro ao fazer login.');
             }

@@ -2,7 +2,7 @@
 
 import { ConvexHttpClient } from "convex/browser";
 import { api } from "@/convex/_generated/api";
-
+import { cookies } from "next/headers";
 
 export async function salvarConfiguracoes(formData: FormData) {
   try {
@@ -30,7 +30,8 @@ export async function salvarConfiguracoes(formData: FormData) {
           promptAgente2: novasRegras.agente_2?.regras_escrita?.toString() || "",
           contextoSquad: novasRegras.contexto_squad?.toString() || "",
           tomGlobal: novasRegras.tom_de_voz_global?.toString() || "",
-          value: novasRegras // backup da estrutura completa
+          value: novasRegras, // backup da estrutura completa
+          token: (await cookies()).get('session')?.value
         };
 
         console.log(`--- INICIANDO SALVAMENTO PARA: ${keyName} ---`);

@@ -1,10 +1,11 @@
 "use node";
 
-import { action } from "./_generated/server";
+import { action, internalAction } from "./_generated/server";
 import { v } from "convex/values";
 import { internal, api } from "./_generated/api";
 import { GoogleGenerativeAI } from "@google/generative-ai";
 import { PROMPT_AGENTE_01, PROMPT_AGENTE_02 } from "./instructions";
+import { requireUser } from "./auth";
 
 // Modelos — gemini-2.5-flash é o principal, e gemini-1.5-flash é o salva-vidas infinito
 const MODEL_PRIMARY = 'gemini-2.5-flash';
@@ -79,11 +80,11 @@ async function callGeminiWithRetry(
 /**
  * Agente 1: Busca notícias disruptivas
  */
-export const runAgent1Fetcher = action({
+export const runAgent1Fetcher = internalAction({
   args: { 
     automatic: v.optional(v.boolean()),
     userApiKey: v.optional(v.string()),
-    userEmail: v.optional(v.string()),
+    token: v.optional(v.string()),
     setup: v.optional(v.object({
       nicho: v.string(),
       publicoAlvo: v.string(),
@@ -92,6 +93,10 @@ export const runAgent1Fetcher = action({
     }))
   },
   handler: async (ctx, args): Promise<{ success: boolean; pauta?: string; message?: string; error?: string }> => {
+    let user;
+    if (!args.automatic) {
+      user = await requireUser(args.token);
+    }
     // Prioridade: Key do cliente > Key do admin (.env)
     const apiKey = args.userApiKey || process.env.GOOGLE_GENERATIVE_AI_API_KEY;
     if (!apiKey) throw new Error("Nenhuma API Key do Gemini configurada. Adicione sua chave no Setup do Especialista.");
@@ -123,7 +128,7 @@ export const runAgent1Fetcher = action({
     }
 
     // 2. Busca de Configurações Dinâmicas (Mestre vs. Cliente)
-    const isAdmin = args.userEmail === 'drglauberabreu@gmail.com';
+    const isAdmin = args.automatic ? true : (user?.role === "ADMIN");
     const settings: any = isAdmin 
       ? await ctx.runQuery(internalAgents.getAdminPromptsInternal)
       : await ctx.runQuery(internalAgents.getClientPromptsInternal);
@@ -189,7 +194,7 @@ export const runAgent1Fetcher = action({
       await ctx.runMutation(internalAgents.savePauta, {
         pauta: pautaCompleta,
         type: "noticia",
-        userEmail: args.userEmail
+        userEmail: (user?.email as string) || "CRON",
       });
       
       console.log("[AI_ACTIONS] ✅ Pauta salva com sucesso.");
@@ -202,7 +207,7 @@ export const runAgent1Fetcher = action({
       await ctx.runMutation(internalAgents.savePauta, {
         pauta: `[ERRO] Falha ao gerar pauta — ${err.message?.substring(0, 200)}`,
         type: "noticia",
-        userEmail: args.userEmail
+        userEmail: (user?.email as string) || "CRON",
       });
       // Marca como failed imediatamente
       return { success: false, error: err.message?.substring(0, 300) };
@@ -213,12 +218,18 @@ export const runAgent1Fetcher = action({
 /**
  * Agente 2: Decodificador Viral (Transforma Pauta em Roteiro de Carrossel)
  */
-export const runAgent2Processor = action({
+export const runAgent2Processor = internalAction({
   args: { 
     pautaId: v.optional(v.id("pautas")),
-    userApiKey: v.optional(v.string())
+    userApiKey: v.optional(v.string()),
+    token: v.optional(v.string())
   },
   handler: async (ctx, args): Promise<{ success: boolean; carrossel?: string; message?: string }> => {
+    let user;
+    if (args.pautaId) {
+      user = await requireUser(args.token);
+    }
+
     // 1. Definição da Chave API: Chave do Cliente ou Chave Global
     const apiKey = args.userApiKey || process.env.GOOGLE_GENERATIVE_AI_API_KEY;
     if (!apiKey) throw new Error("Missing GOOGLE_GENERATIVE_AI_API_KEY as fallback.");

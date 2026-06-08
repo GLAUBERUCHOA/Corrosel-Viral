@@ -1,13 +1,23 @@
 import { NextResponse } from 'next/server';
 import type { NextRequest } from 'next/server';
+import { decrypt } from '@/lib/auth/session';
 
-export function middleware(request: NextRequest) {
+export async function middleware(request: NextRequest) {
     const path = request.nextUrl.pathname;
 
     // Proteger rotas do Admin
     if (path.startsWith('/admin') && path !== '/admin/login') {
         const sessionCookie = request.cookies.get('session');
-        if (!sessionCookie || !sessionCookie.value) {
+        let isValidAdmin = false;
+
+        if (sessionCookie && sessionCookie.value) {
+            const payload = await decrypt(sessionCookie.value);
+            if (payload && payload.role === 'ADMIN') {
+                isValidAdmin = true;
+            }
+        }
+
+        if (!isValidAdmin) {
             const loginUrl = new URL('/admin/login', request.url);
             loginUrl.searchParams.set('callbackUrl', path);
             return NextResponse.redirect(loginUrl);
@@ -19,7 +29,23 @@ export function middleware(request: NextRequest) {
         const curadoriaCookie = request.cookies.get('curadoria_session');
         const adminCookie = request.cookies.get('session'); // Admin também pode acessar
         
-        if ((!curadoriaCookie || !curadoriaCookie.value) && (!adminCookie || !adminCookie.value)) {
+        let isValidCuradoria = false;
+
+        if (curadoriaCookie && curadoriaCookie.value) {
+            const payload = await decrypt(curadoriaCookie.value);
+            if (payload && payload.role === 'CURADORIA') {
+                isValidCuradoria = true;
+            }
+        }
+
+        if (adminCookie && adminCookie.value) {
+            const payload = await decrypt(adminCookie.value);
+            if (payload && payload.role === 'ADMIN') {
+                isValidCuradoria = true;
+            }
+        }
+
+        if (!isValidCuradoria) {
             const loginUrl = new URL('/curadoria/login', request.url);
             return NextResponse.redirect(loginUrl);
         }

@@ -1,10 +1,20 @@
-﻿import { SignJWT, jwtVerify } from 'jose';
+import { SignJWT, jwtVerify } from 'jose';
 import { cookies } from 'next/headers';
 
-const secretKey = process.env.JWT_SECRET || 'carrossel-viral-super-secret-key';
+const secretKey = process.env.JWT_SECRET;
+if (!secretKey) {
+    throw new Error('JWT_SECRET is not defined in environment variables');
+}
 const key = new TextEncoder().encode(secretKey);
 
-export async function encrypt(payload: any) {
+export interface SessionPayload {
+    id?: string;
+    email: string;
+    role?: string;
+    [key: string]: any;
+}
+
+export async function encrypt(payload: SessionPayload) {
     return await new SignJWT(payload)
         .setProtectedHeader({ alg: 'HS256' })
         .setIssuedAt()
@@ -12,12 +22,12 @@ export async function encrypt(payload: any) {
         .sign(key);
 }
 
-export async function decrypt(input: string): Promise<any> {
+export async function decrypt(input: string): Promise<SessionPayload | null> {
     try {
         const { payload } = await jwtVerify(input, key, {
             algorithms: ['HS256'],
         });
-        return payload;
+        return payload as SessionPayload;
     } catch (error) {
         return null;
     }

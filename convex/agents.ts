@@ -3,6 +3,7 @@ import { v } from "convex/values";
 import { internal } from "./_generated/api";
 import { GoogleGenerativeAI } from "@google/generative-ai";
 import { PROMPT_AGENTE_01, PROMPT_AGENTE_02 } from "./instructions";
+import { requireAdmin, requireUser, verifyToken } from "./auth";
 
 // gemini-2.5-flash: O ápice da inteligência e velocidade em Março/2026
 const MODEL_AGENT_1 = 'gemini-2.5-flash';
@@ -30,7 +31,7 @@ export const runAgent1Fetcher: any = action({
   args: { 
     automatic: v.optional(v.boolean()),
     userApiKey: v.optional(v.string()),
-    userEmail: v.optional(v.string()),
+    token: v.optional(v.string()),
     setup: v.optional(v.object({
       nicho: v.string(),
       publicoAlvo: v.string(),
@@ -40,7 +41,7 @@ export const runAgent1Fetcher: any = action({
   },
   handler: async (ctx, args) => {
     console.log("[BRIDGE] Redirecionando Agente 1 para ai_actions.ts...");
-    return await ctx.runAction(api.ai_actions.runAgent1Fetcher, args);
+    return await ctx.runAction(internal.ai_actions.runAgent1Fetcher, args);
   },
 });
 
@@ -50,11 +51,12 @@ export const runAgent1Fetcher: any = action({
 export const runAgent2Processor: any = action({
   args: {
     pautaId: v.optional(v.id("pautas")),
-    userApiKey: v.optional(v.string())
+    userApiKey: v.optional(v.string()),
+    token: v.optional(v.string())
   },
   handler: async (ctx, args) => {
     console.log("[BRIDGE] Redirecionando Agente 2 para ai_actions.ts...");
-    return await ctx.runAction(api.ai_actions.runAgent2Processor, args);
+    return await ctx.runAction(internal.ai_actions.runAgent2Processor, args);
   },
 });
 
@@ -102,13 +104,14 @@ export const getPendingPauta = internalQuery({
 });
 
 export const getAllPautas = query({
-  args: { userEmail: v.optional(v.string()) },
+  args: { token: v.optional(v.string()) },
   handler: async (ctx, args) => {
-    if (args.userEmail) {
+    const user = await requireUser(args.token);
+    if (user.role !== "ADMIN") {
       // Multi-tenant: retorna só as pautas do usuário
       return await ctx.db
         .query("pautas")
-        .withIndex("by_user", (q) => q.eq("userEmail", args.userEmail))
+        .withIndex("by_user", (q) => q.eq("userEmail", user.email as string))
         .order("desc")
         .take(50);
     }
@@ -121,17 +124,10 @@ export const getAllPautas = query({
 });
 
 export const clearAllPautas = mutation({
-  args: { userEmail: v.optional(v.string()) },
+  args: { token: v.optional(v.string()) },
   handler: async (ctx, args) => {
-    let all;
-    if (args.userEmail) {
-      all = await ctx.db
-        .query("pautas")
-        .withIndex("by_user", (q) => q.eq("userEmail", args.userEmail))
-        .collect();
-    } else {
-      all = await ctx.db.query("pautas").collect();
-    }
+    const user = await requireAdmin(args.token);
+    const all = await ctx.db.query("pautas").collect();
     for (const pauta of all) {
       await ctx.db.delete(pauta._id);
     }
@@ -139,8 +135,9 @@ export const clearAllPautas = mutation({
 });
 
 export const deletePauta = mutation({
-  args: { id: v.id("pautas") },
+  args: { id: v.id("pautas"), token: v.optional(v.string()) },
   handler: async (ctx, args) => {
+    const user = await requireAdmin(args.token);
     await ctx.db.delete(args.id);
   },
 });
@@ -157,8 +154,9 @@ export const countTodaysPautas = internalQuery({
 });
 
 export const approvePauta = mutation({
-  args: { id: v.id("pautas") },
+  args: { id: v.id("pautas"), token: v.optional(v.string()) },
   handler: async (ctx, args) => {
+    const user = await requireAdmin(args.token);
     await ctx.db.patch(args.id, {
       status: "approved",
       approvedAt: Date.now()
@@ -169,8 +167,9 @@ export const approvePauta = mutation({
 // -- Configurações e Memória --
 
 export const getSquadConfig = query({
-  args: {},
-  handler: async (ctx) => {
+  args: { token: v.optional(v.string()) },
+  handler: async (ctx, args) => {
+    await requireUser(args.token);
     return await ctx.db
       .query("settings")
       .withIndex("by_key", (q) => q.eq("key", "SQUAD_CONFIG"))
@@ -189,8 +188,9 @@ export const getSquadConfigInternal = internalQuery({
 });
 
 export const getAdminPrompts = query({
-  args: {},
-  handler: async (ctx) => {
+  args: { token: v.optional(v.string()) },
+  handler: async (ctx, args) => {
+    await requireAdmin(args.token);
     return await ctx.db
       .query("settings")
       .withIndex("by_key", (q) => q.eq("key", "ADMIN_PROMPTS"))
@@ -209,8 +209,9 @@ export const getAdminPromptsInternal = internalQuery({
 });
 
 export const getClientPrompts = query({
-  args: {},
-  handler: async (ctx) => {
+  args: { token: v.optional(v.string()) },
+  handler: async (ctx, args) => {
+    await requireUser(args.token);
     return await ctx.db
       .query("settings")
       .withIndex("by_key", (q) => q.eq("key", "CLIENT_PROMPTS"))
@@ -240,8 +241,10 @@ export const savePromptConfig = mutation({
     publicoAlvo: v.optional(v.string()),
     objetivo: v.optional(v.string()),
     cta: v.optional(v.string()),
+    token: v.optional(v.string()),
   },
   handler: async (ctx, args) => {
+    const user = await requireAdmin(args.token);
     const existing = await ctx.db
       .query("settings")
       .withIndex("by_key", (q) => q.eq("key", args.keyName))

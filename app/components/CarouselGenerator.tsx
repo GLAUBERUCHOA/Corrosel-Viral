@@ -1,7 +1,6 @@
 'use client';
 // Version: 1.1 - Added mobile download fixes and layout adjustments
 import React, { useState, useRef, useEffect } from 'react';
-import { GoogleGenerativeAI } from "@google/generative-ai";
 import * as htmlToImage from 'html-to-image';
 import JSZip from 'jszip';
 import { saveAs } from 'file-saver';
@@ -968,11 +967,7 @@ export default function CarouselGenerator({ onLogout }: { onLogout: () => void }
     const slide = parsedSlides[index];
     if (!slide) return;
 
-    const apiKey = customApiKey || process.env.NEXT_PUBLIC_GEMINI_API_KEY;
-    if (!apiKey) {
-      alert("Chave da API Gemini não encontrada. Insira sua chave nas configurações para regerar imagens com IA.");
-      return;
-    }
+    const apiKey = customApiKey;
 
     setGeneratingImages(prev => {
       const updated = [...prev];
@@ -982,15 +977,18 @@ export default function CarouselGenerator({ onLogout }: { onLogout: () => void }
     });
 
     try {
-      const genAI = new GoogleGenerativeAI(apiKey);
-      const model = genAI.getGenerativeModel({ model: 'gemini-2.5-flash' });
       const prompt = getImagePrompt(imageNiche, dbImagePrompts, slide.title, slide.subtitle);
 
-      const response = await model.generateContent({
-        contents: [{ role: 'user', parts: [{ text: prompt }] }],
+      const res = await fetch('/api/generate', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ prompt, type: 'image', customApiKey: apiKey })
       });
+      
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error);
 
-      const parts = response.response?.candidates?.[0]?.content?.parts || [];
+      const parts = data.parts || [];
       for (const part of parts) {
         if (part.inlineData) {
           const base64 = part.inlineData.data;
@@ -1020,29 +1018,26 @@ export default function CarouselGenerator({ onLogout }: { onLogout: () => void }
     if (!content.trim()) return;
 
     let finalContent = content;
-    const apiKey = customApiKey || process.env.NEXT_PUBLIC_GEMINI_API_KEY;
+    const apiKey = customApiKey;
 
     // ETAPA 01: GERAÇÃO DE TEXTO (MODO IURY)
     if (isIuryMode) {
-      if (!apiKey) {
-        alert("Chave da API Gemini não encontrada. Por favor, insira sua chave nas configurações para usar o Modo Iury.");
-        return;
-      }
-
       setIsGeneratingText(true);
       try {
-        const genAI = new GoogleGenerativeAI(apiKey);
-        const model = genAI.getGenerativeModel({ model: 'gemini-2.5-flash' });
         const promptFinal = `${getIuryPrompt(toneMode, dbPrompts)}\n\nRASCUNHO DO USUÁRIO:\n${content}`;
 
         // Gemini 2.5 Flash - Estabilizado para restauração do Modo Iury
         console.log('--- PIPELINE: GERANDO TEXTO COM IURY ---');
 
-        const response = await model.generateContent({
-          contents: [{ role: 'user', parts: [{ text: promptFinal }] }],
+        const res = await fetch('/api/generate', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ prompt: promptFinal, type: 'text', customApiKey: apiKey })
         });
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.error);
 
-        finalContent = response.response.text();
+        finalContent = data.text;
         setContent(finalContent); // Atualiza a caixa de texto visualmente
       } catch (error) {
         console.error("Erro no Pipeline (Texto):", error);
@@ -1060,29 +1055,25 @@ export default function CarouselGenerator({ onLogout }: { onLogout: () => void }
 
     // ETAPA 03: GERAÇÃO DE IMAGENS
     if (generateWithAI) {
-      if (!apiKey) {
-        alert("Chave da API Gemini não encontrada. Por favor, insira sua chave nas configurações para gerar imagens.");
-        return;
-      }
-
-      const genAI = new GoogleGenerativeAI(apiKey);
       const newGenerating = Array(newSlides.length).fill(true);
       setGeneratingImages(newGenerating);
 
       const newImages = [...uploadedImages];
       while (newImages.length < newSlides.length) newImages.push(null);
 
-      const imageModel = genAI.getGenerativeModel({ model: 'gemini-2.5-flash' });
-
       for (let i = 0; i < newSlides.length; i++) {
         try {
           const prompt = getImagePrompt(imageNiche, dbImagePrompts, newSlides[i].title, newSlides[i].subtitle);
 
-          const response = await imageModel.generateContent({
-            contents: [{ role: 'user', parts: [{ text: prompt }] }],
+          const res = await fetch('/api/generate', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ prompt, type: 'image', customApiKey: apiKey })
           });
+          const data = await res.json();
+          if (!res.ok) throw new Error(data.error);
 
-          const parts = response.response?.candidates?.[0]?.content?.parts || [];
+          const parts = data.parts || [];
           for (const part of parts) {
             if (part.inlineData) {
               const base64 = part.inlineData.data;

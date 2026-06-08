@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import { gerarIdeias } from '@/services/geradorCarrossel';
-import { prisma } from '@/lib/prisma';
+import { ConvexHttpClient } from 'convex/browser';
+import { api } from '@/convex/_generated/api';
 
 export const dynamic = 'force-dynamic';
 export const revalidate = 0;
@@ -19,10 +20,17 @@ export async function GET(request: Request) {
       return NextResponse.json({ error: 'Não autorizado.' }, { status: 401 });
     }
 
+    const convexUrl = process.env.NEXT_PUBLIC_CONVEX_URL;
+    if (!convexUrl || !process.env.JWT_SECRET) {
+      return NextResponse.json({ error: 'Configuração do Convex ausente.' }, { status: 500 });
+    }
+
     console.log('--- INICIANDO PRODUÇÃO EM LOTE (10 POSTS) ---');
     const geradosNestaRodada: string[] = [];
     const resultadosSucedidos = [];
     const logsErro = [];
+
+    const convex = new ConvexHttpClient(convexUrl);
 
     // O loop gera 10 posts, alternando entre notícias (ímpares) e perenes (pares).
     for (let i = 1; i <= 10; i++) {
@@ -34,19 +42,20 @@ export async function GET(request: Request) {
 
         if (resultado.success) {
           try {
-            const novoPost = await prisma.autoCarrossel.create({
-              data: {
-                user_id: 1,
-                conteudo: JSON.stringify(resultado.carrossel),
-                status: 'pendente'
-              }
+            const novoPost = await convex.mutation(api.agents.createPautaSystem, {
+              pauta: resultado.pauta || `Post Autogerado ${tipo} #${i}`,
+              type: tipo === 'noticias' ? 'noticia' : 'manual',
+              status: 'pending',
+              carrossel: JSON.stringify(resultado.carrossel),
+              userEmail: 'drglauberabreu@gmail.com',
+              secret: process.env.JWT_SECRET,
             });
 
             if (resultado.pauta) {
               geradosNestaRodada.push(resultado.pauta);
             }
             resultadosSucedidos.push(novoPost.id);
-            console.log(`   [SUCESSO] Post ${i} salvo no banco com ID ${novoPost.id}`);
+            console.log(`   [SUCESSO] Post ${i} salvo no Convex com ID ${novoPost.id}`);
           } catch (dbError) {
             logsErro.push({ index: i, error: 'Database Error', details: String(dbError) });
             console.error(`   [ERRO DB] Post ${i}:`, dbError);
@@ -59,6 +68,7 @@ export async function GET(request: Request) {
         logsErro.push({ index: i, error: 'Generation Error', details: String(loopError) });
         console.error(`   [ERRO FATAL] Falha não tratada ao gerar Post ${i}:`, loopError);
       }
+
 
       if (i < 10) await sleep(5000); // Reduzi levemente o sleep para tentar caber melhor no timeout
     }

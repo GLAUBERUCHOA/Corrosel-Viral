@@ -1,11 +1,13 @@
 import { SignJWT, jwtVerify } from 'jose';
 import { cookies } from 'next/headers';
 
-const secretKey = process.env.JWT_SECRET;
-if (!secretKey) {
-    throw new Error('JWT_SECRET is not defined in environment variables');
+function getKey() {
+    const secretKey = process.env.JWT_SECRET;
+    if (!secretKey) {
+        throw new Error('JWT_SECRET is not defined in environment variables');
+    }
+    return new TextEncoder().encode(secretKey);
 }
-const key = new TextEncoder().encode(secretKey);
 
 export interface SessionPayload {
     id?: string;
@@ -19,12 +21,12 @@ export async function encrypt(payload: SessionPayload) {
         .setProtectedHeader({ alg: 'HS256' })
         .setIssuedAt()
         .setExpirationTime('24h')
-        .sign(key);
+        .sign(getKey());
 }
 
 export async function decrypt(input: string): Promise<SessionPayload | null> {
     try {
-        const { payload } = await jwtVerify(input, key, {
+        const { payload } = await jwtVerify(input, getKey(), {
             algorithms: ['HS256'],
         });
         return payload as SessionPayload;
@@ -38,3 +40,4 @@ export async function getSession() {
     if (!session) return null;
     return await decrypt(session);
 }
+

@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { prisma } from '@/lib/prisma';
+import { ConvexHttpClient } from 'convex/browser';
+import { api } from '@/convex/_generated/api';
 
 // Rota interna: retorna a API key real do usuário (usada apenas pelo frontend para disparar agentes)
 export async function POST(req: NextRequest) {
@@ -8,9 +9,17 @@ export async function POST(req: NextRequest) {
     if (!email) return NextResponse.json({ error: 'Email missing' }, { status: 400 });
 
     const cleanEmail = email.toLowerCase().trim();
-    const user = await (prisma.user as any).findUnique({
-      where: { email: cleanEmail },
-      select: { geminiApiKey: true }
+
+    const convexUrl = process.env.NEXT_PUBLIC_CONVEX_URL;
+    const jwtSecret = process.env.JWT_SECRET;
+    if (!convexUrl || !jwtSecret) {
+      return NextResponse.json({ error: 'Configuração do servidor ausente.' }, { status: 500 });
+    }
+
+    const convex = new ConvexHttpClient(convexUrl);
+    const user = await convex.query(api.users.getUserByEmail, {
+      email: cleanEmail,
+      secret: jwtSecret,
     });
 
     if (!user) return NextResponse.json({ error: 'User not found' }, { status: 404 });

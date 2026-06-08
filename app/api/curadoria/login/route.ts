@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
-import { prisma } from '@/lib/prisma';
+import { ConvexHttpClient } from 'convex/browser';
+import { api } from '@/convex/_generated/api';
 import bcrypt from 'bcryptjs';
 import { encrypt } from '@/lib/auth/session';
 import { cookies } from 'next/headers';
@@ -14,8 +15,16 @@ export async function POST(request: Request) {
 
         const cleanEmail = email.toLowerCase().trim();
 
-        const user = await prisma.user.findUnique({
-            where: { email: cleanEmail },
+        const convexUrl = process.env.NEXT_PUBLIC_CONVEX_URL;
+        const jwtSecret = process.env.JWT_SECRET;
+        if (!convexUrl || !jwtSecret) {
+            return NextResponse.json({ error: 'Configuração do servidor ausente.' }, { status: 500 });
+        }
+
+        const convex = new ConvexHttpClient(convexUrl);
+        const user = await convex.query(api.users.getUserByEmail, {
+            email: cleanEmail,
+            secret: jwtSecret,
         });
 
         // Verifica se usuário existe e se está ativo
@@ -43,7 +52,7 @@ export async function POST(request: Request) {
 
         // Criar sessão segura
         const sessionPayload = { 
-            id: user.id, 
+            id: user._id, 
             email: user.email, 
             role: user.role, 
             curadoria: true 

@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { prisma } from '@/lib/prisma';
+import { ConvexHttpClient } from 'convex/browser';
+import { api } from '@/convex/_generated/api';
 
 export async function POST(req: NextRequest) {
   try {
@@ -16,8 +17,16 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ success: true, isFirstAccess: false, status: 'ativo' });
     }
 
-    const user = await prisma.user.findUnique({
-      where: { email: cleanEmail }
+    const convexUrl = process.env.NEXT_PUBLIC_CONVEX_URL;
+    const jwtSecret = process.env.JWT_SECRET;
+    if (!convexUrl || !jwtSecret) {
+      return NextResponse.json({ error: 'Configuração do servidor ausente.' }, { status: 500 });
+    }
+
+    const convex = new ConvexHttpClient(convexUrl);
+    const user = await convex.query(api.users.getUserByEmail, {
+      email: cleanEmail,
+      secret: jwtSecret,
     });
 
     if (!user) {
@@ -46,7 +55,6 @@ export async function POST(req: NextRequest) {
 
   } catch (error) {
     console.error('Error in check auth:', error);
-    return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
+    return NextResponse.json({ error: 'Erro interno no servidor' }, { status: 500 });
   }
 }
-

@@ -1,5 +1,6 @@
 import { GoogleGenerativeAI } from '@google/generative-ai';
-import { prisma } from '@/lib/prisma';
+import { ConvexHttpClient } from 'convex/browser';
+import { api } from '@/convex/_generated/api';
 import path from 'path';
 import fs from 'fs';
 
@@ -18,19 +19,22 @@ const MODEL_AGENT_2 = 'gemini-2.5-pro';
 
 async function loadSquadRules() {
   try {
-    const setting = await prisma.promptSetting.findUnique({
-      where: { toneKey: 'SQUAD_CONFIG' }
-    });
-    if (setting && setting.instruction) {
-      return JSON.parse(setting.instruction);
+    const convexUrl = process.env.NEXT_PUBLIC_CONVEX_URL;
+    if (convexUrl && process.env.JWT_SECRET) {
+      const convex = new ConvexHttpClient(convexUrl);
+      const value = await convex.query(api.agents.getSquadConfigSystem, { secret: process.env.JWT_SECRET });
+      if (value) {
+        return value;
+      }
     }
   } catch (err) {
-    console.warn('Erro ao ler do BD, caindo para fallback local:', err);
+    console.warn('Erro ao ler do Convex, caindo para fallback local:', err);
   }
 
   const rulesPath = path.join(process.cwd(), 'config', 'squad-rules.json');
   return JSON.parse(fs.readFileSync(rulesPath, 'utf8'));
 }
+
 
 export async function gerarIdeias(tipo: 'noticias' | 'perene', temasGerados: string[] = []) {
   try {

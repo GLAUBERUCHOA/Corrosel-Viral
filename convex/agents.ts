@@ -286,3 +286,42 @@ export const getPautaById = query({
     return await ctx.db.get(args.id);
   },
 });
+
+export const getSquadConfigSystem = query({
+  args: { secret: v.string() },
+  handler: async (ctx, args) => {
+    requireSystem(args.secret);
+    const config = await ctx.db
+      .query("settings")
+      .withIndex("by_key", (q) => q.eq("key", "SQUAD_CONFIG"))
+      .unique();
+    return config?.value || null;
+  },
+});
+
+export const createPautaSystem = mutation({
+  args: {
+    pauta: v.string(),
+    type: v.string(),
+    status: v.string(),
+    carrossel: v.optional(v.string()),
+    userEmail: v.optional(v.string()),
+    secret: v.string(),
+  },
+  handler: async (ctx, args) => {
+    requireSystem(args.secret);
+    const id = await ctx.db.insert("pautas", {
+      pauta: args.pauta,
+      type: args.type,
+      status: args.status,
+      carrossel: args.carrossel,
+      userEmail: args.userEmail,
+      createdAt: Date.now(),
+    });
+    return { id };
+  },
+});
+
+// Import requireSystem
+import { requireSystem } from "./auth";
+

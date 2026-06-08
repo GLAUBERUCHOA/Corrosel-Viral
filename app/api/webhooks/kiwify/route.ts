@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import crypto from 'crypto';
-import { prisma } from '@/lib/prisma';
+import { ConvexHttpClient } from 'convex/browser';
+import { api } from '@/convex/_generated/api';
 
 export async function POST(req: NextRequest) {
   try {
@@ -74,32 +75,28 @@ export async function POST(req: NextRequest) {
     const activeStatuses = ['approved', 'paid', 'active'];
     const inactiveStatuses = ['refunded', 'chargeback', 'canceled', 'expired', 'waiting_payment', 'refused'];
 
+    const convexUrl = process.env.NEXT_PUBLIC_CONVEX_URL;
+    const jwtSecret = process.env.JWT_SECRET;
+    if (!convexUrl || !jwtSecret) {
+      console.error('Kiwify Webhook: Convex environment variables missing');
+      return NextResponse.json({ error: 'Server configuration error' }, { status: 500 });
+    }
+
+    const convex = new ConvexHttpClient(convexUrl);
+
     if (activeStatuses.includes(status)) {
-      await prisma.user.upsert({
-        where: { email: finalEmail },
-        update: { 
-          status: 'ativo',
-          hasCuradoriaAccess: true 
-        },
-        create: { 
-          email: finalEmail, 
-          status: 'ativo', 
-          role: 'USER',
-          hasCuradoriaAccess: true
-        }
+      await convex.mutation(api.users.upsertKiwifyUser, {
+        email: finalEmail,
+        status: 'ativo',
+        hasCuradoriaAccess: true,
+        secret: jwtSecret,
       });
       console.log(`Granted access (including Curadoria) to ${finalEmail}`);
     } else if (inactiveStatuses.includes(status)) {
-      await prisma.user.upsert({
-        where: { email: finalEmail },
-        update: { 
-          status: 'inativo'
-        },
-        create: { 
-          email: finalEmail, 
-          status: 'inativo', 
-          role: 'USER'
-        }
+      await convex.mutation(api.users.upsertKiwifyUser, {
+        email: finalEmail,
+        status: 'inativo',
+        secret: jwtSecret,
       });
       console.log(`Revoked access from ${finalEmail}`);
     }
@@ -110,5 +107,3 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
   }
 }
-
-

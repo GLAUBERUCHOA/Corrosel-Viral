@@ -29,4 +29,21 @@ export default defineSchema({
     objetivo: v.optional(v.string()),
     cta: v.optional(v.string()),
   }).index("by_key", ["key"]),
+  users: defineTable({
+    name: v.optional(v.string()),
+    email: v.string(),
+    password: v.optional(v.string()),
+    role: v.string(), // "USER" | "ADMIN"
+    status: v.string(), // "ativo" | "pendente" | "inativo"
+    hasCuradoriaAccess: v.optional(v.boolean()),
+    isVerified: v.optional(v.boolean()),
+    verificationCode: v.optional(v.string()),
+    nicho: v.optional(v.string()),
+    publicoAlvo: v.optional(v.string()),
+    objetivo: v.optional(v.string()),
+    cta: v.optional(v.string()),
+    geminiApiKey: v.optional(v.string()),
+    createdAt: v.number(),
+  }).index("by_email", ["email"]),
 });
+

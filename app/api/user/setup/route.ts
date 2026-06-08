@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { prisma } from '@/lib/prisma';
+import { ConvexHttpClient } from 'convex/browser';
+import { api } from '@/convex/_generated/api';
 
 export async function GET(req: NextRequest) {
   try {
@@ -7,9 +8,17 @@ export async function GET(req: NextRequest) {
     if (!email) return NextResponse.json({ error: 'Email missing' }, { status: 400 });
 
     const cleanEmail = email.toLowerCase().trim();
-    const user = await (prisma.user as any).findUnique({
-      where: { email: cleanEmail },
-      select: { nicho: true, publicoAlvo: true, objetivo: true, cta: true, geminiApiKey: true, role: true }
+
+    const convexUrl = process.env.NEXT_PUBLIC_CONVEX_URL;
+    const jwtSecret = process.env.JWT_SECRET;
+    if (!convexUrl || !jwtSecret) {
+      return NextResponse.json({ error: 'Configuração do servidor ausente.' }, { status: 500 });
+    }
+
+    const convex = new ConvexHttpClient(convexUrl);
+    const user = await convex.query(api.users.getUserByEmail, {
+      email: cleanEmail,
+      secret: jwtSecret,
     });
 
     if (!user) return NextResponse.json({ error: 'User not found' }, { status: 404 });
@@ -22,10 +31,10 @@ export async function GET(req: NextRequest) {
     return NextResponse.json({ 
       success: true, 
       data: { 
-        nicho: user.nicho, 
-        publicoAlvo: user.publicoAlvo, 
-        objetivo: user.objetivo, 
-        cta: user.cta,
+        nicho: user.nicho || '', 
+        publicoAlvo: user.publicoAlvo || '', 
+        objetivo: user.objetivo || '', 
+        cta: user.cta || '',
         geminiApiKey: maskedKey,
         hasApiKey: !!user.geminiApiKey,
         role: user.role
@@ -44,24 +53,43 @@ export async function POST(req: NextRequest) {
 
     const cleanEmail = email.toLowerCase().trim();
     
+    const convexUrl = process.env.NEXT_PUBLIC_CONVEX_URL;
+    const jwtSecret = process.env.JWT_SECRET;
+    if (!convexUrl || !jwtSecret) {
+      return NextResponse.json({ error: 'Configuração do servidor ausente.' }, { status: 500 });
+    }
+
+    const convex = new ConvexHttpClient(convexUrl);
+    const user = await convex.query(api.users.getUserByEmail, {
+      email: cleanEmail,
+      secret: jwtSecret,
+    });
+
+    if (!user) return NextResponse.json({ error: 'User not found' }, { status: 404 });
+
     // Só atualiza a API key se o valor não for a máscara
-    const updateData: any = { nicho, publicoAlvo, objetivo, cta };
+    const updateData: any = { 
+      id: user._id,
+      nicho, 
+      publicoAlvo, 
+      objetivo, 
+      cta,
+      secret: jwtSecret,
+    };
+    
     if (geminiApiKey && !geminiApiKey.startsWith('••••')) {
       updateData.geminiApiKey = geminiApiKey;
     }
 
-    const user = await (prisma.user as any).update({
-      where: { email: cleanEmail },
-      data: updateData
-    });
+    const updatedUser = await convex.mutation(api.users.updateUser, updateData);
 
     return NextResponse.json({ 
       success: true, 
       data: { 
-        nicho: user.nicho, 
-        publicoAlvo: user.publicoAlvo, 
-        objetivo: user.objetivo, 
-        cta: user.cta 
+        nicho: updatedUser.nicho || '', 
+        publicoAlvo: updatedUser.publicoAlvo || '', 
+        objetivo: updatedUser.objetivo || '', 
+        cta: updatedUser.cta || '' 
       } 
     });
   } catch (error) {

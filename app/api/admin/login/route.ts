@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
-import { prisma } from '@/lib/prisma';
+import { ConvexHttpClient } from 'convex/browser';
+import { api } from '@/convex/_generated/api';
 import bcrypt from 'bcryptjs';
 import { encrypt } from '@/lib/auth/session';
 import { cookies } from 'next/headers';
@@ -18,20 +19,30 @@ export async function POST(request: Request) {
             return NextResponse.json({ error: 'Senha é obrigatória.' }, { status: 400 });
         }
 
-        let user = await prisma.user.findUnique({
-            where: { email: ALLOWED_EMAIL },
+        const convexUrl = process.env.NEXT_PUBLIC_CONVEX_URL;
+        const jwtSecret = process.env.JWT_SECRET;
+        if (!convexUrl || !jwtSecret) {
+            return NextResponse.json({ error: 'Configuração do servidor ausente.' }, { status: 500 });
+        }
+
+        const convex = new ConvexHttpClient(convexUrl);
+
+        let user = await convex.query(api.users.getUserByEmail, {
+            email: ALLOWED_EMAIL,
+            secret: jwtSecret,
         });
 
         if (!user) {
             // Se ainda não existir, cria-se automaticamente como admin
             const hashedPassword = await bcrypt.hash(password, 10);
-            user = await prisma.user.create({
-                data: {
-                    email: ALLOWED_EMAIL,
-                    name: 'Glauber Uchoa',
-                    password: hashedPassword,
-                    role: 'ADMIN',
-                }
+            user = await convex.mutation(api.users.createUser, {
+                email: ALLOWED_EMAIL,
+                name: 'Glauber Uchoa',
+                password: hashedPassword,
+                role: 'ADMIN',
+                status: 'ativo',
+                isVerified: true,
+                secret: jwtSecret,
             });
         } else {
             // Verificar senha
@@ -41,8 +52,8 @@ export async function POST(request: Request) {
             }
         }
 
-        // Criar sessÃ£o JWT
-        const session = await encrypt({ id: user.id, email: user.email, role: user.role });
+        // Criar sessão JWT
+        const session = await encrypt({ id: user._id, email: user.email, role: user.role });
 
         (await cookies()).set('session', session, {
             httpOnly: true,
@@ -52,7 +63,7 @@ export async function POST(request: Request) {
             maxAge: 60 * 60 * 24, // 24 hours
         });
 
-        return NextResponse.json({ success: true, user: { id: user.id, email: user.email, name: user.name, role: user.role } });
+        return NextResponse.json({ success: true, user: { id: user._id, email: user.email, name: user.name, role: user.role } });
     } catch (error) {
         console.error('Login error:', error);
         return NextResponse.json({ error: 'Erro interno ao tentar fazer login.' }, { status: 500 });

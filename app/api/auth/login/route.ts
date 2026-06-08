@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { prisma } from '@/lib/prisma';
+import { ConvexHttpClient } from 'convex/browser';
+import { api } from '@/convex/_generated/api';
 import bcrypt from 'bcryptjs';
 
 export async function POST(req: NextRequest) {
@@ -21,8 +22,16 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'A senha é obrigatória.' }, { status: 400 });
     }
 
-    const user = await prisma.user.findUnique({
-      where: { email: cleanEmail }
+    const convexUrl = process.env.NEXT_PUBLIC_CONVEX_URL;
+    const jwtSecret = process.env.JWT_SECRET;
+    if (!convexUrl || !jwtSecret) {
+      return NextResponse.json({ error: 'Configuração do servidor ausente.' }, { status: 500 });
+    }
+
+    const convex = new ConvexHttpClient(convexUrl);
+    const user = await convex.query(api.users.getUserByEmail, {
+      email: cleanEmail,
+      secret: jwtSecret,
     });
 
     if (!user || user.status !== 'ativo') {
@@ -38,12 +47,11 @@ export async function POST(req: NextRequest) {
       // Cria a senha e já deixa a conta verificada! Sem enviar e-mail.
       const hashedPassword = await bcrypt.hash(password, 10);
       
-      await prisma.user.update({
-        where: { id: user.id },
-        data: { 
-          password: hashedPassword,
-          isVerified: true
-        }
+      await convex.mutation(api.users.updateUser, {
+        id: user._id,
+        password: hashedPassword,
+        isVerified: true,
+        secret: jwtSecret,
       });
 
       return NextResponse.json({ success: true, isVerified: true });

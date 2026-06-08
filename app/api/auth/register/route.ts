@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { prisma } from '@/lib/prisma';
-import { supabase } from '@/lib/supabase';
+import { ConvexHttpClient } from 'convex/browser';
+import { api } from '@/convex/_generated/api';
 import bcrypt from 'bcryptjs';
 
 export async function POST(req: NextRequest) {
@@ -13,34 +13,31 @@ export async function POST(req: NextRequest) {
 
     const cleanEmail = email.toLowerCase().trim();
 
-    // 1. Supabase Auth Registration
-    const { data: authData, error: authError } = await supabase.auth.signUp({
-      email: cleanEmail,
-      password: password,
-    });
-
-    if (authError) {
-      return NextResponse.json({ error: authError.message }, { status: 400 });
+    const convexUrl = process.env.NEXT_PUBLIC_CONVEX_URL;
+    const jwtSecret = process.env.JWT_SECRET;
+    if (!convexUrl || !jwtSecret) {
+      return NextResponse.json({ error: 'Configuração do servidor ausente.' }, { status: 500 });
     }
 
-    // 2. Prisma Sync Logic
-    const existingUser = await prisma.user.findUnique({
-      where: { email: cleanEmail }
+    const convex = new ConvexHttpClient(convexUrl);
+
+    // Get existing user
+    const existingUser = await convex.query(api.users.getUserByEmail, {
+      email: cleanEmail,
+      secret: jwtSecret,
     });
 
-    // Hash the password to keep it in sync with the existing login logic (optional but safer for legacy compatibility)
     const hashedPassword = await bcrypt.hash(password, 10);
 
     if (existingUser) {
       // Cenário A: O e-mail já existe (Webhook foi rápido)
-      // Apenas garantimos que ele tenha a senha para o login legado (se necessário)
+      // Apenas garantimos que ele tenha a senha para o login
       if (!existingUser.password) {
-        await prisma.user.update({
-          where: { id: existingUser.id },
-          data: { 
-            password: hashedPassword,
-            isVerified: true
-          }
+        await convex.mutation(api.users.updateUser, {
+          id: existingUser._id,
+          password: hashedPassword,
+          isVerified: true,
+          secret: jwtSecret,
         });
       }
       return NextResponse.json({ 
@@ -50,15 +47,13 @@ export async function POST(req: NextRequest) {
       });
     } else {
       // Cenário B: O e-mail não existe (Webhook atrasado ou acesso manual)
-      const newUser = await prisma.user.create({
-        data: {
-          email: cleanEmail,
-          password: hashedPassword,
-          status: 'pendente',
-          hasCuradoriaAccess: false,
-          isVerified: true,
-          role: 'USER'
-        }
+      const newUser = await convex.mutation(api.users.createUser, {
+        email: cleanEmail,
+        password: hashedPassword,
+        status: 'pendente',
+        isVerified: true,
+        role: 'USER',
+        secret: jwtSecret,
       });
 
       return NextResponse.json({ 

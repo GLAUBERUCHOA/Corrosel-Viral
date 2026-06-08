@@ -29,3 +29,14 @@ export async function requireUser(token?: string) {
   }
   return payload;
 }
+
+export function requireSystem(secret?: string) {
+  const jwtSecret = process.env.JWT_SECRET;
+  if (!jwtSecret) {
+    throw new Error("JWT_SECRET missing in Convex environment variables");
+  }
+  if (!secret || secret !== jwtSecret) {
+    throw new Error("Unauthorized: Invalid system secret");
+  }
+}
+

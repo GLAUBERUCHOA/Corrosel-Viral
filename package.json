@@ -7,8 +7,7 @@
     "build": "next build",
     "start": "next start",
     "lint": "eslint .",
-    "clean": "next clean",
-    "postinstall": "prisma generate"
+    "clean": "next clean"
   },
   "dependencies": {
     "@google/generative-ai": "^0.24.1",
